@@ -1,0 +1,9 @@
+[submodule "IWW"]
+	path = IWW
+	url = https://github.com/IHateMyKite/iWantWidgetsNG.git
+[submodule "hook"]
+	path = hook
+	url = https://github.com/gfreivasc/VMTHook
+[submodule "extern/VMTHook"]
+	path = extern/VMTHook
+	url = https://github.com/gfreivasc/VMTHook
