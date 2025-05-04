@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+  "dependencies": [
+    "commonlibsse-ng",
+    "boost-algorithm",
+    "boost-property-tree",
+    "boost-lexical-cast",
+    "boost-foreach",
+    "script-extender-common",
+    "xbyak",
+    "frozen",
+    "rsm-binary-io",
+    "fmt",
+    "spdlog",
+    "srell",
+    "articuno",
+    "catch2",
+    "nlohmann-json"
+  ]
+}

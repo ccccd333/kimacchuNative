@@ -1,0 +1,102 @@
+#pragma once
+#include <IWWFunctions.h>
+#include "KMCConfig.h"
+#include "KMCUtility.h"
+
+namespace KMCCT {
+
+    void KMCTimer(long long limit);
+    
+    
+    void wrap_UpdateModifiedContainer(std::vector<std::string> &mod_container, int &StrageUtilEndIndex, int &ModStartIndex,
+                                      int &ModEndIndex, KMCProfil &profile);
+    void UpdateModifiedContainer(std::vector<std::string> *mod_container, int *StrageUtilEndIndex, int *ModStartIndex,
+                                 int *ModEndIndex, KMCProfil *profile);
+    void KMCTimerWithWaitTask(long long limit);
+    void CutInPeriodicCall();
+    void CutInConditionPeriodicCall();
+    //void CutInPeriodicCall_Cycle();
+    //void CutInPeriodicCall_Evaluation();
+    void ProfilePeriodicCall();
+#pragma region init function
+    int WaitLoad(int *wid, uint64_t *rand, std::string *root,
+                 std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> **loadedWedget);
+    int WaitMultLoad(int *wid, uint64_t *rand, std::string *root, int *index,
+                     std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> **loadedWedget);
+    int WaitLoadText(int *wid, uint64_t *rand, std::string *root, std::vector<std::pair<uint64_t, int>> **loadedText);
+    int WaitLoadNamePlate(int *wid);
+    void InitMain(std::vector<float> *floatArray);
+#pragma endregion
+
+#pragma region interrupt event
+    void InterruptEventAddItem();
+    void InterruptEventOnHit();
+#pragma endregion
+
+#pragma region oar
+    void TryKMCOAR(OARCompDetail *ocd);
+#pragma endregion
+
+    void wrap_InterruptCutInEventManager(std::function<void(void)> fn);
+    void InterruptProfileEventManager();
+
+    void KMCLoadedWidget();
+    void KMCSetInitFlag();
+    bool KMCGetInitFlag();
+    void LaunchOAR(OARCompDetail &ocd);
+
+    typedef void (*WaitWidgetFunction)(int wid);
+
+    const std::string STATE_MANAGER_CONFIG_KEY = "event_cool_time";
+    const std::string PROFILE_DELAY_TIME_CONFIG_KEY = "profile_delay_time";
+    const std::string PROFILE_POLLING_COUNT_CONFIG_KEY = "profile_polling_count";
+    const std::string OTHER_INITIALIZATION_WAITING_TIME = "other_initialization_waiting_time";
+    const std::string PROFILE_SETTING_KEY_NAME_OTHER = "other";
+    const std::string TEXT_FADE_IN_OUT_TIME_SETTING = "text_fade_in_out_time";
+    const std::string WIDGET_FADE_IN_OUT_TIME_SETTING = "widget_fade_in_out_time";
+
+    const std::string ENABLE_CUT_IN_SETTING = "enable_cut_in";
+    const std::string ENABLE_PROFILE_SETTING = "enable_profile";
+
+    const long long INIT_WAIT_TIME = 5;
+    const int INTERRUPT_EVENT_COOL_TIME = 5;
+    const float INTERRUPT_SHOW_PROFILE_DELAY_TIME = 1.0f;
+    const int PROFILE_POLLING_COUNT = 3;
+    class KMCEventThread {
+        SINGLETONHEADER(KMCEventThread)
+    public:
+
+        ~KMCEventThread();
+
+        bool IsAlreadyInited();
+        void InitWordsAndWidgets(RE::BSFixedString skyroot, std::vector<float> floatArray);
+        void Init();
+        void CutInCreate(std::vector<std::string> variableArray);
+        void TryShowProfile();
+        void MCMSettingChange(std::vector<float> floatArray);
+        
+        int wrap_WaitLoadNamePlate(int &wid);
+        int wrap_WaitMultLoad(int &wid, uint64_t &rand, int &index,
+                              std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> *loadedWedget);
+        int wrap_WaitLoad(int &wid, uint64_t &rand, 
+                     std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> *loadedWedget);
+        int wrap_WaitLoadText(int &wid, uint64_t &rand, 
+                         std::vector<std::pair<uint64_t, int>> *loadedText);
+
+        void Reset();
+        bool GetShutDown();
+        bool GetProfileInitEnd();
+        bool GetInitFirstFlag();
+        bool GetEnableProfileFlag();
+        bool GetInitEndFlag();
+    public:
+        std::atomic<bool> forceendanim;
+        
+    private:
+
+        std::vector<float> papyrus_floatArray;
+        std::vector<float> papyrus_mcm;
+    };
+
+    
+}

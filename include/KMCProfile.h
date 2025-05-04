@@ -1,0 +1,65 @@
+#pragma once
+#include "KMCUtility.h"
+
+namespace KMCCT {
+    
+
+    class KMCProfile {
+        SINGLETONHEADER(KMCProfile)
+    public:
+        ~KMCProfile();
+        void Init();
+        void InitProfile(std::string skyroot, std::vector<float> *floatArray);
+        void Reset() {
+            BefResultModifiedContainer.clear();
+            ResultModifiedContainer.clear();
+        }
+
+        std::vector<std::string> GetModifiedContainer();
+        void SetModifiedContainer(std::vector<std::string> container);
+        void UpdateModifiedContainer(std::vector<std::string> *mod_container, int *SUtilEndIndex, int *ModStIndex,
+                                     int *ModEnIndex, KMCProfil *profile);
+        void KMCResetProfileContainer();
+        void InterruptProfileEventManager();
+        void ShowProfile(bool visible);
+        void TryShowProfile();
+        int GetStateProfileEvent();
+        bool Get_update_prifile() { return update_prifile; }
+        void Set_update_prifile(bool set) { update_prifile = set; }
+        bool Get_first_profile_update() { return first_profile_update; }
+        void Set_first_profile_update(bool set) { first_profile_update = set; }
+        bool Get_show_prifile() { return show_prifile; }
+        void Set_show_prifile(bool set) { show_prifile = set; }
+        bool Get_showing_profile() { return showing_profile; }
+        void Set_showing_profile(bool set) { showing_profile = set; }
+        bool Get_interrupt_show_profile() { return interrupt_show_profile; }
+        void Set_interrupt_show_profile(bool set) { interrupt_show_profile = set; }
+        bool Get_switch_disp_profile_flag() { return switch_disp_profile_flag; }
+        void Set_switch_disp_profile_flag(bool set) { switch_disp_profile_flag = set; }
+    private:
+        void ProfileInit(KMCProfil &profil, std::string target, std::vector<std::pair<std::string, std::string>> *ws,
+                         std::vector<std::pair<std::string, std::string>> *ts, std::vector<std::string> *pt);
+
+    private:
+        // player
+        KMCProfil PlayerProfil;
+
+        // ModifiedContainer
+        std::vector<std::string> ModifiedContainer;
+        std::vector<std::string> ResultModifiedContainer;
+        std::vector<std::string> BefResultModifiedContainer;
+        int StrageUtilStartIndex = 0;
+        int StrageUtilEndIndex = 0;
+        int ModStartIndex = 0;
+        int ModEndIndex = 0;
+
+        std::string aaaakmcroot = "";
+        float aaaakmcvolum = 1.0f;
+        bool update_prifile = false;
+        bool first_profile_update = false;
+        std::atomic<bool> show_prifile = false;
+        bool showing_profile = false;
+        bool interrupt_show_profile = false;
+        bool switch_disp_profile_flag = false;
+    };
+}
