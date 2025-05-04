@@ -5,6 +5,7 @@
 
 namespace KMCCT {
 
+
     SKSEPluginLoad(const SKSE::LoadInterface *skse) {
         SKSE::Init(skse);
 
@@ -23,8 +24,7 @@ namespace KMCCT {
         //const auto serialization = SKSE::GetSerializationInterface();
         //RE::ScriptEventSourceHolder::GetSingleton()->AddEventSink<EventType>(
         //    new CallbackEventSink<EventType>(callback));
-
-
+        
         //On<RE::TESTopicInfoEvent>([](const RE::TESTopicInfoEvent* event) {
         //    ConsoleLog("topic event");
         //});
