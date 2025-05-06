@@ -5,18 +5,22 @@
 #include "KMCEventThread.h"
 #include "KMCOAR.h"
 #include "KMCWaitTask.h"
+#include "KMCExpression.h"
 
 SINGLETONBODY(KMCCT::KMCCutin)
 
 namespace KMCCT {
-    std::map<int, KMCCutinOrder> AnimFtoAnimP{{0, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
-                                                     {1, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
-                                                     {2, KMCCutinOrder(KMCCT::AnimWidgetVisible, 1)},
-                                                     {3, KMCCutinOrder(KMCCT::TextVisible, 1)},
-                                                     {4, KMCCutinOrder(KMCCT::KMCPlayAnim, 1)},
-                                                     {5, KMCCutinOrder(KMCCT::TextInVisible, 1)},
-                                                     {6, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 1)},
-                                                     {7, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)},
+    std::map<int, KMCCutinOrder> AnimFtoAnimP{
+                                                     {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)},
+                                                     {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
+                                                     {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
+                                                     {11, KMCCutinOrder(KMCCT::AnimWidgetVisible, 1)},
+                                                     {12, KMCCutinOrder(KMCCT::TextVisible, 1)},
+                                                     {13, KMCCutinOrder(KMCCT::KMCPlayAnim, 1)},
+                                                     {14, KMCCutinOrder(KMCCT::TextInVisible, 1)},
+                                                     {15, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 1)},
+                                                     {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)},   
+                                                     {18, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},
                                                      {19, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
                                                      {20, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
                                                      {21, KMCCutinOrder(KMCCT::AnimWidgetVisible, 0)},
@@ -25,14 +29,17 @@ namespace KMCCT {
                                                      {24, KMCCutinOrder(KMCCT::TextInVisible, 0)},
                                                      {25, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 0)},
                                                      {26, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)}};
-    std::map<int, KMCCutinOrder> AnimPtoAnimF{{0, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
-                                                     {1, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
-                                                     {2, KMCCutinOrder(KMCCT::AnimWidgetVisible, 0)},
-                                                     {3, KMCCutinOrder(KMCCT::TextVisible, 0)},
-                                                     {4, KMCCutinOrder(KMCCT::KMCPlayAnim, 0)},
-                                                     {5, KMCCutinOrder(KMCCT::TextInVisible, 0)},
-                                                     {6, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 0)},
-                                                     {7, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)},
+    std::map<int, KMCCutinOrder> AnimPtoAnimF{
+                                                     {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},
+                                                     {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
+                                                     {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
+                                                     {11, KMCCutinOrder(KMCCT::AnimWidgetVisible, 0)},
+                                                     {12, KMCCutinOrder(KMCCT::TextVisible, 0)},
+                                                     {13, KMCCutinOrder(KMCCT::KMCPlayAnim, 0)},
+                                                     {14, KMCCutinOrder(KMCCT::TextInVisible, 0)},
+                                                     {15, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 0)},
+                                                     {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)},   
+                                                     {18, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)},
                                                      {19, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
                                                      {20, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
                                                      {21, KMCCutinOrder(KMCCT::AnimWidgetVisible, 1)},
@@ -41,14 +48,17 @@ namespace KMCCT {
                                                      {24, KMCCutinOrder(KMCCT::TextInVisible, 1)},
                                                      {25, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 1)},
                                                      {26, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)}};
-    std::map<int, KMCCutinOrder> FtoAnimP{{0, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
-                                                 {1, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
-                                                 {2, KMCCutinOrder(KMCCT::TextVisible, 1)},
-                                                 {3, KMCCutinOrder(KMCCT::WidgetVisible, 1)},
-                                                 {4, KMCCutinOrder(KMCCT::KMCPlay, 1)},
-                                                 {5, KMCCutinOrder(KMCCT::TextInVisible, 1)},
-                                                 {6, KMCCutinOrder(KMCCT::WidgetInVisible, 1)},
-                                                 {7, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)},
+    std::map<int, KMCCutinOrder> FtoAnimP{
+                                                 {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)}, 
+                                                 {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
+                                                 {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
+                                                 {11, KMCCutinOrder(KMCCT::TextVisible, 1)},
+                                                 {12, KMCCutinOrder(KMCCT::WidgetVisible, 1)},
+                                                 {13, KMCCutinOrder(KMCCT::KMCPlay, 1)},
+                                                 {14, KMCCutinOrder(KMCCT::TextInVisible, 1)},
+                                                 {15, KMCCutinOrder(KMCCT::WidgetInVisible, 1)},
+                                                 {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)},
+                                                 {18, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},
                                                  {19, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
                                                  {20, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
                                                  {21, KMCCutinOrder(KMCCT::TextVisible, 0)},
@@ -58,14 +68,17 @@ namespace KMCCT {
                                                  {25, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 0)},
                                                  {26, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)}};
 
-    std::map<int, KMCCutinOrder> AnimPtoF{{0, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
-                                                 {1, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
-                                                 {2, KMCCutinOrder(KMCCT::AnimWidgetVisible, 0)},
-                                                 {3, KMCCutinOrder(KMCCT::TextVisible, 0)},
-                                                 {4, KMCCutinOrder(KMCCT::KMCPlayAnim, 0)},
-                                                 {5, KMCCutinOrder(KMCCT::TextInVisible, 0)},
-                                                 {6, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 0)},
-                                                 {7, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)},
+    std::map<int, KMCCutinOrder> AnimPtoF{
+                                                 {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},       
+                                                 {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
+                                                 {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
+                                                 {11, KMCCutinOrder(KMCCT::AnimWidgetVisible, 0)},
+                                                 {12, KMCCutinOrder(KMCCT::TextVisible, 0)},
+                                                 {13, KMCCutinOrder(KMCCT::KMCPlayAnim, 0)},
+                                                 {14, KMCCutinOrder(KMCCT::TextInVisible, 0)},
+                                                 {15, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 0)},
+                                                 {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)},
+                                                 {18, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)},
                                                  {19, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
                                                  {20, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
                                                  {21, KMCCutinOrder(KMCCT::TextVisible, 1)},
@@ -74,14 +87,17 @@ namespace KMCCT {
                                                  {24, KMCCutinOrder(KMCCT::TextInVisible, 1)},
                                                  {25, KMCCutinOrder(KMCCT::WidgetInVisible, 1)},
                                                  {26, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)}};
-    std::map<int, KMCCutinOrder> AnimFtoP{{0, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
-                                                 {1, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
-                                                 {2, KMCCutinOrder(KMCCT::AnimWidgetVisible, 1)},
-                                                 {3, KMCCutinOrder(KMCCT::TextVisible, 1)},
-                                                 {4, KMCCutinOrder(KMCCT::KMCPlayAnim, 1)},
-                                                 {5, KMCCutinOrder(KMCCT::TextInVisible, 1)},
-                                                 {6, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 1)},
-                                                 {7, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)},
+    std::map<int, KMCCutinOrder> AnimFtoP{
+                                                 {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)},        
+                                                 {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
+                                                 {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
+                                                 {11, KMCCutinOrder(KMCCT::AnimWidgetVisible, 1)},
+                                                 {12, KMCCutinOrder(KMCCT::TextVisible, 1)},
+                                                 {13, KMCCutinOrder(KMCCT::KMCPlayAnim, 1)},
+                                                 {14, KMCCutinOrder(KMCCT::TextInVisible, 1)},
+                                                 {15, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 1)},
+                                                 {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)},
+                                                 {18, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},
                                                  {19, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
                                                  {20, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
                                                  {21, KMCCutinOrder(KMCCT::TextVisible, 0)},
@@ -90,14 +106,17 @@ namespace KMCCT {
                                                  {24, KMCCutinOrder(KMCCT::TextInVisible, 0)},
                                                  {25, KMCCutinOrder(KMCCT::WidgetInVisible, 0)},
                                                  {26, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)}};
-    std::map<int, KMCCutinOrder> PtoAnimF{{0, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
-                                                 {1, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
-                                                 {2, KMCCutinOrder(KMCCT::TextVisible, 0)},
-                                                 {3, KMCCutinOrder(KMCCT::WidgetVisible, 0)},
-                                                 {4, KMCCutinOrder(KMCCT::KMCPlay, 0)},
-                                                 {5, KMCCutinOrder(KMCCT::TextInVisible, 0)},
-                                                 {6, KMCCutinOrder(KMCCT::WidgetInVisible, 0)},
-                                                 {7, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)},
+    std::map<int, KMCCutinOrder> PtoAnimF{
+                                                 {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},
+                                                 {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
+                                                 {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
+                                                 {11, KMCCutinOrder(KMCCT::TextVisible, 0)},
+                                                 {12, KMCCutinOrder(KMCCT::WidgetVisible, 0)},
+                                                 {13, KMCCutinOrder(KMCCT::KMCPlay, 0)},
+                                                 {14, KMCCutinOrder(KMCCT::TextInVisible, 0)},
+                                                 {15, KMCCutinOrder(KMCCT::WidgetInVisible, 0)},
+                                                 {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)},   
+                                                 {18, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)},
                                                  {19, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
                                                  {20, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
                                                  {21, KMCCutinOrder(KMCCT::AnimWidgetVisible, 1)},
@@ -106,14 +125,17 @@ namespace KMCCT {
                                                  {24, KMCCutinOrder(KMCCT::TextInVisible, 1)},
                                                  {25, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 1)},
                                                  {26, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)}};
-    std::map<int, KMCCutinOrder> FtoP{{0, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
-                                             {1, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
-                                             {2, KMCCutinOrder(KMCCT::TextVisible, 1)},
-                                             {3, KMCCutinOrder(KMCCT::WidgetVisible, 1)},
-                                             {4, KMCCutinOrder(KMCCT::KMCPlay, 1)},
-                                             {5, KMCCutinOrder(KMCCT::TextInVisible, 1)},
-                                             {6, KMCCutinOrder(KMCCT::WidgetInVisible, 1)},
-                                             {7, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)},
+    std::map<int, KMCCutinOrder> FtoP{
+                                             {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)},        
+                                             {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
+                                             {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
+                                             {11, KMCCutinOrder(KMCCT::TextVisible, 1)},
+                                             {12, KMCCutinOrder(KMCCT::WidgetVisible, 1)},
+                                             {13, KMCCutinOrder(KMCCT::KMCPlay, 1)},
+                                             {14, KMCCutinOrder(KMCCT::TextInVisible, 1)},
+                                             {15, KMCCutinOrder(KMCCT::WidgetInVisible, 1)},
+                                             {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)},
+                                             {18, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},  
                                              {19, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
                                              {20, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
                                              {21, KMCCutinOrder(KMCCT::TextVisible, 0)},
@@ -122,14 +144,17 @@ namespace KMCCT {
                                              {24, KMCCutinOrder(KMCCT::TextInVisible, 0)},
                                              {25, KMCCutinOrder(KMCCT::WidgetInVisible, 0)},
                                              {26, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)}};
-    std::map<int, KMCCutinOrder> PtoF{{0, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
-                                             {1, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
-                                             {2, KMCCutinOrder(KMCCT::TextVisible, 0)},
-                                             {3, KMCCutinOrder(KMCCT::WidgetVisible, 0)},
-                                             {4, KMCCutinOrder(KMCCT::KMCPlay, 0)},
-                                             {5, KMCCutinOrder(KMCCT::TextInVisible, 0)},
-                                             {6, KMCCutinOrder(KMCCT::WidgetInVisible, 0)},
-                                             {7, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)},
+    std::map<int, KMCCutinOrder> PtoF{
+                                             {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},        
+                                             {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
+                                             {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
+                                             {11, KMCCutinOrder(KMCCT::TextVisible, 0)},
+                                             {12, KMCCutinOrder(KMCCT::WidgetVisible, 0)},
+                                             {13, KMCCutinOrder(KMCCT::KMCPlay, 0)},
+                                             {14, KMCCutinOrder(KMCCT::TextInVisible, 0)},
+                                             {15, KMCCutinOrder(KMCCT::WidgetInVisible, 0)},
+                                             {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)},
+                                             {18, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)}, 
                                              {19, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
                                              {20, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
                                              {21, KMCCutinOrder(KMCCT::TextVisible, 1)},
@@ -138,22 +163,26 @@ namespace KMCCT {
                                              {24, KMCCutinOrder(KMCCT::TextInVisible, 1)},
                                              {25, KMCCutinOrder(KMCCT::WidgetInVisible, 1)},
                                              {26, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)}};
-    std::map<int, KMCCutinOrder> AnimPlayerOnly{{0, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
-                                                       {1, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
-                                                       {2, KMCCutinOrder(KMCCT::AnimWidgetVisible, 0)},
-                                                       {3, KMCCutinOrder(KMCCT::TextVisible, 0)},
-                                                       {4, KMCCutinOrder(KMCCT::KMCPlayAnim, 0)},
-                                                       {5, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 0)},
-                                                       {6, KMCCutinOrder(KMCCT::TextInVisible, 0)},
-                                                       {7, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)}};
-    std::map<int, KMCCutinOrder> WidgetPlayerOnly{{0, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
-                                                         {1, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
-                                                         {2, KMCCutinOrder(KMCCT::TextVisible, 0)},
-                                                         {3, KMCCutinOrder(KMCCT::WidgetVisible, 0)},
-                                                         {4, KMCCutinOrder(KMCCT::KMCPlay, 0)},
-                                                         {5, KMCCutinOrder(KMCCT::TextInVisible, 0)},
-                                                         {6, KMCCutinOrder(KMCCT::WidgetInVisible, 0)},
-                                                         {7, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)}};
+    std::map<int, KMCCutinOrder> AnimPlayerOnly{
+                                                       {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},        
+                                                       {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
+                                                       {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
+                                                       {11, KMCCutinOrder(KMCCT::AnimWidgetVisible, 0)},
+                                                       {12, KMCCutinOrder(KMCCT::TextVisible, 0)},
+                                                       {13, KMCCutinOrder(KMCCT::KMCPlayAnim, 0)},
+                                                       {14, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 0)},
+                                                       {15, KMCCutinOrder(KMCCT::TextInVisible, 0)},
+                                                       {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)}};
+    std::map<int, KMCCutinOrder> WidgetPlayerOnly{
+                                                         {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},        
+                                                         {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
+                                                         {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
+                                                         {11, KMCCutinOrder(KMCCT::TextVisible, 0)},
+                                                         {12, KMCCutinOrder(KMCCT::WidgetVisible, 0)},
+                                                         {13, KMCCutinOrder(KMCCT::KMCPlay, 0)},
+                                                         {14, KMCCutinOrder(KMCCT::TextInVisible, 0)},
+                                                         {15, KMCCutinOrder(KMCCT::WidgetInVisible, 0)},
+                                                         {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)}};
 
     std::string ct_aaaakmcroot = "";
     KMCInterruptPushCutInData aaaakmcInterruptData;
@@ -578,7 +607,7 @@ namespace KMCCT {
             pcf.SE = KMCCT::KMCSound::GetSingleton()->GetFirstSEIndexEx(srand, -1, &precord);
         }
         if (pcf.NamePlate || pcf.NamePlateName) {
-            if (pcf.Widget == false && pcf.Word == false && pcf.Sound == false && pcf.SE == false) {
+            if (pcf.Widget == false && pcf.Word == false/* && pcf.Sound == false && pcf.SE == false*/) {
                 pcf.NamePlate = false;
                 pcf.NamePlateName = false;
             }
@@ -649,7 +678,7 @@ namespace KMCCT {
                 fcf.SE = KMCCT::KMCSound::GetSingleton()->GetFirstSEIndexEx(srand, frand, &frecord);
             }
             if (fcf.NamePlate || fcf.NamePlateName) {
-                if (fcf.Widget == false && fcf.Word == false && fcf.Sound == false && fcf.SE == false) {
+                if (fcf.Widget == false && fcf.Word == false /*&& fcf.Sound == false && fcf.SE == false*/) {
                     fcf.NamePlate = false;
                     fcf.NamePlateName = false;
                 }
@@ -1747,6 +1776,21 @@ namespace KMCCT {
         }
 
         KMCCT::KMCOAR::GetSingleton()->PushOARFunc(rand, frand, st->overri_oar_time, st->oar_time);
+    }
+
+    void KMCExpFuncStart(KMCAnimST* st, int& playerorfollower) {
+        int frand;
+        int rand;
+
+        rand = st->rand;
+
+        if (playerorfollower == 0) {
+            frand = -1;
+        } else {
+            frand = st->frand;
+        }
+
+        KMCCT::KMCExpression::GetSingleton()->PushExpFunc(rand, frand, st->overri_exp_time, st->exp_time);
     }
 #pragma endregion
 

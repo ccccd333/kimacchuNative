@@ -401,6 +401,71 @@ void Replace(std::string &stringreplace, const std::string &origin, const std::s
     stringreplace.replace(pos, len, dest);
 }
 
+
+RE::ObjectRefHandle GetSelectedRefHandle()
+{
+    const REL::Relocation<RE::ObjectRefHandle *> selectedRef{
+        RELOCATION_ID(519394, REL::Module::get().version().patch() < 1130 ? 405935 : 504099)};
+    return *selectedRef;
+}
+
+RE::NiPointer<RE::TESObjectREFR> GetSelectedRef()
+{
+    const auto handle = GetSelectedRefHandle();
+    return handle.get();
+}
+
+void CompileAndRunImpl(RE::Script *script, RE::ScriptCompiler *compiler, RE::COMPILER_NAME name,
+                       RE::TESObjectREFR *targetRef)
+{
+    using func_t = decltype(CompileAndRunImpl);
+    const REL::Relocation<func_t> func{
+        RELOCATION_ID(21416, REL::Module::get().version().patch() < 1130 ? 21890 : 441582)};
+    return func(script, compiler, name, targetRef);
+}
+
+void CompileAndRun(RE::Script *script, RE::TESObjectREFR *targetRef, const RE::COMPILER_NAME name)
+{
+    RE::ScriptCompiler compiler;
+    CompileAndRunImpl(script, &compiler, name, targetRef);
+}
+
+void RunConsoleCommand(const std::string &command)
+{
+    const auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+    if (const auto script = scriptFactory ? scriptFactory->Create() : nullptr) {
+        script->SetCommand(command);
+        CompileAndRun(script, GetSelectedRef().get(), RE::COMPILER_NAME::kSystemWindowCompiler);
+        delete script;
+    }
+}
+
+//template <class... Args>
+//void PapyrusFuncCall(std::string script_n, std::string func_n, Args ...a_args) {
+//    auto vm = RE::BSScript::Internal::VirtualMachine::GetSingleton();
+//
+//    RE::TESForm *form = RE::TESDataHandler::GetSingleton()->LookupForm(0x806, "KimachuuCutIn.esp");
+//    if (form) {
+//        auto policy = vm->GetObjectHandlePolicy();
+//        RE::VMHandle handle = policy->GetHandleForObject(form->GetFormType(), form);
+//
+//        if (handle == policy->EmptyHandle()) {
+//            return;
+//        }
+//
+//        RE::BSFixedString scriptName = script_n;
+//        RE::BSFixedString functionName = func_n;
+//
+//        RE::BSTSmartPointer<RE::BSScript::Object> object;
+//        RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> result;
+//
+//        if (vm->FindBoundObject(handle, scriptName.c_str(), object)) {
+//            auto args = RE::MakeFunctionArguments(a_args);
+//            vm->DispatchMethodCall1(object, functionName, args, result);
+//        }
+//    }
+//}
+
 void NamePlateSimplyWipe(KMCNPLoadedWidget id, std::string aaaakmcroot) {
     auto npasimple = KMCCT::KMCConfig::GetSingleton()->getINamePlateAnimation((int)simply);
 

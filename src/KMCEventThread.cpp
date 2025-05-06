@@ -14,6 +14,7 @@
 #include "KMCUtility.h"
 #include "KMCWaitTask.h"
 #include "KMCTempKeywordManager.h"
+#include "KMCExpression.h"
 #include "thread_pool.h"
 
 SINGLETONBODY(KMCCT::KMCEventThread)
@@ -117,6 +118,7 @@ void KMCCT::KMCTimerWithWaitTask(long long limit) {
 
 #pragma region main loop
 void KMCCT::CutInPeriodicCall() {
+    
     while (true) {
         if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
             break;
@@ -131,7 +133,9 @@ void KMCCT::CutInPeriodicCall() {
         if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
             break;
         }
-
+        // auto func_arg = RE::MakeFunctionArguments();
+        //RE::BSScript::Internal::VirtualMachine::GetSingleton()->SendEventAll("event name", func_arg);
+        //PapyrusFuncCall("aaaKimachuuCutInMCMScripts", "KimachuuExpression");
         cutin_setting.time = aaaakmctime;
         cutin_setting.anim_time = aaaakmcAnimtime;
         cutin_setting.volume = aaaakmcvolum;
@@ -267,6 +271,11 @@ void KMCCT::InitMain(std::vector<float> *floatArray) {
 void KMCCT::TryKMCOAR(OARCompDetail *ocd) { KMCCT::KMCOAR::GetSingleton()->TryKMCOAR(ocd); }
 #pragma endregion
 
+#pragma region expression
+void KMCCT::TryKMCExp(STMFGPair *mfg_pair) { KMCCT::KMCExpression::GetSingleton()->TryKMCExp(mfg_pair); }
+void KMCCT::TryKMCFLExp(STMFGPair *mfg_pair) { KMCCT::KMCExpression::GetSingleton()->TryKMCFLExp(mfg_pair); }
+#pragma endregion
+
 #pragma region wait task
 void KMCCT::wrap_InterruptCutInEventManager(std::function<void(void)> fn) {
     executor.submit(fn).wait_for(std::chrono::seconds(0));
@@ -295,6 +304,11 @@ void KMCCT::KMCLoadedWidget() {
 #pragma region use: oar
 void KMCCT::LaunchOAR(OARCompDetail &ocd) { executor.submit(TryKMCOAR, &ocd).wait_for(std::chrono::seconds(0)); }
 
+#pragma endregion
+
+#pragma region use: exp
+void KMCCT::LaunchExp(STMFGPair &mfg_pair) { executor.submit(TryKMCExp, &mfg_pair).wait_for(std::chrono::seconds(0)); }
+void KMCCT::LaunchFLExp(STMFGPair &mfg_pair) { executor.submit(TryKMCFLExp, &mfg_pair).wait_for(std::chrono::seconds(0)); }
 #pragma endregion
 
 namespace KMCCT {
@@ -418,6 +432,7 @@ namespace KMCCT {
         KMCCT::KMCWaitTask::GetSingleton()->Reset();
         KMCCT::KMCTempKeywordManager::GetSingleton()->Reset();
         KMCCT::KMCStateManager::GetSingleton()->Reset();
+        KMCCT::KMCExpression::GetSingleton()->Reset();
     }
 
     bool KMCEventThread::GetShutDown() { return shutdown; }

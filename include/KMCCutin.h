@@ -40,6 +40,7 @@ namespace KMCCT {
     void KMCNamePlateStartAnim(KMCAnimST *st, int &playerorfollower);
     void KMCNamePlateEndAnim(KMCAnimST *st, int &playerorfollower);
     void KMCOARFuncStart(KMCAnimST *st, int &playerorfollower);
+    void KMCExpFuncStart(KMCAnimST *st, int &playerorfollower);
 
     void KMCMoveWidgetWaitTask(KMCWaitTaskParam st);
 

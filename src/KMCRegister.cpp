@@ -8,6 +8,7 @@
 #include "KMCProfile.h"
 #include "KMCCutinCondition.h"
 #include "KMCGameEventListener.h"
+#include "KMCExpression.h"
 #include "KMCVMTHook.h"
 
 #include <IWWPapyrus.h>
@@ -41,7 +42,7 @@ namespace KMCCT {
                 IWW::Config::GetSingleton()->Setup();
                 KMCCT::KMCConfig::GetSingleton()->Setup();
                 KMCCT::KMCCutinCondition::GetSingleton()->Setup();
-
+                KMCCT::KMCExpression::GetSingleton()->Setup();
             	//SKSE::GetMessagingInterface()->RegisterListener("SlaveTatsNG", [](SKSE::MessagingInterface::Message* a_msg) {
              //       LOG("a_msg={}, msgtype={}, message_root_interface={}", (void*)a_msg, a_msg ? a_msg->type : -1, 1);
              //       if (a_msg && a_msg->type == 1) {
@@ -63,6 +64,7 @@ namespace KMCCT {
                 KMCCT::KMCCutinCondition::GetSingleton()->Init();
 
                 KMCCT::KMCGameEventListener::GetSingleton()->Init();
+                KMCCT::KMCExpression::GetSingleton()->Init();
                 break;
             case SKSE::MessagingInterface::kPreLoadGame:  // set reload flag, so we can prevent in papyrus calls of
                                                           // native function untill view get reset by invoking _reset
@@ -126,6 +128,8 @@ namespace KMCCT {
         REGISTERPAPYRUSFUNC2(GetCutinConditionNode, true);
         REGISTERPAPYRUSFUNC2(GetPathNumber, true);
         REGISTERPAPYRUSFUNC2(SetIDContainer, true);
+        REGISTERPAPYRUSFUNC2(SetEndPapurusExp, true);
+        REGISTERPAPYRUSFUNC2(SetFLEndPapurusExp, true);
         
 
         REGISTERPAPYRUSFUNC2(GetMArray, true);

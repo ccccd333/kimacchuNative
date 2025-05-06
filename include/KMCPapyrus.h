@@ -3,6 +3,7 @@
 #include "KMCProfile.h"
 #include "KMCStateManager.h"
 #include "KMCCutinCondition.h"
+#include "KMCExpression.h"
 
 namespace KMCCT {
 
@@ -152,6 +153,12 @@ namespace KMCCT {
 
     inline std::string SaveKMCMCM(RE::StaticFunctionTag *) { return KMCCutinCondition::GetSingleton()->SaveKMCMCM();
     }
+
+    inline void SetEndPapurusExp(RE::StaticFunctionTag *) { 
+        return KMCExpression::GetSingleton()->SetEndPapurusExp();
+    }
+
+    inline void SetFLEndPapurusExp(RE::StaticFunctionTag *) { return KMCExpression::GetSingleton()->SetFLEndPapurusExp(); }
         //bool CutInCreate(RE::StaticFunctionTag*, std::vector<RE::BSFixedString> variableArray);
         //bool CutInDestroy(RE::StaticFunctionTag*);
 }

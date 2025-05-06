@@ -88,16 +88,7 @@ namespace KMCCT {
     }
 
     void KMCOAR::TryKMCOAR(OARCompDetail* ocd) {
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
-            return;
-        }
         ocd->global->value = 1.0f;
-
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
-            return;
-        }
 
         KMCCT::KMCTimer(ocd->time * KMCCT::WHILE_WAIT_TIME);
 

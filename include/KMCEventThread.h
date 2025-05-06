@@ -37,6 +37,11 @@ namespace KMCCT {
     void TryKMCOAR(OARCompDetail *ocd);
 #pragma endregion
 
+#pragma region expression
+    void TryKMCExp(STMFGPair *mfg_pair);
+    void TryKMCFLExp(STMFGPair *mfg_pair);
+#pragma endregion
+
     void wrap_InterruptCutInEventManager(std::function<void(void)> fn);
     void InterruptProfileEventManager();
 
@@ -44,6 +49,8 @@ namespace KMCCT {
     void KMCSetInitFlag();
     bool KMCGetInitFlag();
     void LaunchOAR(OARCompDetail &ocd);
+    void LaunchExp(STMFGPair &mfg_pair);
+    void LaunchFLExp(STMFGPair &mfg_pair);
 
     typedef void (*WaitWidgetFunction)(int wid);
 

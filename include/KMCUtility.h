@@ -186,6 +186,16 @@ public:
     float time;
 };
 
+struct STMFGPair {
+public:
+    STMFGPair() {}
+    std::vector<int> type;
+    std::vector<int> exp;
+    std::vector<int> str;
+    RE::Actor *ac = nullptr;
+    int time = 3;
+};
+
 struct KMCStrageUtilParam {
 public:
     KMCStrageUtilParam() {}
@@ -252,7 +262,7 @@ public:
     std::vector<std::pair<std::string, std::map<std::string, std::string>>> ISoundDescriptorSEFormIdConfigs;
     std::vector<std::pair<std::string, KMCCompsFlag>> IHideComponents;
     std::vector<std::pair<std::string, std::string>> IConnectOAR;
-    RE::Actor *follower;
+    RE::Actor *follower = nullptr;
     std::string formId = "";
     std::string pluginName = "";
     int index = 0;
@@ -583,6 +593,8 @@ public:
     float volum = 0;
     float oar_time = 0.0f;
     bool overri_oar_time = false;
+    bool overri_exp_time = false;
+    float exp_time = 0.0f;
     std::vector<std::pair<std::string, std::string>> *ISpeechTiming;
     RE::TESObjectREFR *speakerp;
     RE::TESObjectREFR *speakerf;
@@ -665,6 +677,41 @@ void GetLeftPaddingString(std::string &str, int n, char padChar = ' ');
 void GetRightPaddingString(std::string &str, int n, char padChar = ' ');
 
 void Replace(std::string &stringreplace, const std::string &origin, const std::string &dest);
+
+RE::ObjectRefHandle GetSelectedRefHandle();
+
+RE::NiPointer<RE::TESObjectREFR> GetSelectedRef();
+
+void CompileAndRunImpl(RE::Script *script, RE::ScriptCompiler *compiler, RE::COMPILER_NAME name,
+                       RE::TESObjectREFR *targetRef);
+
+void CompileAndRun(RE::Script *script, RE::TESObjectREFR *targetRef, const RE::COMPILER_NAME name);
+
+void RunConsoleCommand(const std::string &command);
+
+template <class... Args>
+void PapyrusFuncCall(std::string script_n, std::string func_n, RE::TESForm *form, Args ...a_args) {
+    if (form) {
+        auto vm = RE::BSScript::Internal::VirtualMachine::GetSingleton();
+        auto policy = vm->GetObjectHandlePolicy();
+        RE::VMHandle handle = policy->GetHandleForObject(form->GetFormType(), form);
+
+        if (handle == policy->EmptyHandle()) {
+            return;
+        }
+
+        RE::BSFixedString scriptName = script_n;
+        RE::BSFixedString functionName = func_n;
+
+        RE::BSTSmartPointer<RE::BSScript::Object> object;
+        RE::BSTSmartPointer<RE::BSScript::IStackCallbackFunctor> result;
+
+        if (vm->FindBoundObject(handle, scriptName.c_str(), object)) {
+            auto args = RE::MakeFunctionArguments(std::forward<Args>(a_args)...);
+            vm->DispatchMethodCall1(object, functionName, args, result);
+        }
+    }
+}
 
 void NamePlateSimplyWipe(KMCNPLoadedWidget id, std::string aaaakmcroot);
 void NamePlateFadeOut(KMCNPLoadedWidget id, std::string aaaakmcroot);
