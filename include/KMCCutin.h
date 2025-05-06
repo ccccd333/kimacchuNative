@@ -22,11 +22,15 @@ namespace KMCCT {
         }
     public:
         std::string aaaakmctype = "";
+        std::string aaaakmcExptype = "";
         float aaaakmctime = 1.0f;
         float aaaakmcAnimtime = 1.0f;
         float aaaakmcvolum = 1.0f;
         float aaaakmcoar = 1.0f;
+        float aaaakmcexp = 1.0f;
         bool overri_oar_time = false;
+        bool overri_exp_time = false;
+        bool overri_fc_exp = false;
     };
 
     void WidgetVisible(KMCAnimST *st, int &playerorfollower);

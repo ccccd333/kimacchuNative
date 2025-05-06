@@ -35,7 +35,7 @@ namespace KMCCT {
     const std::string DETECTION_MAGIC_EFFECT_KEYWORD_FILE_NAME = "DetectionMagicEffectKeyword.json";
     const std::string DETECTION_GLOBAL_FILE_NAME = "DetectionGlobal.json";
     const std::string DETECTION_STORAGE_UTIL_FILE_NAME = "DetectionStorageUtil.json";
-    const std::string CUT_IN_COND_FILE_NAME = "CutInCondition.json";
+    const std::string CUT_IN_COND_FILE_NAME = "Condition.json";
 
     const std::string INVISIBLE_TIMING_SETTING_FILE_NAME = "InvisibleTimingSetting.json";
     const std::string PROFILE_TEXT_FADE_FILE_NAME = "TextFade.json";

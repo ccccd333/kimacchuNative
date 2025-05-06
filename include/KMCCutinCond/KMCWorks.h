@@ -40,7 +40,7 @@ namespace KMCCT {
         virtual void Div(float div_value) {}
         virtual void Mult(float mult_value) {}
         virtual bool IsEpsilon() { return true; }
-
+        virtual float CompPercent() { return 0.0; }
         void SetCoefR(std::string cr) {
             if (cr == CCTCoefR::BETWEEN) {
                 coef_relation = CCTCoefR::BETWEEN;
@@ -175,6 +175,12 @@ namespace KMCCT {
 
         bool IsEpsilon() override { return fabsf(wrk_value_add - commit_wrk_value_add) < FLT_EPSILON; }
 
+        float CompPercent() override { 
+            if (upper_value == 0.0f) return 100.0f;
+
+            return (commit_wrk_value_add / upper_value) * 100.0f; 
+        }
+
         void Reset() override {
             commit_wrk_value_add = lower_value;
             wrk_value_add = lower_value;
@@ -249,6 +255,12 @@ namespace KMCCT {
         }
 
         bool IsEpsilon() override { return fabsf(wrk_value_time - commit_wrk_value_time) < FLT_EPSILON; }
+
+        float CompPercent() override {
+            if (end_time == 0.0f) return 100.0f;
+
+            return (commit_wrk_value_time / end_time) * 100.0f;
+        }
 
         void Reset() override {
             commit_wrk_value_time = start_time;
@@ -328,6 +340,12 @@ namespace KMCCT {
         }
 
         bool IsEpsilon() override { return fabsf(wrk_value_add - commit_wrk_value_add) < FLT_EPSILON; }
+
+        float CompPercent() override {
+            if (target_amount == 0.0f) return 100.0f;
+
+            return (commit_wrk_value_add / target_amount) * 100.0f;
+        }
 
         void Reset() override {
             commit_wrk_value_add = 0.0f;

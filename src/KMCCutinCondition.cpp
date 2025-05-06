@@ -6,6 +6,7 @@
 #include "KMCCutin.h"
 #include "KMCCutinCond/KMCCCJsonTags.h"
 #include "KMCEventThread.h"
+#include "KMCExpression.h"
 #include "KMCStateManager.h"
 #include "KMCTempKeywordManager.h"
 
@@ -290,6 +291,13 @@ namespace KMCCT {
         if (!KMCCT::KMCEventThread::GetSingleton()->GetInitEndFlag()) {
             return result;
         }
+
+        PreProcess();
+
+        if (!KMCCT::KMCEventThread::GetSingleton()->GetInitEndFlag()) {
+            return result;
+        }
+
         if (!KMCCT::KMCStateManager::GetSingleton()->GetStoppingState()) {
             StartEvaluation();
 
@@ -694,6 +702,8 @@ namespace KMCCT {
         }
     }
 
+    void KMCCutinCondition::PreProcess() { custom_cond.PlayFcExp(); }
+
     void KMCCutinCondition::StartEvaluation() {
         custom_cond.checked_nodes.clear();
         custom_cond.pre_commit_nodes.clear();
@@ -764,6 +774,9 @@ namespace KMCCT {
             }
         }
 
+        float percent = 0.0f;
+        std::map<std::string, KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>> *> exp_work;
+
         for (auto &m_node : pre_commit_nodes) {
             if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
                 KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
@@ -774,10 +787,34 @@ namespace KMCCT {
 
             if (node->task_hub->IsEpsilon()) continue;
 
+            if (node->task_hub->CompPercent() > percent && !node->not_cutin) {
+                // カットインするものがどれくらいの進捗率となっているか
+                percent = node->task_hub->CompPercent();
+            }
+
             LOG("[COMMIT1] [{}]", node->post_commit_push_key);
             node->task_hub->Commit();
             if (node->task_hub->Completed()) {
                 pre_completed_nodes.emplace(mpushed_key, node);
+
+            } else {
+                // force expression
+                if (node->force_exp_timing == 1) {
+                    exp_work.emplace(node->post_commit_push_key, node);
+                }
+            }
+        }
+
+        // force exp
+        if (pre_completed_nodes.size() > 0) {
+            TryReleaseExp();
+        } else {
+            for (auto &[key, node] : exp_work) {
+                if (node->stop_percentage >= percent) {
+                    // 現在進行中のタスクがstop_percentage以上の進捗の場合以外はプッシュする
+                    // 同着のものがある場合、優先順位はnodeのpriorityによる
+                    TryPushExp(node->post_commit_push_key, node);
+                }
             }
         }
     }
@@ -850,7 +887,11 @@ namespace KMCCT {
             auto node = m_node.second;
 
             // push
-            if (node->PushTask()) {
+            if (node->not_cutin) {
+                LOG("[PUSH] [NOT CUTIN] [{}], [NPUSH_KEY]===>[{}]", node->post_commit_push_key, node->push_key);
+                node->polling.timer = Clock::now();
+                node->Stop();
+            } else if (node->PushTask()) {
                 LOG("[PUSH] [{}], [PUSH_KEY]===>[{}]", node->post_commit_push_key, node->push_key);
                 node->polling.timer = Clock::now();
                 node->Stop();
@@ -1090,13 +1131,23 @@ namespace KMCCT {
             target.aaaakmctype = force_cutin_name;
         }
 
+        if (force_exp_timing == 0) {
+            target.aaaakmcExptype = force_exp_name;
+            target.overri_fc_exp = target.aaaakmcExptype != force_cutin_name && force_exp_name != "";
+        } else {
+            target.aaaakmcExptype = force_cutin_name;
+        }
+
         if (cutin_setting.override_setting) {
             // result.overri = cutin_setting;
             target.aaaakmcAnimtime = cutin_setting.anim_time;
             target.aaaakmcoar = cutin_setting.oar_time;
             target.aaaakmctime = cutin_setting.time;
             target.aaaakmcvolum = cutin_setting.volume;
+            target.aaaakmcexp = cutin_setting.exp_time;
             target.overri_oar_time = true;
+            target.overri_exp_time = true;
+            
         }
     }
 
@@ -1229,6 +1280,37 @@ namespace KMCCT {
 
             return true;
         }
+    }
+
+    bool KMCCustomCondMain::TryPushExp(std::string push_key,
+                                       KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>> *node) {
+        pushed_exp_task.insert(std::make_pair(push_key, node));
+
+        LOG("[TryPushExp] Count {}, Project {}", pushed_task.size(), node->project_name);
+
+        return true;
+    }
+
+    bool KMCCustomCondMain::TryReleaseExp() {
+        pushed_exp_task.clear();
+        LOG("[TryReleaseExp]");
+
+        return true;
+    }
+
+    void KMCCustomCondMain::PlayFcExp() {
+        LOG("[PlayFcExp] Count {}", pushed_task.size());
+        for (auto &[key, node] : pushed_exp_task) {
+            int ret = KMCCT::KMCExpression::GetSingleton()->ForceExp(
+                node->force_exp_name, node->force_expression_cool_time, node->force_expression_time);
+            LOG("[PlayFcExp] Count {}, Project {}", pushed_task.size(), node->project_name);
+            if (ret != 1) {
+                LOG("[PlayFcExp] FC EXP =====> Project {}", pushed_task.size(), node->project_name);
+                break;
+            }
+        }
+
+        pushed_exp_task.clear();
     }
 
     bool KMCCustomCondMain::Contains(std::string find_key) {
@@ -1711,7 +1793,14 @@ namespace KMCCT {
 
                 LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
-                if (k1 == KMCCCJsonTags::CYCLE) {
+                if (k1 == KMCCCJsonTags::OPERATION_DETAIL) {
+                    if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
+                        SetupJsonNodesOPDetail(nested.get(), level, manager, node);
+
+                    } else {
+                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    }
+                } else if (k1 == KMCCCJsonTags::CYCLE) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesCycle(nested.get(), level, manager, node);
 
@@ -1724,6 +1813,42 @@ namespace KMCCT {
                     } else {
                         ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
+                } else if (k1 == KMCCCJsonTags::FORCE_EXPRESSION) {
+                    if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
+                        SetupJsonNodesForceEXP(nested.get(), level, manager, node);
+                    } else {
+                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    }
+                } else {
+                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                }
+            }
+        } catch (std::exception ex) {
+            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+        }
+
+        now_json_node = bef_now_json_node;
+    }
+
+    void KMCCutinCondition::SetupJsonNodesOPDetail(
+        boost::property_tree::ptree pt, int level, KMCCustomCondManager<KMCCustomCondMain> *manager,
+        KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>> *node) {
+        std::string bef_now_json_node = now_json_node;
+        level = level + 1;
+        try {
+            std::string project_name = node->project_name;
+            // header
+            path_mapping[project_name].emplace_back(KMCKEPath(key_detail.Build(now_json_node), level));
+            for (auto &child : pt) {
+                now_json_node = bef_now_json_node;
+
+                std::string k1 = child.first;
+                now_json_node = now_json_node + "." + k1;
+
+                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+
+                if (k1 == KMCCCJsonTags::OP_NOT_CUTIN) {
+                    node->not_cutin = NodeTreesGetValue<int>(child.second, level, now_json_node, project_name) == 1;
                 } else {
                     ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
@@ -1786,6 +1911,47 @@ namespace KMCCT {
                 } else if (k1 == KMCCCJsonTags::CUTIN_NAME) {
                     node->force_cutin_name =
                         NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
+                } else {
+                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                }
+            }
+        } catch (std::exception ex) {
+            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+        }
+
+        now_json_node = bef_now_json_node;
+    }
+
+    void KMCCutinCondition::SetupJsonNodesForceEXP(
+        boost::property_tree::ptree pt, int level, KMCCustomCondManager<KMCCustomCondMain> *manager,
+        KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>> *node) {
+        std::string bef_now_json_node = now_json_node;
+        level = level + 1;
+        try {
+            std::string project_name = node->project_name;
+            // header
+            path_mapping[project_name].emplace_back(KMCKEPath(key_detail.Build(now_json_node), level));
+            for (auto &child : pt) {
+                now_json_node = bef_now_json_node;
+
+                std::string k1 = child.first;
+                now_json_node = now_json_node + "." + k1;
+
+                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+
+                if (k1 == KMCCCJsonTags::EXP_ID) {
+                    node->force_exp_name =
+                        NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
+                } else if (k1 == KMCCCJsonTags::EXPRESSION_TIME) {
+                    node->force_expression_time =
+                        NodeTreesGetValue<float>(child.second, level, now_json_node, project_name);
+                } else if (k1 == KMCCCJsonTags::FORCE_EXP) {
+                    node->force_exp_timing = NodeTreesGetValue<int>(child.second, level, now_json_node, project_name);
+                } else if (k1 == KMCCCJsonTags::EXP_COOL_TIME) {
+                    node->force_expression_cool_time =
+                        NodeTreesGetValue<float>(child.second, level, now_json_node, project_name);
+                } else if (k1 == KMCCCJsonTags::STOP_PERCENTAGE) {
+                    node->stop_percentage = NodeTreesGetValue<float>(child.second, level, now_json_node, project_name);
                 } else {
                     ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
@@ -2043,6 +2209,9 @@ namespace KMCCT {
                 } else if (k1 == KMCCCJsonTags::OAR_TIME) {
                     node->cutin_setting.oar_time =
                         NodeTreesGetValue<float>(child.second, level, now_json_node, project_name);
+                } else if (k1 == KMCCCJsonTags::EXP_TIME) {
+                    node->cutin_setting.exp_time =
+                        NodeTreesGetValue<float>(child.second, level, now_json_node, project_name);
                 } else if (k1 == KMCCCJsonTags::OVERRIDE_CI_SETTING) {
                     node->cutin_setting.override_setting =
                         NodeTreesGetValue<int>(child.second, level, now_json_node, project_name) == 1;
@@ -2182,6 +2351,23 @@ namespace KMCCT {
 
     bool KMCCutinCondition::Validate_node(KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>> *node) {
         std::string message;
+        if (node->force_exp_timing > -1) {
+            //[06][force_exp]
+            std::string validate_fexp = std::to_string(node->force_exp_timing) + "/" + node->force_exp_name + "/" +
+                                        std::to_string(node->force_expression_cool_time) + "/" +
+                                        std::to_string(node->force_expression_time) + "/" +
+                                        std::to_string(node->stop_percentage);
+            if (!v.validator(KMCCCJsonTags::FORCE_EXPRESSION, validate_fexp, true, message)) {
+                // FORCE_EXPRESSIONの組み合わせがおかしい
+                ERROR(" --------------Validate Error.-------------- wt : [FORCE_EXPRESSION] {}", message);
+                return false;
+            }
+
+            if (validate_fexp != "") {
+                WARN(" --------------Validate WARN.-------------- wt : [FORCE_EXPRESSION] {}", validate_fexp);
+            }
+        }
+
         if (node->cutin_cond_type == CutinCondType::add || node->cutin_cond_type == CutinCondType::time|| node->cutin_cond_type == CutinCondType::amount/* ||
             node->cutin_cond_type == CutinCondType::add_keyword ||
             node->cutin_cond_type == CutinCondType::remove_keyword*/) {
@@ -2218,76 +2404,6 @@ namespace KMCCT {
                 ERROR(" --------------Validate Error.-------------- wt : The type of type_? is unknown");
                 return false;
             }
-
-            // else if (node->cutin_cond_type == CutinCondType::add_keyword) {
-            //     if (node->cutin_cond_type_sub == CutinCondType::add) {
-            //         std::string validate_value_add =
-            //             std::to_string(node->task_hub->coef_1) + "/" + std::to_string(node->task_hub->coef_2) + "/" +
-            //             node->task_hub->coef_relation + "/" + std::to_string(node->task_hub->cool_time) + "/" +
-            //             std::to_string(node->task_hub->cutin_lower_value) + "/" +
-            //             std::to_string(node->task_hub->cutin_upper_value);
-            //         if (!v.validator(KMCCCJsonTags::TYPE_ADD, validate_value_add, true, message)) {
-            //             // type addの組み合わせがおかしい
-            //             ERROR(" --------------Validate Error.-------------- wt : [TYPE_ADD_KEYWORD] {}", message);
-            //             return false;
-            //         }
-            //     } else if (node->cutin_cond_type_sub == CutinCondType::time) {
-            //         std::string validate_value_time =
-            //             std::to_string(node->task_hub->cutin_time) + "/" +
-            //             std::to_string(node->task_hub->start_time);
-            //         if (!v.validator(KMCCCJsonTags::TYPE_TIME, validate_value_time, true, message)) {
-            //             // type timeの組み合わせがおかしい
-            //             ERROR(" --------------Validate Error.-------------- wt : [TYPE_ADD_KEYWORD] {}", message);
-            //             return false;
-            //         }
-            //     } else {
-            //         ERROR(
-            //             " --------------Validate Error.-------------- wt : [TYPE_ADD_KEYWORD] type_add_keyword must
-            //             be " "specified either for type_add or for type_time-based parts.");
-            //     }
-
-            //    std::string validate_add_keyword =
-            //        node->task_hub->keyword_formid + "/" + node->task_hub->keyword_plugin_name;
-            //    if (!v.validator(KMCCCJsonTags::TYPE_ADD_KEYWORD, validate_add_keyword, true, message)) {
-            //        // type addの組み合わせがおかしい
-            //        ERROR(" --------------Validate Error.-------------- wt : [TYPE_ADD_KEYWORD] {}", message);
-            //        return false;
-            //    }
-            //} else if (node->cutin_cond_type == CutinCondType::remove_keyword) {
-            //    if (node->cutin_cond_type_sub == CutinCondType::add) {
-            //        std::string validate_value_add =
-            //            std::to_string(node->task_hub->coef_1) + "/" + std::to_string(node->task_hub->coef_2) + "/" +
-            //            node->task_hub->coef_relation + "/" + std::to_string(node->task_hub->cool_time) + "/" +
-            //            std::to_string(node->task_hub->cutin_lower_value) + "/" +
-            //            std::to_string(node->task_hub->cutin_upper_value);
-            //        if (!v.validator(KMCCCJsonTags::TYPE_ADD, validate_value_add, true, message)) {
-            //            // type addの組み合わせがおかしい
-            //            ERROR(" --------------Validate Error.-------------- wt : [TYPE_REMOVE_KEYWORD] {}", message);
-            //            return false;
-            //        }
-            //    } else if (node->cutin_cond_type_sub == CutinCondType::time) {
-            //        std::string validate_value_time =
-            //            std::to_string(node->task_hub->cutin_time) + "/" + std::to_string(node->task_hub->start_time);
-            //        if (!v.validator(KMCCCJsonTags::TYPE_TIME, validate_value_time, true, message)) {
-            //            // type timeの組み合わせがおかしい
-            //            ERROR(" --------------Validate Error.-------------- wt : [TYPE_REMOVE_KEYWORD] {}", message);
-            //            return false;
-            //        }
-            //    } else {
-            //        ERROR(
-            //            " --------------Validate Error.-------------- wt : [TYPE_REMOVE_KEYWORD] type_remove_keyword "
-            //            "must be "
-            //            "specified either for type_add or for type_time-based parts.");
-            //    }
-
-            //    std::string validate_remove_keyword =
-            //        node->task_hub->keyword_formid + "/" + node->task_hub->keyword_plugin_name;
-            //    if (!v.validator(KMCCCJsonTags::TYPE_REMOVE_KEYWORD, validate_remove_keyword, true, message)) {
-            //        // type addの組み合わせがおかしい
-            //        ERROR(" --------------Validate Error.-------------- wt : [TYPE_REMOVE_KEYWORD] {}", message);
-            //        return false;
-            //    }
-            //}
 
         } else {
             // 製作者側用
@@ -2340,10 +2456,11 @@ namespace KMCCT {
 
         auto cutin_setting = node->cutin_setting;
         if (cutin_setting.time != 0.0f || cutin_setting.anim_time != 0.0f || cutin_setting.volume != 0.0f) {
-            // pollingノードがある場合
+            // cutin_settingノードがある場合
             std::string validate_value_cutin_setting =
                 std::to_string(cutin_setting.time) + "/" + std::to_string(cutin_setting.anim_time) + "/" +
-                std::to_string(cutin_setting.volume) + "/" + std::to_string(cutin_setting.oar_time);
+                std::to_string(cutin_setting.volume) + "/" + std::to_string(cutin_setting.oar_time) + "/" +
+                std::to_string(cutin_setting.exp_time);
             if (!v.validator(KMCCCJsonTags::CUTIN_SETTING, validate_value_cutin_setting, true, message)) {
                 // subtractのtimingが1 or 0ではない
                 ERROR(" --------------Validate Error.-------------- wt : [CUTIN_SETTING] {}", message);

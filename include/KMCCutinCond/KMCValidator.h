@@ -1,9 +1,9 @@
 #pragma once
 #include <IWWFunctions.h>
+#include <KMCCutinCond/KMCCategory.h>
 
 #include "KMCCCJsonTags.h"
 #include "KMCUtility.h"
-#include <KMCCutinCond/KMCCategory.h>
 
 namespace KMCCT {
 
@@ -26,6 +26,8 @@ namespace KMCCT {
                 return validate_polling(v_value, must, wt);
             } else if (tag == KMCCCJsonTags::CUTIN_SETTING) {
                 return validate_cutin_setting(v_value, must, wt);
+            } else if (tag == KMCCCJsonTags::FORCE_EXPRESSION) {
+                return validate_force_expression(v_value, must, wt);
             }
 
             // if (tag == KMCCCJsonTags::PRIORITY) {
@@ -135,8 +137,8 @@ namespace KMCCT {
                          " [now] " + sp.at(7);
                     return false;
                 }
-            } 
-            
+            }
+
             if (sp.at(0) == KMCCCMainCategory::TEMP_KEYWORD) {
                 auto sp_k = KMCSplit(sp.at(1), ',');
                 bool ok = true;
@@ -147,7 +149,8 @@ namespace KMCCT {
                 }
 
                 if (!ok) {
-                    wt = "If maincategory 1 is a TEMP_KEYWORD, subcategory 1 should be specified with has or nhas [now] " +
+                    wt = "If maincategory 1 is a TEMP_KEYWORD, subcategory 1 should be specified with has or nhas "
+                         "[now] " +
                          sp.at(1);
                     return false;
                 }
@@ -193,8 +196,8 @@ namespace KMCCT {
             float upper_value = stof(sp.at(5));
             if (lower_value < 0.0f || upper_value < 0.0f) {
                 // •‰”‚ÌŽžŠÔ‚ÍŽó‚¯•t‚¯‚È‚¢
-                wt = "lower_value and upper_value should be a positive number. [now] " + sp.at(4) + " [now] " +
-                     sp.at(5);
+                wt =
+                    "lower_value and upper_value should be a positive number. [now] " + sp.at(4) + " [now] " + sp.at(5);
                 return false;
             }
 
@@ -228,7 +231,7 @@ namespace KMCCT {
 
             return true;
         }
-        
+
         bool validate_type_temp_keywords(std::string v_value, bool must, std::string &wt) {
             auto sp = KMCSplit(v_value, '/');
             std::string keyword = sp.at(0);
@@ -246,10 +249,10 @@ namespace KMCCT {
             return true;
         }
 
-        //bool validate_type_remove_keyword(std::string v_value, bool must, std::string &wt) {
-        //    auto sp = KMCSplit(v_value, '/');
-        //    std::string keyword = sp.at(0);
-        //    std::string keyword_plugin_name = sp.at(1);
+        // bool validate_type_remove_keyword(std::string v_value, bool must, std::string &wt) {
+        //     auto sp = KMCSplit(v_value, '/');
+        //     std::string keyword = sp.at(0);
+        //     std::string keyword_plugin_name = sp.at(1);
 
         //    auto ksp = KMCSplit(keyword, ',');
         //    auto kpnsp = KMCSplit(keyword_plugin_name, ',');
@@ -297,6 +300,7 @@ namespace KMCCT {
             float anim_time = stof(sp.at(1));
             float volume = stof(sp.at(2));
             float oar_time = stof(sp.at(3));
+            float exp_time = stof(sp.at(4));
             if (time < 0.0f || anim_time < 0.0f) {
                 wt = "time and anim_time of the polling node must be a positive number greater than or equal to "
                      "0. [now] " +
@@ -309,10 +313,41 @@ namespace KMCCT {
                 return false;
             }
 
-            if (oar_time < 0.0f) {
-                wt = "oar_time of the polling node must be a positive number greater than or equal to 0. [now]  " +
+            if (oar_time < 0.0f || exp_time < 0.0f) {
+                wt = "oar_time, exp_time of the polling node must be a positive number greater than or equal to 0. "
+                     "[now]  " +
                      sp.at(2);
                 return false;
+            }
+
+            return true;
+        }
+
+        bool validate_force_expression(std::string v_value, bool must, std::string &wt) {
+            auto sp = KMCSplit(v_value, '/');
+            auto force_exp_timing = stoi(sp.at(0));
+
+            auto force_exp_name = sp.at(1);
+
+
+            auto force_expression_cool_time = stof(sp.at(2));
+            auto force_expression_time = stof(sp.at(3));
+            auto stop_percentage = stof(sp.at(4));
+
+            if (force_expression_cool_time < 0.0f || force_expression_time < 0.0f) {
+                wt = "Do not set negative numbers for expression_time and exp_cool_time.";
+                return false;
+            }
+
+            if (stop_percentage < 0.0f || stop_percentage > 100.0f) {
+                wt = "stop_percentage should be set with a value between 0 and 100";
+                return false;
+            }
+
+            if (force_exp_timing == 0 || force_exp_timing == 1) {
+                if (force_exp_name == "") {
+                    wt = "Force_exp_timing is set to 0 or 1, but force_exp_name is set to an empty string.";
+                }
             }
 
             return true;

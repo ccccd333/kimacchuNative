@@ -577,6 +577,7 @@ public:
     float anim_time = 5.0f;
     float volume = 1.0f;
     float oar_time = 7.0f;
+    float exp_time = 4.0f;
 };
 
 struct KMCAnimST {
@@ -595,6 +596,7 @@ public:
     bool overri_oar_time = false;
     bool overri_exp_time = false;
     float exp_time = 0.0f;
+    uint64_t exp_rand = 0;
     std::vector<std::pair<std::string, std::string>> *ISpeechTiming;
     RE::TESObjectREFR *speakerp;
     RE::TESObjectREFR *speakerf;

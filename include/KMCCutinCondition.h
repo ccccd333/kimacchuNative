@@ -10,7 +10,7 @@
 
 namespace KMCCT {
 
-    const std::string CUT_IN_CONDITION_FILE_NAME = "CutInCondition.json";
+    const std::string CUT_IN_CONDITION_FILE_NAME = "Condition.json";
 
     enum class ManageType {
         keyword,
@@ -60,9 +60,25 @@ namespace KMCCT {
         std::unique_ptr<KMCCustomCondTaskHub> task_hub;
         std::unique_ptr<KMCCustomCondSubTaskHub> sub_task_hub;
         std::unique_ptr<KMCCustomCondCheckHub> check_hub;
+
         bool check_ok = false;
+
+        // Operation
+
+        // op detail
+        bool not_cutin = false;
+        
+        // force_ct
         bool force_cutin = false;
         std::string force_cutin_name = "";
+
+        // force_exp
+        std::string force_exp_name = "";
+        float force_expression_time = 1.0f;
+        float force_expression_cool_time = 1.0f;
+        int force_exp_timing = -1;
+        float stop_percentage = 0.0f;
+
         std::vector<RelationsData> node_relations;
         // タスク完了時にmanagerへpushする際の優先度(post commit時使用)
         int priority = 0;
@@ -129,6 +145,10 @@ namespace KMCCT {
         bool TryPush(std::string push_key, KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>* node);
         bool Contains(std::string find_key);
         
+        bool TryPushExp(std::string push_key, KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>* node);
+        bool TryReleaseExp();
+
+        void PlayFcExp();
 
         void PreCommit();
         void Commit();
@@ -136,6 +156,7 @@ namespace KMCCT {
     public:
         std::vector<std::unique_ptr<KMCCustomCondManager<KMCCustomCondMain>>> managers;
         std::map<std::string, KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>*> pushed_task;
+        std::map<std::string, KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>*> pushed_exp_task;
 
         std::map<std::string, KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>*> checked_nodes;
         std::map<std::string, KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>*> pre_commit_nodes;
@@ -173,6 +194,7 @@ namespace KMCCT {
         std::string SaveKMCMCM();
     private:
         void Update();
+        void PreProcess();
         void StartEvaluation();
         void Commit();
 
@@ -194,12 +216,18 @@ namespace KMCCT {
         void SetupJsonNodesOperation(boost::property_tree::ptree pt, int level,
                                   KMCCustomCondManager<KMCCustomCondMain>* manager,
                                   KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>* node);
+        void SetupJsonNodesOPDetail(boost::property_tree::ptree pt, int level,
+                                 KMCCustomCondManager<KMCCustomCondMain>* manager,
+                                 KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>* node);
         void SetupJsonNodesCycle(boost::property_tree::ptree pt, int level,
                                      KMCCustomCondManager<KMCCustomCondMain>* manager,
                                      KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>* node);
         void SetupJsonNodesForceCT(boost::property_tree::ptree pt, int level,
                                  KMCCustomCondManager<KMCCustomCondMain>* manager,
                                  KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>* node);
+        void SetupJsonNodesForceEXP(boost::property_tree::ptree pt, int level,
+                                   KMCCustomCondManager<KMCCustomCondMain>* manager,
+                                   KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>* node);
         void SetupJsonNodesTask(boost::property_tree::ptree pt, int level, std::unique_ptr<KMCCustomCondTaskHub>* task,
                                 std::string proj_name);
         void SetupJsonNodesKeyword(boost::property_tree::ptree pt, int level,

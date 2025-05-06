@@ -9,6 +9,13 @@ SINGLETONBODY(KMCCT::KMCExpression)
 
 namespace KMCCT {
     using json = nlohmann::json;
+    using Clock = std::chrono::steady_clock;
+    using std::chrono::duration_cast;
+    using std::chrono::milliseconds;
+    using std::chrono::time_point;
+    using namespace std::literals::chrono_literals;
+
+    time_point<Clock> force_exp_st_time;
 
     bool BuildMFGValues(STMFGPair& pair, MFG_TYPE type, json items) {
         for (auto ite = items.begin(); ite != items.end(); ite++) {
@@ -122,11 +129,21 @@ namespace KMCCT {
         exp_loop_now = false;
         f_papyrus_end_exp = false;
         f_exp_loop_now = false;
+        force_exp_loop = false;
+        force_cool_time = 0.0f;
+        force_exp_time = 0.0f;
     }
 
-    void KMCExpression::Init() { form = RE::TESDataHandler::GetSingleton()->LookupForm(0x806, "KimachuuCutIn.esp"); }
+    void KMCExpression::Init() { 
+        form = RE::TESDataHandler::GetSingleton()->LookupForm(0x806, "KimachuuCutIn.esp"); 
+        CategoryRandomizer();
+    }
 
     void KMCExpression::PushExpFunc(uint64_t rand, uint64_t frand, bool force, float ex_exp_time) {
+        if (rand == -1) {
+            ERROR("KMCExpression::PushExpFunc rand == -1");
+        }
+
         if (frand == -1) {
             PPushExpFunc(rand, force, ex_exp_time);
         } else {
@@ -327,6 +344,45 @@ namespace KMCCT {
         }
     }
 
+    int KMCExpression::ForceExp(std::string exp_id, float cool_time, float exp_time) {
+
+        bool loop_now = true;
+        {
+            std::lock_guard<std::mutex> lock(mtx);
+            loop_now = exp_loop_now;
+        }
+        if (loop_now) {
+            return -1;
+        }
+
+        time_point<Clock> end;
+        long long dur = 0;
+        // sleep
+        if (force_cool_time != 0.0f) {
+            end = Clock::now();
+            
+            milliseconds diff = duration_cast<milliseconds>(end - force_exp_st_time);
+            dur = diff.count();
+            if (dur <= force_cool_time * TIME_SCALE_MS) {
+                return -2;
+            }
+        }
+
+        auto rand = GetCutInID(exp_id);
+
+        if (rand == 0) {
+            return 1;
+        }
+
+        force_exp_st_time = Clock::now();
+        force_cool_time = cool_time;
+        force_exp_time = exp_time;
+
+        PPushExpFunc(rand, true, force_exp_time);
+
+        return 0;
+    }
+
     void KMCExpression::PPushExpFunc(uint64_t rand, bool force, float ex_exp_time) {
         bool loop_now = true;
         {
@@ -381,6 +437,77 @@ namespace KMCCT {
                         LaunchFLExp(f_now);
                     }
                 }
+            }
+        }
+    }
+
+    uint64_t KMCExpression::GetCutInID(std::string aaaakmctype) {
+        uint64_t rand = 0;
+
+        auto findit = aaaakmcCategoryRandMap.find(aaaakmctype);
+        if (findit != aaaakmcCategoryRandMap.end()) {
+            auto* randData = &(findit->second);
+            int of = randData->offset;
+            auto r = randData->randValues;
+            rand = r[of];
+            ++of;
+            int mi = randData->maxIndex;
+            if (of > mi) {
+                of = 0;
+                //auto randomValue = MakeRandArraySelect(randData->size, randData->low, randData->high);
+                //randData->randValues = std::move(randomValue);
+            }
+
+            randData->offset = of;
+        }
+        return rand;
+    }
+
+    void KMCExpression::CategoryRandomizer() {
+        aaaakmcCategoryRandMap.clear();
+
+        std::vector<std::pair<std::string, std::string>>* autoWordRangeConfigs =
+            KMCCT::KMCConfig::GetSingleton()->getIAutoWordRangeConfigs();
+        std::vector<std::pair<std::string, std::string>>* autoWordCategoriesConfigs =
+            KMCCT::KMCConfig::GetSingleton()->getIAutoWordCategoriesConfigs();
+
+        // animation widget
+        for (auto [key, value] : *autoWordCategoriesConfigs) {
+            auto findit = aaaakmcCategoryRandMap.find(value);
+            if (findit != aaaakmcCategoryRandMap.end()) {
+                continue;
+            }
+
+            std::string k1 = value;
+            std::string k2 = k1;
+            std::transform(k1.begin(), k1.end(), k2.begin(), [](char c) { return std::tolower(c); });
+            std::string tLow = k2 + "low";
+            std::string tHigh = k2 + "high";
+            auto it1 = std::find_if(autoWordRangeConfigs->begin(), autoWordRangeConfigs->end(),
+                                    [tLow](const auto& p) { return p.first == tLow; });
+            auto it2 = std::find_if(autoWordRangeConfigs->begin(), autoWordRangeConfigs->end(),
+                                    [tHigh](const auto& p) { return p.first == tHigh; });
+            if (it1 != autoWordRangeConfigs->end() && it2 != autoWordRangeConfigs->end()) {
+                int l = std::stoi(it1->second);
+                int h = std::stoi(it2->second);
+
+                if ((h - l) + 1 <= 0) {
+                    ERROR("Error KMCEventThread::CategoryRandomizer range error type = {} low = {} high = {}", k2, tLow,
+                          tHigh);
+                }
+
+                size_t size = (h - l) + 1;
+                auto randomValue = MakeRandArraySelect(size, l, h);
+
+                aaaakmcCategoryRandMap.insert(std::make_pair(value, KMCRandomData(0, h - l, randomValue, h, l, size)));
+
+                // for (int i = 0; i < randomValue.size(); i++) {
+                //     LOG("KMCEventThread::CategoryRandomizer type = {} rand = {}", value, randomValue[i]);
+                // }
+
+            } else {
+                ERROR("Error KMCEventThread::CategoryRandomizer auto word range configs type = {} low = {} high = {}",
+                      k2, tLow, tHigh);
             }
         }
     }

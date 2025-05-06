@@ -3,6 +3,7 @@
 
 namespace KMCCT {
     const std::string EXPRESSION_FILE_NAME = "Expression.json";
+
     enum class MFG_TYPE { modifier, phoneme, expression
     };
 
@@ -26,6 +27,10 @@ namespace KMCCT {
             exp_loop_now = false;
             f_papyrus_end_exp = false;
             f_exp_loop_now = false;
+
+            force_exp_loop = false;
+            force_cool_time = 0.0f;
+            force_exp_time = 0.0f;
         }
 
         void PushExpFunc(uint64_t rand, uint64_t frand, bool force, float ex_exp_time);
@@ -34,11 +39,17 @@ namespace KMCCT {
 
         void SetEndPapurusExp();
         void SetFLEndPapurusExp();
+
+        int ForceExp(std::string exp_id, float cool_time, float exp_time);
+        uint64_t GetCutInID(std::string aaaakmctype);
     private:
         void PPushExpFunc(uint64_t rand, bool force, float ex_exp_time);
         void FPushExpFunc(uint64_t rand, uint64_t frand, bool force, float ex_exp_time);
-
+        
+        void CategoryRandomizer();
     private:
+        std::unordered_map<std::string, KMCRandomData> aaaakmcCategoryRandMap;
+
         STMFGPair p_now;
         STMFG player_mfg;
         bool papyrus_end_exp = false;
@@ -53,5 +64,11 @@ namespace KMCCT {
         RE::TESForm *form;
         std::mutex mtx;
         std::mutex f_mtx;
+
+        // force exp
+        float force_cool_time = 0.0f;
+        float force_exp_time = 0.0f;
+        
+        bool force_exp_loop = false;
     };
 }

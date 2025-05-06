@@ -25,11 +25,22 @@ namespace KMCCT {
         static constexpr const char* CONDITION = "[02][condition]";
 
         static constexpr const char* OPERATION = "[03][operation]";
+
+        static constexpr const char* OPERATION_DETAIL = "[030][detail]";
+        static constexpr const char* OP_NOT_CUTIN = "not_cutin";
+
         static constexpr const char* CYCLE = "[04][cycle]";
         static constexpr const char* ONCE = "once";
         static constexpr const char* FORCE_CT = "[05][force_ct]";
         static constexpr const char* FORCE_CUTIN = "force_cutin";
         static constexpr const char* CUTIN_NAME = "cutin_name";
+
+        static constexpr const char* FORCE_EXPRESSION = "[06][force_exp]";
+        static constexpr const char* EXP_ID = "exp_id";
+        static constexpr const char* EXPRESSION_TIME = "expression_time";
+        static constexpr const char* EXP_COOL_TIME = "exp_cool_time";
+        static constexpr const char* FORCE_EXP = "force_exp_timing";
+        static constexpr const char* STOP_PERCENTAGE = "stop_percentage";
 
         static constexpr const char* TYPE_ADD = "[10][type_add]";
         static constexpr const char* ADD_VALUE = "add_value";
@@ -75,6 +86,7 @@ namespace KMCCT {
         static constexpr const char* ANIM_TIME = "anim_time";
         static constexpr const char* VOLUME = "volume";
         static constexpr const char* OAR_TIME = "oar_time";
+        static constexpr const char* EXP_TIME = "expression_time";
 
 
         //static constexpr const char* TYPE_REMOVE_KEYWORD = "type_remove_keyword";
@@ -100,9 +112,17 @@ namespace KMCCT {
         static constexpr const char* F_DISABLE = "5.disable";
         static constexpr const char* F_PRIORITY = "5.priority";
 
+        static constexpr const char* S_OP_NOT_CUTIN = "6.not_cutin";
+
         static constexpr const char* S_ONCE = "6.once";
         static constexpr const char* S_FORCE_CUTIN = "6.force_cutin";
         static constexpr const char* S_CUTIN_NAME = "6.cutin_name";
+
+        static constexpr const char* S_EXP_ID = "6.exp_id";
+        static constexpr const char* S_EXPRESSION_TIME = "6.expression_time";
+        static constexpr const char* S_EXP_COOL_TIME = "6.exp_cool_time";
+        static constexpr const char* S_FORCE_EXP = "6.force_exp_timing";
+        static constexpr const char* S_STOP_PERCENTAGE = "6.stop_percentage";
 
         // type add
         static constexpr const char* F_ADD_VALUE = "5.add_value";
@@ -141,6 +161,8 @@ namespace KMCCT {
         static constexpr const char* F_ANIM_TIME = "5.anim_time";
         static constexpr const char* F_VOLUME = "5.volume";
         static constexpr const char* F_OAR_TIME = "5.oar_time";
+        static constexpr const char* F_EXP_TIME = "5.expression_time";
+        
         static constexpr const char* F_OVERRIDE_CI_SETTING = "5.override_ci_setting";
     };
 

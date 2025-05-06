@@ -512,6 +512,7 @@ namespace KMCCT {
         float c_animtime = val.aaaakmcAnimtime;
         float c_volum = val.aaaakmcvolum;
         float c_oar_time = val.aaaakmcoar;
+        float c_exp_time = val.aaaakmcexp;
         // ct_aaaakmcroot = (*variableArray)[0].c_str();
         // std::string aaaakmctype = (*variableArray)[1].c_str();
         // std::string aaaakmctime = (*variableArray)[2].c_str();
@@ -533,6 +534,20 @@ namespace KMCCT {
             }
         }
         LOG("CutIn type {}", aaaakmctype);
+
+        uint64_t exp_rand = -1;
+        std::string exp_type = val.aaaakmcExptype;
+        LOG("EXP type ===> {}, CUTIN type ===> {}", exp_type, aaaakmctype);
+        if (val.overri_fc_exp) {
+            LOG("[EXP type] ===> {}", exp_type);
+            if (aaaakmctype != exp_type) {
+                exp_rand = KMCCT::KMCExpression::GetSingleton()->GetCutInID(exp_type);
+                if (exp_rand == 0) {
+                    LOG("EXP type ===> not found", exp_type, aaaakmctype);
+                    exp_rand = -1;
+                }
+            }
+        }
 
         std::string skyUiBase = ct_aaaakmcroot;
         int wid = -1;
@@ -712,7 +727,10 @@ namespace KMCCT {
             st.frecord = frecord;
             st.nppw = PlayerNamePlate;
             st.oar_time = c_oar_time;
+            st.exp_time = c_exp_time;
             st.overri_oar_time = val.overri_oar_time;
+            st.overri_exp_time = val.overri_exp_time;
+            st.exp_rand = exp_rand;
             try {
                 auto fpl = (FNamePlate).at(st.frand);
                 st.npfw = fpl;
@@ -735,7 +753,10 @@ namespace KMCCT {
             st.precord = precord;
             st.nppw = PlayerNamePlate;
             st.oar_time = c_oar_time;
+            st.exp_time = c_exp_time;
             st.overri_oar_time = val.overri_oar_time;
+            st.overri_exp_time = val.overri_exp_time;
+            st.exp_rand = exp_rand;
             DispPWidget(st);
         }
 
@@ -1782,7 +1803,7 @@ namespace KMCCT {
         int frand;
         int rand;
 
-        rand = st->rand;
+        rand = st->exp_rand == -1 ? st->rand : st->exp_rand;
 
         if (playerorfollower == 0) {
             frand = -1;

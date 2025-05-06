@@ -2,7 +2,7 @@
 #include <boost/any.hpp>
 
 namespace KMCCT {
-    const std::string CUTIN_CONDITION_INTERVAL_VALUE = "CutInConditionIntervalValue.json";
+    const std::string CUTIN_CONDITION_INTERVAL_VALUE = "ConditionIntervalValue.json";
 
     class KMCCJsonValueInterval {
     public:
