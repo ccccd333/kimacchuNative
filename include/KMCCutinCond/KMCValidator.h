@@ -16,8 +16,8 @@ namespace KMCCT {
                 return validate_type_add(v_value, must, wt);
             } else if (tag == KMCCCJsonTags::TYPE_TIME) {
                 return validate_type_time(v_value, must, wt);
-            } else if (tag == KMCCCJsonTags::TYPE_TEMP_KEYWORDS) {
-                return validate_type_temp_keywords(v_value, must, wt);
+            } else if (tag == KMCCCJsonTags::PUSH_TEMP_KEYWORDS) {
+                return validate_push_temp_keywords(v_value, must, wt);
             } else if (tag == KMCCCJsonTags::TYPE_AMOUNT) {
                 return validate_type_amount(v_value, must, wt);
             } else if (tag == KMCCCJsonTags::NODE_RELATIONS) {
@@ -110,13 +110,14 @@ namespace KMCCT {
                 !(sp.at(0) == KMCCCMainCategory::CROSS_HAIR)) {
                 if (!(sp.at(1) == KMCCCSubCategory::MOVE || sp.at(1) == KMCCCSubCategory::COMBAT ||
                       sp.at(1) == KMCCCSubCategory::KEYWORD || sp.at(1) == KMCCCSubCategory::RUNNING ||
-                      sp.at(1) == KMCCCSubCategory::IDLE || sp.at(1) == KMCCCSubCategory::KILL)) {
+                      sp.at(1) == KMCCCSubCategory::IDLE || sp.at(1) == KMCCCSubCategory::KILL ||
+                      sp.at(1) == KMCCCSubCategory::BODY_SLOT || sp.at(1) == KMCCCSubCategory::MAGIC_EFFECT_KEYWORD)) {
                     wt = "Something is wrong with what you have designated as the sub category 1. [now] " + sp.at(1);
                     return false;
                 }
             }
 
-            if (sp.at(1) == KMCCCSubCategory::KEYWORD) {
+            if (sp.at(1) == KMCCCSubCategory::KEYWORD || sp.at(1) == KMCCCSubCategory::MAGIC_EFFECT_KEYWORD) {
                 auto sp_k = KMCSplit(sp.at(2), ',');
                 bool ok = true;
                 for (auto v : sp_k) {
@@ -232,7 +233,7 @@ namespace KMCCT {
             return true;
         }
 
-        bool validate_type_temp_keywords(std::string v_value, bool must, std::string &wt) {
+        bool validate_push_temp_keywords(std::string v_value, bool must, std::string &wt) {
             auto sp = KMCSplit(v_value, '/');
             std::string keyword = sp.at(0);
             std::string category = sp.at(1);
@@ -344,9 +345,9 @@ namespace KMCCT {
                 return false;
             }
 
-            if (force_exp_timing == 0 || force_exp_timing == 1) {
+            if (force_exp_timing == 1 || force_exp_timing == 2) {
                 if (force_exp_name == "") {
-                    wt = "Force_exp_timing is set to 0 or 1, but force_exp_name is set to an empty string.";
+                    wt = "Force_exp_timing is set to 1 or 2, but force_exp_name is set to an empty string.";
                 }
             }
 

@@ -715,6 +715,8 @@ void PapyrusFuncCall(std::string script_n, std::string func_n, RE::TESForm *form
     }
 }
 
+void KMCIsWorn(RE::Actor *actor, std::vector<std::uint32_t> worn_slot, std::vector<bool> &result);
+
 void NamePlateSimplyWipe(KMCNPLoadedWidget id, std::string aaaakmcroot);
 void NamePlateFadeOut(KMCNPLoadedWidget id, std::string aaaakmcroot);
 

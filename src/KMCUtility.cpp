@@ -466,6 +466,43 @@ void RunConsoleCommand(const std::string &command)
 //    }
 //}
 
+void KMCIsWorn(RE::Actor *actor, std::vector<std::uint32_t> worn_slot, std::vector<bool> &result) {
+
+    using Slot = RE::BIPED_MODEL::BipedObjectSlot;
+    if (worn_slot.empty()) {
+        return;
+    }
+    result.assign(worn_slot.size(), false);
+	//const auto armorType = static_cast<RE::BGSBipedObjectForm::ArmorType>(a_armorType);
+
+    auto inv = actor->GetInventory([/*armorType,*/ worn_slot](RE::TESBoundObject &a_object) {
+        const auto armor = a_object.As<RE::TESObjectARMO>();
+        if (armor /*&& armor->GetArmorType() == armorType*/) {
+            if (worn_slot.empty() || std::ranges::any_of(worn_slot, [&](const auto &slot) {
+                    return armor->HasPartOf(static_cast<Slot>(slot));
+                })) {
+                return true;
+            }
+        }
+        return false;
+    });
+
+    for (auto &[item, data] : inv) {
+        const auto &[count, entry] = data;
+        if (count > 0 && entry->IsWorn()) {
+            const auto armor = entry->GetObject()->As<RE::TESObjectARMO>();
+            if (armor) {
+                for (int i = 0; i < worn_slot.size(); i++) {
+                    auto slt = static_cast<Slot>(worn_slot.at(i));
+                    if (armor->HasPartOf(static_cast<Slot>(slt))) {
+                        result.at(i) = true;
+                    }
+                }
+            }
+        }
+    }
+}
+
 void NamePlateSimplyWipe(KMCNPLoadedWidget id, std::string aaaakmcroot) {
     auto npasimple = KMCCT::KMCConfig::GetSingleton()->getINamePlateAnimation((int)simply);
 

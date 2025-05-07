@@ -1,11 +1,111 @@
 #pragma once
 #include "KMCUtility.h"
+#include "KMCCCJsonTags.h"
 
 namespace KMCCT {
+
     enum class HasNHan {
         has,
         nhas,
         both
+    };
+
+    class KMCCSBodySlot {
+    public:
+        KMCCSBodySlot() {}
+        using Slot = RE::BIPED_MODEL::BipedObjectSlot;
+
+        Slot GetSlot(std::string name) {
+            if (name == KMCCCJsonTags::HEAD) {
+                return Slot::kHead;
+            } else if (name == KMCCCJsonTags::HAIR) {
+                return Slot::kHair;
+            } else if (name == KMCCCJsonTags::BODY) {
+                return Slot::kBody;
+            } else if (name == KMCCCJsonTags::HANDS) {
+                return Slot::kHands;
+            } else if (name == KMCCCJsonTags::FOREARMS) {
+                return Slot::kForearms;
+            } else if (name == KMCCCJsonTags::AMULET) {
+                return Slot::kAmulet;
+            } else if (name == KMCCCJsonTags::RING) {
+                return Slot::kRing;
+            } else if (name == KMCCCJsonTags::FEET) {
+                return Slot::kFeet;
+            } else if (name == KMCCCJsonTags::CALVES) {
+                return Slot::kCalves;
+            } else if (name == KMCCCJsonTags::SHIELD) {
+                return Slot::kShield;
+            } else if (name == KMCCCJsonTags::TAIL) {
+                return Slot::kTail;
+            } else if (name == KMCCCJsonTags::LONGHAIR) {
+                return Slot::kLongHair;
+            } else if (name == KMCCCJsonTags::CIRCLET) {
+                return Slot::kCirclet;
+            } else if (name == KMCCCJsonTags::EARS) {
+                return Slot::kEars;
+            } else if (name == KMCCCJsonTags::FACE_COVERING_OVER_THE_MOUTH) {
+                return Slot::kModMouth;
+            } else if (name == KMCCCJsonTags::NECK_COVERING) {
+                return Slot::kModNeck;
+            } else if (name == KMCCCJsonTags::CLOAK) {
+                return Slot::kModChestPrimary;
+            } else if (name == KMCCCJsonTags::BACKPACK) {
+                return Slot::kModBack;
+            } else if (name == KMCCCJsonTags::MAGIC_FX) {
+                return Slot::kModMisc1;
+            } else if (name == KMCCCJsonTags::SKIRT) {
+                return Slot::kModPelvisPrimary;
+            } else if (name == KMCCCJsonTags::DECAPITATEHEAD) {
+                return Slot::kDecapitateHead;
+            } else if (name == KMCCCJsonTags::DECAPITATE) {
+                return Slot::kDecapitate;
+            } else if (name == KMCCCJsonTags::GENITALS_OR_UNDERWEAR) {
+                return Slot::kModPelvisSecondary;
+            } else if (name == KMCCCJsonTags::PANTS) {
+                return Slot::kModLegRight;
+            } else if (name == KMCCCJsonTags::STOCKINGS) {
+                return Slot::kModLegLeft;
+            } else if (name == KMCCCJsonTags::FACE_COVERING_USUALLY_UPPER_FACE) {
+                return Slot::kModFaceJewelry;
+            } else if (name == KMCCCJsonTags::TORSO) {
+                return Slot::kModChestSecondary;
+            } else if (name == KMCCCJsonTags::SHOULDERS) {
+                return Slot::kModShoulder;
+            } else if (name == KMCCCJsonTags::SHIRT_OR_LEFT_ARM) {
+                return Slot::kModArmLeft;
+            } else if (name == KMCCCJsonTags::LOOSE_SHIRT_OR_RIGHT_ARM) {
+                return Slot::kModArmRight;
+            } else if (name == KMCCCJsonTags::MISCELLANEOUS) {
+                return Slot::kModMisc2;
+            } else if (name == KMCCCJsonTags::FX01) {
+                return Slot::kFX01;
+            }
+
+            return Slot::kNone;
+        }
+
+        void Set(std::string name, int value) {
+            int v = value > 1 ? 0 : value;
+
+            if (check_value.contains(name)) {
+                check_value.at(name) = v;
+            } else {
+                check_value.emplace(name, v);                
+            }
+        }
+
+        void Init() {
+            slots.clear();
+
+            for (auto &[uk, uv] : check_value) {
+                slots.emplace_back(static_cast<std::uint32_t>(GetSlot(uk)));
+            }
+        }
+
+        std::vector<std::uint32_t> slots;
+        std::map<std::string, int> check_value; 
+        int match = 0;
     };
 
     class KMCCCheckSource {
@@ -21,6 +121,8 @@ namespace KMCCT {
         std::string temp_keyword_name;
         std::vector<std::string> cross_hair_ref_name;
 
+        KMCCSBodySlot body_slot;
+
         std::vector<RE::TESForm*> forms;
         std::vector<RE::BGSKeyword*> keywords;
         
@@ -34,6 +136,10 @@ namespace KMCCT {
         std::set<std::string> tnhas;
         HasNHan thsnhs;
     public:
+        void body_slot_build() { 
+            body_slot.Init();
+        }
+
         bool keyword_has_nhas_build(std::string ctgry) {
             auto sp = KMCSplit(ctgry, ',');
             if (keywords.size() != sp.size()) {

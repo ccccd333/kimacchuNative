@@ -91,6 +91,13 @@ namespace KMCCT {
                 auto *mnger = itr->get();
                 std::string pname = mnger->cond_custom_pro_name;
                 auto source = mnger->source;
+
+                // managerの管理がkeywordか
+                if (mnger->source.sub1_category == KMCCCSubCategory::KEYWORD ||
+                    mnger->source.sub1_category == KMCCCSubCategory::MAGIC_EFFECT_KEYWORD) {
+                    mnger->m_type = ManageType::keyword;
+                }
+
                 if (mnger->m_type == ManageType::keyword) {
                     auto sp_keyword_formid = KMCSplit(source.keyword_formid, ',');
                     auto sp_keyword_plugin_name = KMCSplit(source.keyword_plugin_name, ',');
@@ -121,7 +128,8 @@ namespace KMCCT {
 
                     if (!mnger->disable) {
                         // has nhasをすぐ使えるようにする
-                        if (source.sub1_category == KMCCCSubCategory::KEYWORD) {
+                        if (source.sub1_category == KMCCCSubCategory::KEYWORD ||
+                            source.sub1_category == KMCCCSubCategory::MAGIC_EFFECT_KEYWORD) {
                             if (!mnger->source.keyword_has_nhas_build(source.sub2_category)) {
                                 mnger->disable = true;
                                 ERROR(
@@ -134,6 +142,10 @@ namespace KMCCT {
                 }
 
                 if (!mnger->disable) {
+                    if (source.sub1_category == KMCCCSubCategory::BODY_SLOT) {
+                        mnger->source.body_slot_build();
+                    }
+
                     if (source.main_category == KMCCCMainCategory::TEMP_KEYWORD) {
                         if (!mnger->source.temp_keyword_has_nhas_build(source.sub1_category)) {
                             mnger->disable = true;
@@ -799,7 +811,7 @@ namespace KMCCT {
 
             } else {
                 // force expression
-                if (node->force_exp_timing == 1) {
+                if (node->force_exp_timing == 2) {
                     exp_work.emplace(node->post_commit_push_key, node);
                 }
             }
@@ -1047,12 +1059,37 @@ namespace KMCCT {
         double n = 3.0;
         if (end_name == KMCCLevelTags::F_PRIORITY) {
             this->priority = elem.ivalue;
+#pragma region[04][cycle]
         } else if (end_name == KMCCLevelTags::S_ONCE) {
             this->once = elem.ivalue == 1;
+#pragma endregion
+
+#pragma region[05][force_ct]
         } else if (end_name == KMCCLevelTags::S_FORCE_CUTIN) {
             this->force_cutin = elem.ivalue == 1;
         } else if (end_name == KMCCLevelTags::S_CUTIN_NAME) {
             this->force_cutin_name = elem.value;
+#pragma endregion
+
+#pragma region[030][flag]
+        } else if (end_name == KMCCLevelTags::S_OP_NOT_CUTIN) {
+            this->not_cutin = elem.ivalue == 1;
+#pragma endregion
+
+#pragma region[06][force_exp]
+        } else if (end_name == KMCCLevelTags::S_EXP_ID) {
+            this->force_exp_name = elem.value;
+        } else if (end_name == KMCCLevelTags::S_FORCE_EXP) {
+            this->force_exp_timing = elem.ivalue;
+        } else if (end_name == KMCCLevelTags::S_EXPRESSION_TIME) {
+            this->force_expression_time = round_n(elem.dvalue, n);
+        } else if (end_name == KMCCLevelTags::S_EXP_COOL_TIME) {
+            this->force_expression_cool_time = round_n(elem.dvalue, n);
+        } else if (end_name == KMCCLevelTags::S_STOP_PERCENTAGE) {
+            this->stop_percentage = round_n(elem.dvalue, n);
+#pragma endregion
+
+#pragma region[10][type_add]
         } else if (end_name == KMCCLevelTags::F_ADD_VALUE) {
             this->task_hub->add_value = round_n(elem.dvalue, n);
         } else if (end_name == KMCCLevelTags::F_COEF_1) {
@@ -1067,10 +1104,27 @@ namespace KMCCT {
             this->task_hub->upper_value = round_n(elem.dvalue, n);
         } else if (end_name == KMCCLevelTags::F_LOWER_VALUE) {
             this->task_hub->lower_value = round_n(elem.dvalue, n);
+
+#pragma endregion
+
+#pragma region[11][type_time]
         } else if (end_name == KMCCLevelTags::F_END_TIME) {
             this->task_hub->end_time = round_n(elem.dvalue, n);
         } else if (end_name == KMCCLevelTags::F_START_TIME) {
             this->task_hub->start_time = round_n(elem.dvalue, n);
+#pragma endregion
+
+#pragma region[12][type_amount]
+        } else if (end_name == KMCCLevelTags::F_STACK_LIMIT) {
+            this->task_hub->stack_limit = round_n(elem.dvalue, n);
+        } else if (end_name == KMCCLevelTags::F_TARGET_VALUE) {
+            this->task_hub->target_amount = round_n(elem.dvalue, n);
+        } else if (end_name == KMCCLevelTags::F_ABANDON_AMOUNT) {
+            this->task_hub->abandon_amount = round_n(elem.dvalue, n);
+        } else if (end_name == KMCCLevelTags::F_STACK_COOL_TIME) {
+            this->task_hub->cool_time = round_n(elem.dvalue, n);
+#pragma endregion
+
         } else if (end_name == KMCCLevelTags::S_CALC_ADD_VALUE) {
             for (int i = 0; i < this->node_relations.size(); i++) {
                 auto *relation = &this->node_relations.at(i).relations;
@@ -1131,9 +1185,12 @@ namespace KMCCT {
             target.aaaakmctype = force_cutin_name;
         }
 
-        if (force_exp_timing == 0) {
+        if (force_exp_timing == 1) {
             target.aaaakmcExptype = force_exp_name;
             target.overri_fc_exp = target.aaaakmcExptype != force_cutin_name && force_exp_name != "";
+
+            target.aaaakmcexp = force_expression_time;
+            target.overri_exp_time = true;
         } else {
             target.aaaakmcExptype = force_cutin_name;
         }
@@ -1147,7 +1204,9 @@ namespace KMCCT {
             target.aaaakmcexp = cutin_setting.exp_time;
             target.overri_oar_time = true;
             target.overri_exp_time = true;
-            
+            if (force_exp_timing == 1) {
+                target.aaaakmcexp = force_expression_time;
+            }
         }
     }
 
@@ -1169,45 +1228,6 @@ namespace KMCCT {
                 continue;
             }
 
-            // if (node->push_end) {
-            //     bool contains = main->Contains(push_key);
-
-            //    if (node->once && contains == false) {
-            //        node->once_and_pop_out_end = true;
-            //        continue;
-            //    } else if (node->once == false && contains == false) {
-            //        node->Reset();
-            //    } else {
-            //        LOG("[{}]", push_key);
-            //        if (node->polling.stay_time > 0.0f) {
-            //            time_point<Clock> now = Clock::now();
-            //            float st_t = node->polling.stay_time;
-            //            milliseconds diff = duration_cast<milliseconds>(now - node->polling.timer);
-            //            long long dur = diff.count();
-            //            if (dur >= st_t * KMCCT::TIME_SCALE_MS) {
-            //                LOG("[{}] REMOVE dur : {}, stay_time_ms : {}, stay_time(base) : {}", push_key, dur,
-            //                    st_t * KMCCT::TIME_SCALE_MS, st_t);
-            //                main->TryPopOut(push_key);
-
-            //                if (!node->once) {
-            //                    node->Reset();
-            //                } else {
-            //                    node->once_and_pop_out_end = true;
-            //                    continue;
-            //                }
-            //            }
-            //        } else {
-            //            main->TryPopOut(push_key);
-            //            if (!node->once) {
-            //                node->Reset();
-            //            } else {
-            //                node->once_and_pop_out_end = true;
-            //                continue;
-            //            }
-            //        }
-            //    }
-            //}
-
             if (node->Check(source)) {
                 bool completed = node->task_hub->Completed();
                 if (!completed) {
@@ -1226,6 +1246,75 @@ namespace KMCCT {
 
         if (end_name == KMCCLevelTags::T_PRIORITY) {
             this->priority = elem.ivalue;
+
+#pragma region[011][body_slot]
+        } else if (end_name == KMCCLevelTags::F_IS_MATCH) {
+            this->source.body_slot.match = elem.ivalue;
+        } else if (end_name == KMCCLevelTags::F_HEAD) {
+            this->source.body_slot.Set(KMCCCJsonTags::HEAD, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_HAIR) {
+            this->source.body_slot.Set(KMCCCJsonTags::HAIR, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_BODY) {
+            this->source.body_slot.Set(KMCCCJsonTags::BODY, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_HANDS) {
+            this->source.body_slot.Set(KMCCCJsonTags::HANDS, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_FOREARMS) {
+            this->source.body_slot.Set(KMCCCJsonTags::FOREARMS, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_AMULET) {
+            this->source.body_slot.Set(KMCCCJsonTags::AMULET, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_RING) {
+            this->source.body_slot.Set(KMCCCJsonTags::RING, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_FEET) {
+            this->source.body_slot.Set(KMCCCJsonTags::FEET, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_CALVES) {
+            this->source.body_slot.Set(KMCCCJsonTags::CALVES, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_SHIELD) {
+            this->source.body_slot.Set(KMCCCJsonTags::SHIELD, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_TAIL) {
+            this->source.body_slot.Set(KMCCCJsonTags::TAIL, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_LONGHAIR) {
+            this->source.body_slot.Set(KMCCCJsonTags::LONGHAIR, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_CIRCLET) {
+            this->source.body_slot.Set(KMCCCJsonTags::CIRCLET, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_EARS) {
+            this->source.body_slot.Set(KMCCCJsonTags::EARS, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_FACE_COVERING_OVER_THE_MOUTH) {
+            this->source.body_slot.Set(KMCCCJsonTags::FACE_COVERING_OVER_THE_MOUTH, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_NECK_COVERING) {
+            this->source.body_slot.Set(KMCCCJsonTags::NECK_COVERING, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_CLOAK) {
+            this->source.body_slot.Set(KMCCCJsonTags::CLOAK, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_BACKPACK) {
+            this->source.body_slot.Set(KMCCCJsonTags::BACKPACK, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_MAGIC_FX) {
+            this->source.body_slot.Set(KMCCCJsonTags::MAGIC_FX, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_SKIRT) {
+            this->source.body_slot.Set(KMCCCJsonTags::SKIRT, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_DECAPITATEHEAD) {
+            this->source.body_slot.Set(KMCCCJsonTags::DECAPITATEHEAD, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_DECAPITATE) {
+            this->source.body_slot.Set(KMCCCJsonTags::DECAPITATE, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_GENITALS_OR_UNDERWEAR) {
+            this->source.body_slot.Set(KMCCCJsonTags::GENITALS_OR_UNDERWEAR, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_PANTS) {
+            this->source.body_slot.Set(KMCCCJsonTags::PANTS, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_STOCKINGS) {
+            this->source.body_slot.Set(KMCCCJsonTags::STOCKINGS, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_FACE_COVERING_USUALLY_UPPER_FACE) {
+            this->source.body_slot.Set(KMCCCJsonTags::FACE_COVERING_USUALLY_UPPER_FACE, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_TORSO) {
+            this->source.body_slot.Set(KMCCCJsonTags::TORSO, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_SHOULDERS) {
+            this->source.body_slot.Set(KMCCCJsonTags::SHOULDERS, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_SHIRT_OR_LEFT_ARM) {
+            this->source.body_slot.Set(KMCCCJsonTags::SHIRT_OR_LEFT_ARM, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_LOOSE_SHIRT_OR_RIGHT_ARM) {
+            this->source.body_slot.Set(KMCCCJsonTags::LOOSE_SHIRT_OR_RIGHT_ARM, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_MISCELLANEOUS) {
+            this->source.body_slot.Set(KMCCCJsonTags::MISCELLANEOUS, elem.ivalue);
+        } else if (end_name == KMCCLevelTags::F_FX01) {
+            this->source.body_slot.Set(KMCCCJsonTags::FX01, elem.ivalue);
+#pragma endregion
         }
     }
 
@@ -1377,10 +1466,7 @@ namespace KMCCT {
                     if (manager->disable) {
                         ERROR("Level {} key {} Validate check error. force disable", level, now_json_node);
                     } else {
-                        // managerの管理がkeywordか
-                        if (manager->source.sub1_category == "keyword") {
-                            manager->m_type = ManageType::keyword;
-                        }
+
                     }
                 } else {
                     ERROR("Level {} key {} It's not in the format.", level, cond_main_key);
@@ -1466,6 +1552,14 @@ namespace KMCCT {
                     } else {
                         ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
+                } else if (k1 == KMCCCJsonTags::BODY_SLOT) {
+                    if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
+                        SetupJsonNodesBodySlot(nested.get(), level, manager);
+
+                    } else {
+                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    }
+                    
                 } else if (k1 == KMCCCJsonTags::KEYWORD) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesKeyword(nested.get(), level, manager);
@@ -1542,6 +1636,131 @@ namespace KMCCT {
 
         now_json_node = bef_now_json_node;
     }
+    void KMCCutinCondition::SetupJsonNodesBodySlot(boost::property_tree::ptree pt, int level,
+        KMCCustomCondManager<KMCCustomCondMain>* manager) {
+        std::string bef_now_json_node = now_json_node;
+        level = level + 1;
+        try {
+            std::string project_name = manager->cond_custom_pro_name;
+            // header
+            path_mapping[project_name].emplace_back(KMCKEPath(key_detail.Build(now_json_node), level));
+
+            for (auto &child : pt) {
+                now_json_node = bef_now_json_node;
+                std::string k1 = child.first;
+                now_json_node = now_json_node + "." + k1;
+
+                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+
+                if (k1 == KMCCCJsonTags::IS_MATCH) {
+                    manager->source.body_slot.match = NodeTreesGetValue<int>(child.second, level, now_json_node, project_name);
+                } else if (k1 == KMCCCJsonTags::HEAD) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::HAIR) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::BODY) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::HANDS) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::FOREARMS) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::AMULET) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::RING) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::FEET) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::CALVES) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::SHIELD) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::TAIL) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::LONGHAIR) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::CIRCLET) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::EARS) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::FACE_COVERING_OVER_THE_MOUTH) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::NECK_COVERING) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::CLOAK) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::BACKPACK) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::MAGIC_FX) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::SKIRT) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::DECAPITATEHEAD) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::DECAPITATE) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::GENITALS_OR_UNDERWEAR) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::PANTS) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::STOCKINGS) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::FACE_COVERING_USUALLY_UPPER_FACE) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::TORSO) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::SHOULDERS) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::SHIRT_OR_LEFT_ARM) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::LOOSE_SHIRT_OR_RIGHT_ARM) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::MISCELLANEOUS) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else if (k1 == KMCCCJsonTags::FX01) {
+                    manager->source.body_slot.Set(
+                        k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
+                } else {
+                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                }
+            }
+        } catch (std::exception ex) {
+            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+        }
+
+        now_json_node = bef_now_json_node;
+    }
+
     void KMCCutinCondition::SetupJsonNodesKeyword(boost::property_tree::ptree pt, int level,
                                                   KMCCustomCondManager<KMCCustomCondMain> *manager) {
         std::string bef_now_json_node = now_json_node;
@@ -1700,27 +1919,6 @@ namespace KMCCT {
                     } else {
                         ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
-                } else if (k1 == KMCCCJsonTags::TYPE_TEMP_KEYWORDS) {
-                    if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
-                        if (k1 == KMCCCJsonTags::TYPE_TEMP_KEYWORDS) {
-                            node->cutin_cond_type_sub = CutinCondSubType::keyword;
-                        }
-
-                        // チェック後のsub taskを決定する
-                        if (GetCheckSubTaskDetail(node->cutin_cond_type_sub, &node->sub_task_hub) == false) {
-                            ERROR(
-                                "Level {} key {} Work(sub) processing cannot be performed. Incorrect combination. "
-                                "cond_type {} ",
-                                level, now_json_node, static_cast<int>(node->cutin_cond_type_sub));
-                            node->disable = true;
-                            throw std::exception();
-                        }
-
-                        SetupJsonNodesKeyword(nested.get(), level, &node->sub_task_hub, project_name);
-
-                    } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
-                    }
                 } else if (k1 == KMCCCJsonTags::TYPE_ADD || k1 == KMCCCJsonTags::TYPE_TIME ||
                            k1 == KMCCCJsonTags::TYPE_AMOUNT) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
@@ -1816,6 +2014,27 @@ namespace KMCCT {
                 } else if (k1 == KMCCCJsonTags::FORCE_EXPRESSION) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesForceEXP(nested.get(), level, manager, node);
+                    } else {
+                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    }
+                } else if (k1 == KMCCCJsonTags::PUSH_TEMP_KEYWORDS) {
+                    if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
+                        if (k1 == KMCCCJsonTags::PUSH_TEMP_KEYWORDS) {
+                            node->cutin_cond_type_sub = CutinCondSubType::keyword;
+                        }
+
+                        // チェック後のsub taskを決定する
+                        if (GetCheckSubTaskDetail(node->cutin_cond_type_sub, &node->sub_task_hub) == false) {
+                            ERROR(
+                                "Level {} key {} Work(sub) processing cannot be performed. Incorrect combination. "
+                                "cond_type {} ",
+                                level, now_json_node, static_cast<int>(node->cutin_cond_type_sub));
+                            node->disable = true;
+                            throw std::exception();
+                        }
+
+                        SetupJsonNodesKeyword(nested.get(), level, &node->sub_task_hub, project_name);
+
                     } else {
                         ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
@@ -2032,10 +2251,10 @@ namespace KMCCT {
 
                 LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
-                if (k1 == KMCCCJsonTags::TYPE_TEMP_KEYWORD_NAME) {
+                if (k1 == KMCCCJsonTags::PUSH_TEMP_KEYWORD_NAME) {
                     (*sub_task)->sub_task_source.keyword_name =
                         NodeTreesGetValue<std::string>(child.second, level, now_json_node, proj_name);
-                } else if (k1 == KMCCCJsonTags::TYPE_KEYWORD_CATEGORY) {
+                } else if (k1 == KMCCCJsonTags::PUSH_KEYWORD_CATEGORY) {
                     (*sub_task)->sub_task_source.category =
                         NodeTreesGetValue<std::string>(child.second, level, now_json_node, proj_name);
                 } else {
@@ -2351,7 +2570,7 @@ namespace KMCCT {
 
     bool KMCCutinCondition::Validate_node(KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>> *node) {
         std::string message;
-        if (node->force_exp_timing > -1) {
+        if (node->force_exp_timing > 0) {
             //[06][force_exp]
             std::string validate_fexp = std::to_string(node->force_exp_timing) + "/" + node->force_exp_name + "/" +
                                         std::to_string(node->force_expression_cool_time) + "/" +
@@ -2416,7 +2635,7 @@ namespace KMCCT {
                 if (node->sub_task_hub) {
                     auto ssource = node->sub_task_hub->sub_task_source;
                     std::string validate_ky = ssource.keyword_name + "/" + ssource.category;
-                    if (!v.validator(KMCCCJsonTags::TYPE_TEMP_KEYWORDS, validate_ky, true, message)) {
+                    if (!v.validator(KMCCCJsonTags::PUSH_TEMP_KEYWORDS, validate_ky, true, message)) {
                         // type add keywordの組み合わせがおかしい
                         ERROR(" --------------Validate Error.-------------- wt : [TYPE_TEMP_KEYWORD] {}", message);
                         return false;

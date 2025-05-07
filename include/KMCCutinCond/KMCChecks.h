@@ -262,6 +262,38 @@ namespace KMCCT {
         RE::CrosshairPickData* cpd = nullptr;
     };
 
+    class KMCCCTBodySlot : public KMCCustomCondCheckHub {
+    public:
+        bool Init() override { return true; }
+        bool Check(KMCCCheckSource source) override;
+        void Reset() override {}
+        std::unique_ptr<KMCCustomCondCheckHub> GetDetail(KMCCCheckSource source) override {
+            if (source.main_category == KMCCCMainCategory::PLAYER) {
+                if (source.sub1_category == KMCCCSubCategory::BODY_SLOT) {
+                    return std::make_unique<KMCCCTBodySlot>();
+                }
+            }
+
+            return nullptr;
+        }
+    };
+
+    class KMCCCTMagicEffectKeyword : public KMCCustomCondCheckHub {
+    public:
+        bool Init() override { return true; }
+        bool Check(KMCCCheckSource source) override;
+        void Reset() override {}
+        std::unique_ptr<KMCCustomCondCheckHub> GetDetail(KMCCCheckSource source) {
+            if (source.main_category == KMCCCMainCategory::PLAYER) {
+                if (source.sub1_category == KMCCCSubCategory::MAGIC_EFFECT_KEYWORD) {
+                    return std::make_unique<KMCCCTMagicEffectKeyword>();
+                }
+            }
+
+            return nullptr;
+        }
+    };
+
     bool GetCheckTaskDetail(KMCCCheckSource source, std::unique_ptr<KMCCustomCondCheckHub>* hub);
 
 }

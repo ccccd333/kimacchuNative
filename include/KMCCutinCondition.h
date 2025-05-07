@@ -76,7 +76,7 @@ namespace KMCCT {
         std::string force_exp_name = "";
         float force_expression_time = 1.0f;
         float force_expression_cool_time = 1.0f;
-        int force_exp_timing = -1;
+        int force_exp_timing = 0;
         float stop_percentage = 0.0f;
 
         std::vector<RelationsData> node_relations;
@@ -206,6 +206,8 @@ namespace KMCCT {
                                   KMCCustomCondManager<KMCCustomCondMain>* manager);
         void SetupJsonNodesCategory(boost::property_tree::ptree pt, int level,
                                     KMCCustomCondManager<KMCCustomCondMain>* manager);
+        void SetupJsonNodesBodySlot(boost::property_tree::ptree pt, int level,
+                                   KMCCustomCondManager<KMCCustomCondMain>* manager);
         void SetupJsonNodesKeyword(boost::property_tree::ptree pt, int level,
                                     KMCCustomCondManager<KMCCustomCondMain>* manager);
         void SetupJsonNodesLevel2(boost::property_tree::ptree pt, int level,

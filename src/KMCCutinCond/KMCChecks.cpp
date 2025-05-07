@@ -17,7 +17,10 @@ namespace KMCCT {
     KMCCCTPlayerKill pkill;
     KMCCCTTempKeyword tkey;
     KMCCCTCrossHair ctch;
-    std::vector<KMCCustomCondCheckHub*> Tasks = {&nothi, &pm, &pc, &pr, &pid, &psn, &pk, &lk, &pkill, &tkey, &ctch};
+    KMCCCTBodySlot ctbs;
+    KMCCCTMagicEffectKeyword ctmek;
+    std::vector<KMCCustomCondCheckHub*> Tasks = {&nothi, &pm, &pc,    &pr,   &pid,  &psn,  &pk,
+                                                 &lk,    &pkill, &tkey, &ctch, &ctbs, &ctmek};
 
     bool GetCheckTaskDetail(KMCCCheckSource source, std::unique_ptr<KMCCustomCondCheckHub>* hub) {
         for (auto t : Tasks) {
@@ -369,6 +372,86 @@ namespace KMCCT {
                 if (std::regex_match(name, sm, p.pattern)) {
                     LOG("KMCCCTCrossHair::GetName [{}] [{}]", name, p.work);
                     return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool KMCCCTBodySlot::Check(KMCCCheckSource source) {
+        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        if (player) {
+            std::vector<bool> res;
+            KMCIsWorn(player, source.body_slot.slots, res);
+
+            if (res.size() == source.body_slot.check_value.size()) {
+                int i = 0;
+                bool hresult = false;
+                bool nhresult = false;
+                for (auto& [key, value] : source.body_slot.check_value) {
+                    bool rv = res.at(i);
+                    if (rv) {
+                        if (value == 1) {
+                            hresult = true;
+                            LOG("[IsWorn] body slot ===> {}, flag:{}", key, value);
+                        } else {
+                            LOG("[IsWorn] body slot ===> {}, flag:{}", key, value);
+                            nhresult = true;
+                        }
+                    } else {
+                        if (value == 0) {
+                            LOG("[IsNotWorn] body slot ===> {}, flag:{}", key, value);
+                            hresult = true;
+                        } else {
+                            LOG("[IsNotWorn] body slot ===> {}, flag:{}", key, value);
+                            nhresult = true;
+                        }
+                    }
+
+                    i++;
+                }
+
+                if (source.body_slot.match == 0) {
+                    // any
+                    return hresult;
+
+                } else {
+                    // all
+                    if (nhresult) return false;
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool KMCCCTMagicEffectKeyword::Check(KMCCCheckSource source) {
+        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        if (player) {
+            const auto activeEffects = player->GetMagicTarget()->GetActiveEffectList();
+            if (activeEffects) {
+                for (auto const& ae : *activeEffects) {
+                    const auto mgef = ae ? ae->GetBaseObject() : nullptr;
+                    if (mgef) {
+                        LOG("[Active Effect] Name {}, FormId {}", mgef->GetName(), mgef->GetFormID());
+                        if (source.hsnhs == HasNHan::both) {
+                            if (mgef->HasKeywordInArray(source.has, true) &&
+                                !mgef->HasKeywordInArray(source.nhas, true)) {
+                                return true;
+                            }
+                        } else if (source.hsnhs == HasNHan::has) {
+                            if (mgef->HasKeywordInArray(source.has, true)) {
+                                return true;
+                            }
+                        } else if (source.hsnhs == HasNHan::nhas) {
+                            if (!mgef->HasKeywordInArray(source.nhas, true)) {
+                                return true;
+                            }
+                        }
+                    }
                 }
             }
         }
