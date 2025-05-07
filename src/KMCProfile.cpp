@@ -1,8 +1,9 @@
+#include "KMCProfile.h"
+
 #include "KMCConfig.h"
 #include "KMCEventThread.h"
-#include "KMCProfile.h"
-#include "KMCStateManager.h"
 #include "KMCSound.h"
+#include "KMCStateManager.h"
 #include "KMCWaitTask.h"
 
 SINGLETONBODY(KMCCT::KMCProfile)
@@ -65,8 +66,8 @@ namespace KMCCT {
         // LOG("KMCEventThread::Init format_id_strings {}", PlayerProfil.format_id_strings);
     }
 
-    void KMCProfile::InitProfile(std::string skyroot, std::vector<float> *floatArray) { 
-        aaaakmcroot = skyroot; 
+    void KMCProfile::InitProfile(std::string skyroot, std::vector<float> *floatArray) {
+        aaaakmcroot = skyroot;
         aaaakmcvolum = (*floatArray)[0];
 
         if (PlayerProfil.tids.size() == 0) return;
@@ -172,7 +173,7 @@ namespace KMCCT {
     }
 
     void KMCProfile::UpdateModifiedContainer(std::vector<std::string> *mod_container, int *SUtilEndIndex,
-                                             int *ModStIndex, int* ModEnIndex, KMCProfil* profile) {
+                                             int *ModStIndex, int *ModEnIndex, KMCProfil *profile) {
         int profile_start_index = 0;
         if (*SUtilEndIndex > 0) {
             profile_start_index += *SUtilEndIndex + 1;
@@ -186,7 +187,10 @@ namespace KMCCT {
                 !KMCCT::KMCEventThread::GetSingleton()->GetProfileInitEnd()) {
                 return;
             }
-            update_prifile = true;
+            {
+                std::lock_guard<std::mutex> lock(pr_mtx);
+                update_prifile = true;
+            }
             try {
                 auto formmap = profile->format_map;
                 std::map<int, KMCUpdateProfileData> formated_map;
@@ -217,7 +221,10 @@ namespace KMCCT {
                 ERROR("UpdateModifiedContainer Error {}", e.what());
             }
         }
-        update_prifile = false;
+        {
+            std::lock_guard<std::mutex> lock(pr_mtx);
+            update_prifile = false;
+        }
         first_profile_update = true;
     }
 
@@ -246,7 +253,15 @@ namespace KMCCT {
                     break;
                 }
 
-                if (!update_prifile && first_profile_update && !showing_profile) {
+                bool sh_p = false;
+                bool u_p = false;
+                {
+                    std::lock_guard<std::mutex> lock(pr_mtx);
+                    sh_p = showing_profile;
+                    u_p = update_prifile;
+                }
+
+                if (!u_p && first_profile_update && !sh_p) {
                     ShowProfile(!switch_disp_profile_flag);
                     switch_disp_profile_flag = !switch_disp_profile_flag;
                     break;
@@ -273,10 +288,16 @@ namespace KMCCT {
     }
 
     void KMCProfile::ShowProfile(bool visible) {
-        if (show_prifile.load(std::memory_order_acquire) && visible) return;
-        if (update_prifile) return;
-        show_prifile = true;
-        showing_profile = true;
+        bool show_p = false;
+        {
+            std::lock_guard<std::mutex> lock(pr_mtx);
+            show_p = show_prifile;
+
+            if (show_p && visible) return;
+            if (update_prifile) return;
+            show_prifile = true;
+            showing_profile = true;
+        }
         // player only
         if (PlayerProfil.tids.size() == 0) return;
         auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
@@ -355,7 +376,8 @@ namespace KMCCT {
 
             // invisible anim
             for (auto &value : PlayerProfil.wids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
+                    KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
                     return;
                 }
 
@@ -366,7 +388,8 @@ namespace KMCCT {
                 }
             }
             for (auto &[key, value] : PlayerProfil.tids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
+                    KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
                     return;
                 }
 
@@ -382,7 +405,8 @@ namespace KMCCT {
 
             // invisible
             for (auto &value : PlayerProfil.wids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
+                    KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
                     return;
                 }
 
@@ -392,7 +416,8 @@ namespace KMCCT {
             }
 
             for (auto &[key, value] : PlayerProfil.tids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
+                    KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
                     return;
                 }
 
@@ -400,11 +425,16 @@ namespace KMCCT {
                     IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, false);
                 }
             }
-
-            show_prifile = false;
+            {
+                std::lock_guard<std::mutex> lock(pr_mtx);
+                show_prifile = false;
+            }
         }
 
-        showing_profile = false;
+        {
+            std::lock_guard<std::mutex> lock(pr_mtx);
+            showing_profile = false;
+        }
     }
 
     void KMCProfile::TryShowProfile() {
@@ -414,6 +444,12 @@ namespace KMCCT {
     }
 
     int KMCProfile::GetStateProfileEvent() {
+        bool sh_p = false;
+        {
+            std::lock_guard<std::mutex> lock(pr_mtx);
+            sh_p = showing_profile;
+        }
+
         if (!KMCCT::KMCEventThread::GetSingleton()->GetInitFirstFlag()) {
             return -4;  // not work iwant widget ng
         } else if (!KMCCT::KMCEventThread::GetSingleton()->GetEnableProfileFlag()) {
@@ -421,7 +457,7 @@ namespace KMCCT {
         } else if (KMCCT::KMCEventThread::GetSingleton()->GetShutDown() ||
                    !KMCCT::KMCEventThread::GetSingleton()->GetProfileInitEnd()) {
             return -3;  // init now
-        } else if (interrupt_show_profile || showing_profile) {
+        } else if (interrupt_show_profile || sh_p) {
             return -2;  // interrupt now
         } else if (update_prifile) {
             return -1;  // profile update now
@@ -435,9 +471,8 @@ namespace KMCCT {
     }
 
     void KMCProfile::ProfileInit(KMCProfil &profil, std::string target,
-                                     std::vector<std::pair<std::string, std::string>> *ws,
-                                     std::vector<std::pair<std::string, std::string>> *ts,
-                                     std::vector<std::string> *pt) {
+                                 std::vector<std::pair<std::string, std::string>> *ws,
+                                 std::vector<std::pair<std::string, std::string>> *ts, std::vector<std::string> *pt) {
         KMCProfil result;
         try {
             for (auto &[key, value] : *ws) {

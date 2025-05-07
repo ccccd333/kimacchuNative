@@ -355,13 +355,6 @@ namespace KMCCT {
 
             KMCCT::KMCWaitTask::GetSingleton()->SetWaitFlag(false);
 
-            KMCCT::KMCProfile::GetSingleton()->Set_show_prifile(false);
-            KMCCT::KMCProfile::GetSingleton()->Set_showing_profile(false);
-            KMCCT::KMCProfile::GetSingleton()->Set_interrupt_show_profile(false);
-            KMCCT::KMCProfile::GetSingleton()->Set_switch_disp_profile_flag(false);
-
-            KMCCT::KMCProfile::GetSingleton()->Set_update_prifile(false);
-
             KMCCT::KMCCutin::GetSingleton()->SetAnimNow(false);
 
             // LOG("KMCEventThread::Init root = {} ms {} me {} up {}", aaaakmcroot, ModStartIndex, ModEndIndex,

@@ -48,7 +48,6 @@ namespace KMCCT {
         
         void CategoryRandomizer();
     private:
-        std::unordered_map<std::string, KMCRandomData> aaaakmcCategoryRandMap;
 
         STMFGPair p_now;
         STMFG player_mfg;

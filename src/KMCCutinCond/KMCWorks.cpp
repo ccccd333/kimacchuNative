@@ -7,10 +7,11 @@ namespace KMCCT {
     KMCCCAdd km_add;
     KMCCCTime km_time;
     KMCCCAmount km_amount;
+    KMCCCDummy dummy;
     //KMCCCAddKeyword km_add_keyword;
     //KMCCCRemoveKeyword km_remove_keyword;
 
-    std::vector<KMCCustomCondTaskHub *> Tasks = {&km_add, &km_time, &km_amount};
+    std::vector<KMCCustomCondTaskHub *> Tasks = {&km_add, &km_time, &km_amount, &dummy};
 
     bool GetWorkDetail(CutinCondType cct, std::unique_ptr<KMCCustomCondTaskHub> *hub) {
         for (auto t : Tasks) {

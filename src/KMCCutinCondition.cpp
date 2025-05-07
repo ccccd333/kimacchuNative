@@ -799,7 +799,7 @@ namespace KMCCT {
 
             if (node->task_hub->IsEpsilon()) continue;
 
-            if (node->task_hub->CompPercent() > percent && !node->not_cutin) {
+            if (node->task_hub->CompPercent() > percent) {
                 // カットインするものがどれくらいの進捗率となっているか
                 percent = node->task_hub->CompPercent();
             }
@@ -1375,7 +1375,7 @@ namespace KMCCT {
                                        KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>> *node) {
         pushed_exp_task.insert(std::make_pair(push_key, node));
 
-        LOG("[TryPushExp] Count {}, Project {}", pushed_task.size(), node->project_name);
+        LOG("[TryPushExp] Count {}, Project {}", pushed_exp_task.size(), node->project_name);
 
         return true;
     }
@@ -1388,13 +1388,15 @@ namespace KMCCT {
     }
 
     void KMCCustomCondMain::PlayFcExp() {
-        LOG("[PlayFcExp] Count {}", pushed_task.size());
+        LOG("[PlayFcExp] Count {}", pushed_exp_task.size());
         for (auto &[key, node] : pushed_exp_task) {
             int ret = KMCCT::KMCExpression::GetSingleton()->ForceExp(
                 node->force_exp_name, node->force_expression_cool_time, node->force_expression_time);
-            LOG("[PlayFcExp] Count {}, Project {}", pushed_task.size(), node->project_name);
+            LOG("[PlayFcExp] ExpID {} Count {}, Project {}, ret {}", node->force_exp_name, pushed_exp_task.size(),
+                node->project_name, ret);
+
             if (ret != 1) {
-                LOG("[PlayFcExp] FC EXP =====> Project {}", pushed_task.size(), node->project_name);
+                LOG("[PlayFcExp] FC EXP =====> Project {}", pushed_exp_task.size(), node->project_name);
                 break;
             }
         }
@@ -1867,16 +1869,40 @@ namespace KMCCT {
                     if (node->sub_task_hub) {
                         node->sub_task_hub->Init();
                     }
+                    if (!node->task_hub) {
+                        // dummyの場合はまずカットインなしか判定する
+                        if (node->not_cutin && node->force_exp_timing == 2) {
+                            // dummyの計算処理方針を設定する
+                            node->cutin_cond_type = CutinCondType::dummy;
 
-                    if (!node->task_hub->Init(node->check_hub.get(), &manager->source)) {
-                        ERROR(
-                            "Level {} key {} Node initialization failed. "
-                            "cond_type {} ",
-                            level, now_json_node, static_cast<int>(node->cutin_cond_type));
-                        node->disable = true;
-                        throw std::exception();
+                            if (GetWorkDetail(node->cutin_cond_type, &node->task_hub) == false) {
+                                ERROR(
+                                    "Level {} key {} dummy work not found. wt?"
+                                    "cond_type {} ",
+                                    level, now_json_node, static_cast<int>(node->cutin_cond_type));
+                                node->disable = true;
+                                throw std::exception();
+                            }
+                        } else {
+                            // 定義なしの場合はエラー
+                            ERROR(
+                                "Level {} key {} For no task node, define not_cutin as 1 and force_exp_timing as 2"
+                                "cond_type {} ",
+                                level, now_json_node, static_cast<int>(node->cutin_cond_type));
+                            node->disable = true;
+                            throw std::exception();
+                        }
                     }
-
+                    if (!node->disable) {
+                        if (!node->task_hub->Init(node->check_hub.get(), &manager->source)) {
+                            ERROR(
+                                "Level {} key {} Node initialization failed. "
+                                "cond_type {} ",
+                                level, now_json_node, static_cast<int>(node->cutin_cond_type));
+                            node->disable = true;
+                            throw std::exception();
+                        }
+                    }
                     node->post_commit_push_key = std::to_string(node->priority) + "." + node->project_name;
 
                 } else {
@@ -2582,8 +2608,8 @@ namespace KMCCT {
                 return false;
             }
 
-            if (validate_fexp != "") {
-                WARN(" --------------Validate WARN.-------------- wt : [FORCE_EXPRESSION] {}", validate_fexp);
+            if (message != "") {
+                WARN(" --------------Validate WARN.-------------- wt : [FORCE_EXPRESSION] {}", message);
             }
         }
 
@@ -2624,6 +2650,8 @@ namespace KMCCT {
                 return false;
             }
 
+        } else if (node->cutin_cond_type == CutinCondType::dummy) {
+            WARN("[Validate] This Node IsDummy {}", node->project_name);
         } else {
             // 製作者側用
             ERROR(" --------------Validate Error.-------------- wt : Unknown Error");

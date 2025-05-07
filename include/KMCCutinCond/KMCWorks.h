@@ -11,7 +11,7 @@ namespace KMCCT {
     using std::chrono::time_point;
     using namespace std::literals::chrono_literals;
 
-    enum class CutinCondType { add, time, amount, none };
+    enum class CutinCondType { add, time, amount, dummy, none };
     class CCTCoefR {
     public:
         static constexpr const char* BETWEEN = "between";
@@ -369,354 +369,55 @@ namespace KMCCT {
         }
     };
 
-    // class KMCCCAddKeyword : public KMCCustomCondTaskHub {
-    // public:
-    //     std::unique_ptr<KMCCustomCondTaskHub> GetDetail(CutinCondType cct) override {
-    //         if (cct == CutinCondType::add_keyword) {
-    //             return std::make_unique<KMCCCAddKeyword>();
-    //         }
-    //         return nullptr;
-    //     }
+    class KMCCCDummy : public KMCCustomCondTaskHub {
+    public:
+        std::unique_ptr<KMCCustomCondTaskHub> GetDetail(CutinCondType cct) override {
+            if (cct == CutinCondType::dummy) {
+                return std::make_unique<KMCCCDummy>();
+            }
+            return nullptr;
+        }
 
-    //    void ToMove() override {
-    //        if (cct_sub == CutinCondType::add) {
+        bool Init(KMCCustomCondCheckHub* check, KMCCCheckSource* source) override { return true; }
+        bool PreProcessing() override { return true; }
+        void ToMove() override {
+            LOG("[Dummy.ToMove]");
+        }
 
-    //            if (cool_time > 0.0f) {
-    //                if (cool_time_now) {
-    //                    time_point<Clock> now = Clock::now();
-    //                    milliseconds diff = duration_cast<milliseconds>(now - timer);
-    //                    long long dur = diff.count();
-    //                    if (dur >= cool_time * KMCCT::TIME_SCALE_MS) {
-    //                        cool_time_now = false;
-    //                    } else {
-    //                        LOG("[ADD.ToMove] cool time av {}, dur(ms) {}, cool time(ms) {}",
-    //                            std::to_string(wrk_value_add), dur, cool_time * KMCCT::TIME_SCALE_MS);
-    //                        return;
-    //                    }
-    //                }
+        void Add(float c_add_value) override { 
+            LOG("[Dummy.Add]");
+        }
 
-    //                if (!cool_time_now) {
-    //                    timer = Clock::now();
-    //                    cool_time_now = true;
-    //                }
-    //            }
+        void Subtract(float subtract_value) override { 
+            LOG("[Dummy.Subtract]");
+        }
 
-    //            if (coef_relation == "between") {
-    //                std::uniform_real_distribution<float> get_rand_uni_real(coef_1, coef_2);
-    //                float r = get_rand_uni_real(mt);
-    //                wrk_value_add += add_value * r;
-    //            } else if (coef_relation == "coef_1") {
-    //                wrk_value_add += add_value * coef_1;
-    //            } else if (coef_relation == "coef_2") {
-    //                wrk_value_add += add_value * coef_2;
-    //            }
+        void Div(float div_value) override { 
+            LOG("[Dummy.Div]");
+        }
 
-    //            LOG("[AddKeyword.ADD.ToMove] av {}", std::to_string(wrk_value_add));
-    //        } else {
-    //            // time
-    //            wrk_value_time += add_time_v;
-    //            LOG("[AddKeyword.TIME.ToMove] av {}", std::to_string(wrk_value_time));
-    //        }
-    //    }
+        void Mult(float mult_value) override { 
+            LOG("[Dummy.Mult]");
+        }
 
-    //    void Add(float c_add_value) override {
-    //        if (cct_sub == CutinCondType::add) {
-    //            wrk_value_add += c_add_value;
-    //            LOG("[AddKeyword.Add] av {}, addv {}, rv {}", std::to_string(wrk_value_add),
-    //            std::to_string(c_add_value),
-    //                std::to_string(commit_wrk_value_add));
-    //        } else {
-    //            wrk_value_time += c_add_value;
-    //            LOG("[AddKeyword.Add] av {}, addv {}, rv {}", std::to_string(wrk_value_time),
-    //            std::to_string(c_add_value),
-    //                std::to_string(commit_wrk_value_time));
-    //        }
-    //    }
+        bool IsEpsilon() override { return false; }
 
-    //    void Subtract(float subtract_value) override {
-    //        if (cct_sub == CutinCondType::add) {
-    //            if (subtract_value > 0.0f && wrk_value_add - subtract_value >= 0.0f) {
-    //                wrk_value_add -= subtract_value;
-    //                LOG("[AddKeyword.ADD.Subtract] av {}, subtractv {}, rv {}", std::to_string(wrk_value_add),
-    //                    std::to_string(subtract_value), std::to_string(commit_wrk_value_add));
-    //            } else if (subtract_value > 0.0f) {
-    //                wrk_value_add = 0.0f;
-    //                LOG("[AddKeyword.Subtract.reset] av {}, subtractv {}, rv {}", std::to_string(wrk_value_add),
-    //                    std::to_string(subtract_value), std::to_string(commit_wrk_value_add));
-    //            }
-    //        } else {
-    //            if (subtract_value > 0.0f && wrk_value_time - subtract_value >= 0.0f) {
-    //                wrk_value_time -= subtract_value;
-    //                LOG("[AddKeyword.TIME.Subtract] av {}, subtractv {}, rv {}", std::to_string(wrk_value_time),
-    //                    std::to_string(subtract_value), std::to_string(commit_wrk_value_time));
-    //            } else if (subtract_value > 0.0f) {
-    //                wrk_value_time = 0.0f;
-    //                LOG("[AddKeyword.TIME.Subtract.reset] av {}, subtractv {}, rv {}", std::to_string(wrk_value_time),
-    //                    std::to_string(subtract_value), std::to_string(commit_wrk_value_time));
-    //            }
-    //        }
-    //    }
+        float CompPercent() override {
+            return 0.0f;
+        }
 
-    //    void Div(float div_value) override {
-    //        if (cct_sub == CutinCondType::add) {
-    //            if (div_value != 0.0f) {
-    //                wrk_value_add /= div_value;
-    //                LOG("[AddKeyword.Div] av {}, divv {}, rv {}", std::to_string(wrk_value_add),
-    //                std::to_string(div_value),
-    //                    std::to_string(commit_wrk_value_add));
-    //            } else {
-    //                LOG("[AddKeyword.Div] skip div(Reason: For division by zero) av {}, divv {}, rv {}",
-    //                    std::to_string(wrk_value_add), std::to_string(div_value),
-    //                    std::to_string(commit_wrk_value_add));
-    //            }
-    //        } else {
-    //            if (div_value != 0.0f) {
-    //                wrk_value_time /= div_value;
-    //                LOG("[AddKeyword.Div] av {}, divv {}, rv {}", std::to_string(wrk_value_time),
-    //                std::to_string(div_value),
-    //                    std::to_string(commit_wrk_value_time));
-    //            } else {
-    //                LOG("[AddKeyword.Div] skip div(Reason: For division by zero) av {}, divv {}, rv {}",
-    //                    std::to_string(wrk_value_time), std::to_string(div_value),
-    //                    std::to_string(commit_wrk_value_time));
-    //            }
-    //        }
-    //    }
+        void Reset() override { LOG("[Dummy.Reset]");
+        }
+        void Commit() override { LOG("[Dummy.Commit]");
+        }
 
-    //    void Mult(float mult_value) override {
-    //        if (cct_sub == CutinCondType::add) {
-    //            wrk_value_add *= mult_value;
-    //            LOG("[AddKeyword.Mult] av {}, multv {}, rv {}", std::to_string(wrk_value_add),
-    //            std::to_string(mult_value),
-    //                std::to_string(commit_wrk_value_add));
-    //        } else {
-    //            wrk_value_time *= mult_value;
-    //            LOG("[AddKeyword.Mult] av {}, multv {}, rv {}", std::to_string(wrk_value_time),
-    //            std::to_string(mult_value),
-    //                std::to_string(commit_wrk_value_time));
-    //        }
-    //    }
+        bool Completed() override {
+            LOG("[Dummy.Completed]");
 
-    //    bool IsEpsilon() override {
-    //        if (cct_sub == CutinCondType::add) {
-    //            return fabsf(wrk_value_add - commit_wrk_value_add) < FLT_EPSILON;
-    //        } else {
-    //            return fabsf(wrk_value_time - commit_wrk_value_time) < FLT_EPSILON;
-    //        }
-    //    }
+            return false;
+        }
+    };
 
-    //    void Reset() override {
-    //        if (cct_sub == CutinCondType::add) {
-    //            commit_wrk_value_add = cutin_lower_value;
-    //            wrk_value_add = cutin_lower_value;
-    //            cool_time_now = false;
-    //            LOG("[AddKeyword.ADD.Reset] av {} cv {}", std::to_string(wrk_value_add),
-    //            std::to_string(commit_wrk_value_add));
-    //        } else {
-    //            commit_wrk_value_time = start_time;
-    //            wrk_value_time = start_time;
-    //            LOG("[AddKeyword.TIME.Reset] av {} cv {}", std::to_string(wrk_value_time),
-    //            std::to_string(commit_wrk_value_time));
-    //        }
-    //    }
-    //    void Commit() override {
-    //        if (cct_sub == CutinCondType::add) {
-    //            commit_wrk_value_add = wrk_value_add;
-    //            LOG("[AddKeyword.ADD.Commit] cv {}, av {}", std::to_string(commit_wrk_value_add),
-    //            std::to_string(wrk_value_add));
-    //        } else {
-    //            commit_wrk_value_time = wrk_value_time;
-    //            LOG("[AddKeyword.TIME.Commit] cv {}, av {}", std::to_string(commit_wrk_value_time),
-    //                std::to_string(wrk_value_time));
-    //        }
-    //    }
-
-    //    bool Completed() override {
-    //        if (cct_sub == CutinCondType::add) {
-    //            if (commit_wrk_value_add >= upper_value) {
-    //                LOG("[AddKeyword.ADD.Completed] cv {}, av {}", std::to_string(commit_wrk_value_add),
-    //                    std::to_string(wrk_value_add));
-    //                return true;
-    //            }
-
-    //            return false;
-    //        } else {
-    //            if (commit_wrk_value_time >= end_time) {
-    //                LOG("[AddKeyword.TIME.Completed] cv {}, av {}", std::to_string(commit_wrk_value_time),
-    //                    std::to_string(end_time));
-    //                return true;
-    //            }
-
-    //            return false;
-    //        }
-
-    //        return false;
-    //    }
-    //};
-
-    // class KMCCCRemoveKeyword : public KMCCustomCondTaskHub {
-    // public:
-    //     std::unique_ptr<KMCCustomCondTaskHub> GetDetail(CutinCondType cct) override {
-    //         if (cct == CutinCondType::remove_keyword) {
-    //             return std::make_unique<KMCCCRemoveKeyword>();
-    //         }
-    //         return nullptr;
-    //     }
-    //     void ToMove() override {
-    //         if (cct_sub == CutinCondType::add) {
-    //             if (coef_relation == "between") {
-    //                 std::uniform_real_distribution<float> get_rand_uni_real(coef_1, coef_2);
-    //                 float r = get_rand_uni_real(mt);
-    //                 wrk_value_add += add_value * r;
-    //             } else if (coef_relation == "coef_1") {
-    //                 wrk_value_add += add_value * coef_1;
-    //             } else if (coef_relation == "coef_2") {
-    //                 wrk_value_add += add_value * coef_2;
-    //             }
-
-    //            LOG("[RemoveKeyword.ADD.ToMove] av {}", std::to_string(wrk_value_add));
-    //        } else {
-    //            // time
-    //            wrk_value_time += add_time_v;
-    //            LOG("[RemoveKeyword.TIME.ToMove] av {}", std::to_string(wrk_value_time));
-    //        }
-    //    }
-    //    void Add(float c_add_value) override {
-    //        if (cct_sub == CutinCondType::add) {
-    //            wrk_value_add += c_add_value;
-    //            LOG("[RemoveKeyword.Add] av {}, addv {}, rv {}", std::to_string(wrk_value_add),
-    //            std::to_string(c_add_value),
-    //                std::to_string(commit_wrk_value_add));
-    //        } else {
-    //            wrk_value_time += c_add_value;
-    //            LOG("[RemoveKeyword.Add] av {}, addv {}, rv {}", std::to_string(wrk_value_time),
-    //            std::to_string(c_add_value),
-    //                std::to_string(commit_wrk_value_time));
-    //        }
-    //    }
-
-    //    void Subtract(float subtract_value) override {
-    //        if (cct_sub == CutinCondType::add) {
-    //            if (subtract_value > 0.0f && wrk_value_add - subtract_value >= 0.0f) {
-    //                wrk_value_add -= subtract_value;
-    //                LOG("[RemoveKeyword.Subtract] av {}, subtractv {}, rv {}", std::to_string(wrk_value_add),
-    //                    std::to_string(subtract_value), std::to_string(commit_wrk_value_add));
-    //            } else if (subtract_value > 0.0f) {
-    //                wrk_value_add = 0.0f;
-    //                LOG("[RemoveKeyword.reset] av {}, subtractv {}, rv {}", std::to_string(wrk_value_add),
-    //                    std::to_string(subtract_value), std::to_string(commit_wrk_value_add));
-    //            }
-    //        } else {
-    //            if (subtract_value > 0.0f && wrk_value_time - subtract_value >= 0.0f) {
-    //                wrk_value_time -= subtract_value;
-    //                LOG("[RemoveKeyword.Subtract] av {}, subtractv {}, rv {}", std::to_string(wrk_value_time),
-    //                    std::to_string(subtract_value), std::to_string(commit_wrk_value_time));
-    //            } else if (subtract_value > 0.0f) {
-    //                wrk_value_time = 0.0f;
-    //                LOG("[RemoveKeyword.Subtract.reset] av {}, subtractv {}, rv {}", std::to_string(wrk_value_time),
-    //                    std::to_string(subtract_value), std::to_string(commit_wrk_value_time));
-    //            }
-    //        }
-    //    }
-
-    //    void Div(float div_value) override {
-    //        if (cct_sub == CutinCondType::add) {
-    //            if (div_value != 0.0f) {
-    //                wrk_value_add /= div_value;
-    //                LOG("[RemoveKeyword.Div] av {}, divv {}, rv {}", std::to_string(wrk_value_add),
-    //                    std::to_string(div_value), std::to_string(commit_wrk_value_add));
-    //            } else {
-    //                LOG("[RemoveKeyword.Div] skip div(Reason: For division by zero) av {}, divv {}, rv {}",
-    //                    std::to_string(wrk_value_add), std::to_string(div_value),
-    //                    std::to_string(commit_wrk_value_add));
-    //            }
-    //        } else {
-    //            if (div_value != 0.0f) {
-    //                wrk_value_time /= div_value;
-    //                LOG("[RemoveKeyword.Div] av {}, divv {}, rv {}", std::to_string(wrk_value_time),
-    //                    std::to_string(div_value), std::to_string(commit_wrk_value_time));
-    //            } else {
-    //                LOG("[RemoveKeyword.Div] skip div(Reason: For division by zero) av {}, divv {}, rv {}",
-    //                    std::to_string(wrk_value_time), std::to_string(div_value),
-    //                    std::to_string(commit_wrk_value_time));
-    //            }
-    //        }
-    //    }
-
-    //    void Mult(float mult_value) override {
-    //        if (cct_sub == CutinCondType::add) {
-    //            wrk_value_add *= mult_value;
-    //            LOG("[RemoveKeyword.Mult] av {}, multv {}, rv {}", std::to_string(wrk_value_add),
-    //                std::to_string(mult_value), std::to_string(commit_wrk_value_add));
-    //        } else {
-    //            wrk_value_time *= mult_value;
-    //            LOG("[RemoveKeyword.Mult] av {}, multv {}, rv {}", std::to_string(wrk_value_time),
-    //                std::to_string(mult_value), std::to_string(commit_wrk_value_time));
-    //        }
-    //    }
-
-    //    bool IsEpsilon() override {
-    //        if (cct_sub == CutinCondType::add) {
-    //            return fabsf(wrk_value_add - commit_wrk_value_add) < FLT_EPSILON;
-    //        } else {
-    //            return fabsf(wrk_value_time - commit_wrk_value_time) < FLT_EPSILON;
-    //        }
-    //    }
-
-    //    void Reset() override {
-    //        if (cct_sub == CutinCondType::add) {
-    //            commit_wrk_value_add = cutin_lower_value;
-    //            wrk_value_add = cutin_lower_value;
-    //            LOG("[RemoveKeyword.ADD.Reset] av {} cv {}", std::to_string(wrk_value_add),
-    //                std::to_string(commit_wrk_value_add));
-    //        } else {
-    //            commit_wrk_value_time = start_time;
-    //            wrk_value_time = start_time;
-    //            LOG("[RemoveKeyword.TIME.Reset] av {} cv {}", std::to_string(wrk_value_time),
-    //                std::to_string(commit_wrk_value_time));
-    //        }
-    //    }
-    //    void Commit() override {
-    //        if (cct_sub == CutinCondType::add) {
-    //            commit_wrk_value_add = wrk_value_add;
-    //            LOG("[RemoveKeyword.ADD.Commit] cv {}, av {}", std::to_string(commit_wrk_value_add),
-    //                std::to_string(wrk_value_add));
-    //        } else {
-    //            commit_wrk_value_time = wrk_value_time;
-    //            LOG("[RemoveKeyword.TIME.Commit] cv {}, av {}", std::to_string(commit_wrk_value_time),
-    //                std::to_string(wrk_value_time));
-    //        }
-    //    }
-
-    //    bool Completed() override {
-    //        if (cct_sub == CutinCondType::add) {
-    //            if (commit_wrk_value_add >= upper_value) {
-    //                LOG("[RemoveKeyword.ADD.Completed] cv {}, av {}", std::to_string(commit_wrk_value_add),
-    //                    std::to_string(wrk_value_add));
-    //                return true;
-    //            }
-
-    //            return false;
-    //        } else {
-    //            if (commit_wrk_value_time >= end_time) {
-    //                LOG("[RemoveKeyword.TIME.Completed] cv {}, av {}", std::to_string(commit_wrk_value_time),
-    //                    std::to_string(end_time));
-    //                return true;
-    //            }
-
-    //            return false;
-    //        }
-
-    //        return false;
-    //    }
-    //};
-
-    // class KMCCustomCondTaskHub : public KMCCCAdd, public KMCCCTime {
-    // public:
-    //     KMCCustomCondTaskHub() {}
-
-    // public:
-    // };
 
     bool GetWorkDetail(CutinCondType cct, std::unique_ptr<KMCCustomCondTaskHub>* hub);
 }

@@ -8,6 +8,13 @@
 SINGLETONBODY(KMCCT::KMCExpression)
 
 namespace KMCCT {
+    struct CaseInsensitiveCompare {
+        bool operator()(const std::string& a, const std::string& b) const {
+            return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(),
+                                                [](char c1, char c2) { return tolower(c1) < tolower(c2); });
+        }
+    };
+
     using json = nlohmann::json;
     using Clock = std::chrono::steady_clock;
     using std::chrono::duration_cast;
@@ -16,6 +23,7 @@ namespace KMCCT {
     using namespace std::literals::chrono_literals;
 
     time_point<Clock> force_exp_st_time;
+    std::map<std::string, KMCRandomData, CaseInsensitiveCompare> aaaakmcCategoryRandMap;
 
     bool BuildMFGValues(STMFGPair& pair, MFG_TYPE type, json items) {
         for (auto ite = items.begin(); ite != items.end(); ite++) {
@@ -359,6 +367,7 @@ namespace KMCCT {
         long long dur = 0;
         // sleep
         if (force_cool_time != 0.0f) {
+            LOG("KMCExpression::ForceExp cool time now {} {} {}", exp_id, cool_time, exp_time);
             end = Clock::now();
             
             milliseconds diff = duration_cast<milliseconds>(end - force_exp_st_time);
@@ -443,7 +452,6 @@ namespace KMCCT {
 
     uint64_t KMCExpression::GetCutInID(std::string aaaakmctype) {
         uint64_t rand = 0;
-
         auto findit = aaaakmcCategoryRandMap.find(aaaakmctype);
         if (findit != aaaakmcCategoryRandMap.end()) {
             auto* randData = &(findit->second);
@@ -501,9 +509,9 @@ namespace KMCCT {
 
                 aaaakmcCategoryRandMap.insert(std::make_pair(value, KMCRandomData(0, h - l, randomValue, h, l, size)));
 
-                // for (int i = 0; i < randomValue.size(); i++) {
-                //     LOG("KMCEventThread::CategoryRandomizer type = {} rand = {}", value, randomValue[i]);
-                // }
+                 for (int i = 0; i < randomValue.size(); i++) {
+                     LOG("KMCEventThread::CategoryRandomizer type = {} rand = {}", value, randomValue[i]);
+                 }
 
             } else {
                 ERROR("Error KMCEventThread::CategoryRandomizer auto word range configs type = {} low = {} high = {}",

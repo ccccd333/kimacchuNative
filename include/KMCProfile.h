@@ -13,6 +13,12 @@ namespace KMCCT {
         void Reset() {
             BefResultModifiedContainer.clear();
             ResultModifiedContainer.clear();
+            update_prifile = false;
+            first_profile_update = false;
+            show_prifile = false;
+            showing_profile = false;
+            interrupt_show_profile = false;
+            switch_disp_profile_flag = false;
         }
 
         std::vector<std::string> GetModifiedContainer();
@@ -43,6 +49,7 @@ namespace KMCCT {
     private:
         // player
         KMCProfil PlayerProfil;
+        std::mutex pr_mtx;
 
         // ModifiedContainer
         std::vector<std::string> ModifiedContainer;
@@ -57,7 +64,7 @@ namespace KMCCT {
         float aaaakmcvolum = 1.0f;
         bool update_prifile = false;
         bool first_profile_update = false;
-        std::atomic<bool> show_prifile = false;
+        bool show_prifile = false;
         bool showing_profile = false;
         bool interrupt_show_profile = false;
         bool switch_disp_profile_flag = false;
