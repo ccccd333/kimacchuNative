@@ -324,13 +324,16 @@ namespace KMCCT {
         
         if (cpd) {
             if (cpd->target.get()) {
+                std::string get_cell_name_tld = "";
+                std::string gn = "";
+
                 for (auto& i : ifs) {
-                    if (i.kmcif == kmc_if::get_cell_name_teleport_linked_door) {
-                        if (GetCellNameTeleportLinkedDoor(i)) {
+                    if (get_cell_name_tld != NOT_FOUND && i.kmcif == kmc_if::get_cell_name_teleport_linked_door) {
+                        if (GetCellNameTeleportLinkedDoor(i, get_cell_name_tld)) {
                             return true;
                         }
-                    } else if (i.kmcif == kmc_if::get_name) {
-                        if (GetName(i)) {
+                    } else if (gn != NOT_FOUND && i.kmcif == kmc_if::get_name) {
+                        if (GetName(i, gn)) {
                             return true;
                         }
                     }
@@ -341,41 +344,47 @@ namespace KMCCT {
         return false;
     }
 
-    bool KMCCCTCrossHair::GetCellNameTeleportLinkedDoor(const KMCPattern& p) {
-        if (auto target = cpd->target.get(); target) {
+    bool KMCCCTCrossHair::GetCellNameTeleportLinkedDoor(const KMCPattern& p, std::string& Obtained) {
+        if (Obtained != "") {
+            return IsMatch(Obtained, p);
+        } else if (auto target = cpd->target.get(); target) {
             if (auto door = target->extraList.GetTeleportLinkedDoor().get(); door) {
                 if (auto gpc = door.get()->GetParentCell(); gpc) {
-                    std::string cell_name = gpc->GetName();
-                    LOG("KMCCCTCrossHair::GetCellNameTeleportLinkedDoor [{}]", cell_name);
-                    if (p.kpm == kmc_pattern_mat::norm) {
-                        return cell_name == p.norm;
-                    } else {
-                        std::smatch sm;
-                        if (std::regex_match(cell_name, sm, p.pattern)) {
-                            return true;
-                        }
-                    }
-
+                    Obtained = gpc->GetName();
+                    LOG("KMCCCTCrossHair::GetCellNameTeleportLinkedDoor [{}]", Obtained);
+                    return IsMatch(Obtained, p);
                 }
             }
         }
+
+        LOG("KMCCCTCrossHair::GetCellNameTeleportLinkedDoor NOT FOUND [{}]", Obtained);
+        Obtained = NOT_FOUND;
+        return false;
+    }
+    bool KMCCCTCrossHair::GetName(const KMCPattern& p, std::string& Obtained) {
+        if (Obtained != "") {
+            return IsMatch(Obtained, p);
+        } else if (auto target = cpd->target.get(); target) {
+            Obtained = target.get()->GetName();
+            LOG("KMCCCTCrossHair::GetName [{}]", Obtained);
+            return IsMatch(Obtained, p);
+        }
+
+        LOG("KMCCCTCrossHair::GetName NOT FOUND [{}]", Obtained);
+        Obtained = NOT_FOUND;
 
         return false;
     }
-    bool KMCCCTCrossHair::GetName(const KMCPattern& p) {
-        if (auto target = cpd->target.get(); target) {
-            std::string name = target.get()->GetName();
-            if (p.kpm == kmc_pattern_mat::norm) {
-                return name == p.norm;
-            } else {
-                std::smatch sm;
-                if (std::regex_match(name, sm, p.pattern)) {
-                    LOG("KMCCCTCrossHair::GetName [{}] [{}]", name, p.work);
-                    return true;
-                }
+
+    bool KMCCCTCrossHair::IsMatch(const std::string& name, const KMCPattern& p) {
+        if (p.kpm == kmc_pattern_mat::norm) {
+            return name == p.norm;
+        } else {
+            std::smatch sm;
+            if (std::regex_match(name, sm, p.pattern)) {
+                return true;
             }
         }
-
         return false;
     }
 

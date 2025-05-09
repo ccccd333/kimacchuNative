@@ -19,6 +19,16 @@ namespace KMCCT {
 
     enum class PushType { cutin, keyword, none };
 
+    struct KMCCCStartArg {
+    public:
+        KMCCCStartArg() {}
+        KMCCCStartArg(time_point<Clock> s) { 
+            start_time = s;
+        }
+
+        time_point<Clock> start_time;
+    };
+
     template <typename TMane>
     class KMCCustomCondWorkerNode {
     public:
@@ -172,7 +182,7 @@ namespace KMCCT {
         ~KMCCutinCondition(){};
         void Setup();
         void Init();
-        int ToMove();
+        int ToMove(const KMCCCStartArg &args);
         KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>* GetTaskResult();
         void Completed(KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>* node);
         bool Contains(std::string project_name);

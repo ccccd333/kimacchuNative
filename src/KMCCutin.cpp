@@ -336,9 +336,6 @@ namespace KMCCT {
                           KMCCT::INTERRUPT_EVENT_COOL_TIME) *
             KMCCT::TIME_SCALE_MS;
 
-            LOG("InterruptCutInEventManager now {} {} {} {}", KMCCT::KMCEventThread::GetSingleton()->GetShutDown(),
-                KMCCT::KMCEventThread::GetSingleton()->GetInitEndFlag(),
-            KMCCT::KMCCutin::GetSingleton()->GetAnimNow(), KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag());
         if (!KMCCT::KMCEventThread::GetSingleton()->GetShutDown() &&
             KMCCT::KMCEventThread::GetSingleton()->GetInitEndFlag() &&
             !KMCCT::KMCCutin::GetSingleton()->GetAnimNow() &&

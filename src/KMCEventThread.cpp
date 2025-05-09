@@ -167,7 +167,7 @@ void KMCCT::CutInConditionPeriodicCall() {
         }
         int result = 0;
         if (!shutdown && isInitEnd && KMCCT::KMCWaitTask::GetSingleton()->GetIsinSceneState() == -3) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::WHILE_WAIT_TIME));
+            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CUT_IN_COND_WHILE_WAIT_TIME));
             continue;
         }
 
@@ -175,13 +175,13 @@ void KMCCT::CutInConditionPeriodicCall() {
             break;
         }
 
-        result = KMCCT::KMCCutinCondition::GetSingleton()->ToMove();
+        result = KMCCT::KMCCutinCondition::GetSingleton()->ToMove(KMCCCStartArg(Clock::now()));
 
         if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
             break;
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::WHILE_WAIT_TIME));
+        std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CUT_IN_COND_WHILE_WAIT_TIME));
 
         if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
             break;
@@ -313,7 +313,10 @@ void KMCCT::LaunchFLExp(STMFGPair &mfg_pair) { executor.submit(TryKMCFLExp, &mfg
 
 namespace KMCCT {
 
-    KMCEventThread::~KMCEventThread() { shutdown = true; }
+    KMCEventThread::~KMCEventThread() { 
+        shutdown = true;
+        forceendanim = true;
+    }
 
     bool KMCEventThread::IsAlreadyInited() {
         {

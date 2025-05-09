@@ -159,21 +159,34 @@ namespace KMCCT {
         // }
     }
 
-    std::vector<std::string> KMCProfile::GetModifiedContainer() { return ModifiedContainer; }
+    std::vector<std::string> KMCProfile::GetModifiedContainer() { 
+        return ModifiedContainer;
+    
+    }
 
     void KMCProfile::SetModifiedContainer(std::vector<std::string> container) {
-        ResultModifiedContainer = std::move(container);
+        {
+            std::lock_guard<std::mutex> lock(pr_mtx);
 
-        if (BefResultModifiedContainer.size() > 0 && BefResultModifiedContainer == ResultModifiedContainer) {
-            return;
+            if (update_prifile) return;
+            update_prifile = true;
+
+            ResultModifiedContainer = std::move(container);
+
+            if (BefResultModifiedContainer.size() > 0 && BefResultModifiedContainer == ResultModifiedContainer) {
+                update_prifile = false;
+                return;
+            }
+            BefResultModifiedContainer = ResultModifiedContainer;
         }
-        BefResultModifiedContainer = ResultModifiedContainer;
+
         KMCCT::wrap_UpdateModifiedContainer(ResultModifiedContainer, StrageUtilEndIndex, ModStartIndex, ModEndIndex,
                                             PlayerProfil);
     }
 
     void KMCProfile::UpdateModifiedContainer(std::vector<std::string> *mod_container, int *SUtilEndIndex,
                                              int *ModStIndex, int *ModEnIndex, KMCProfil *profile) {
+
         int profile_start_index = 0;
         if (*SUtilEndIndex > 0) {
             profile_start_index += *SUtilEndIndex + 1;
@@ -182,15 +195,18 @@ namespace KMCCT {
             profile_start_index = 0;
         }
         if (mod_container->size() <= *ModEnIndex && *ModStIndex != *ModEnIndex) {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                KMCCT::KMCEventThread::GetSingleton()->GetShutDown() ||
+            if (KMCCT::KMCEventThread::GetSingleton()->GetShutDown() ||
                 !KMCCT::KMCEventThread::GetSingleton()->GetProfileInitEnd()) {
+                {
+                    std::lock_guard<std::mutex> lock(pr_mtx);
+                    ResultModifiedContainer.clear();
+                    BefResultModifiedContainer.clear();
+                    update_prifile = false;
+                }
+
                 return;
             }
-            {
-                std::lock_guard<std::mutex> lock(pr_mtx);
-                update_prifile = true;
-            }
+
             try {
                 auto formmap = profile->format_map;
                 std::map<int, KMCUpdateProfileData> formated_map;
@@ -221,20 +237,27 @@ namespace KMCCT {
                 ERROR("UpdateModifiedContainer Error {}", e.what());
             }
         }
+
         {
             std::lock_guard<std::mutex> lock(pr_mtx);
             update_prifile = false;
+            first_profile_update = true;
         }
-        first_profile_update = true;
     }
 
     void KMCProfile::KMCResetProfileContainer() {
         BefResultModifiedContainer.clear();
         ResultModifiedContainer.clear();
+        first_profile_update = false;
+        update_prifile = false;
     }
 
     void KMCProfile::InterruptProfileEventManager() {
-        interrupt_show_profile = true;
+        {
+            std::lock_guard<std::mutex> lock(pr_mtx);
+            interrupt_show_profile = true;
+        }
+       
         static long long event_cool_time =
             KMCFindVector(KMCCT::KMCConfig::GetSingleton()->getISetting(), KMCCT::PROFILE_DELAY_TIME_CONFIG_KEY,
                           KMCCT::INTERRUPT_SHOW_PROFILE_DELAY_TIME) *
@@ -255,16 +278,22 @@ namespace KMCCT {
 
                 bool sh_p = false;
                 bool u_p = false;
+                bool fpu = false;
+
                 {
                     std::lock_guard<std::mutex> lock(pr_mtx);
                     sh_p = showing_profile;
                     u_p = update_prifile;
+                    fpu = first_profile_update;
                 }
 
-                if (!u_p && first_profile_update && !sh_p) {
+                if (!u_p && fpu && !sh_p) {
+                    LOG("Show Profile {} {} {}", u_p, fpu, sh_p);
                     ShowProfile(!switch_disp_profile_flag);
                     switch_disp_profile_flag = !switch_disp_profile_flag;
                     break;
+                } else {
+                    WARN("Profile Stack !!!! {} {} {}", u_p, fpu, sh_p);
                 }
                 // sleep
                 while (true) {
@@ -284,10 +313,21 @@ namespace KMCCT {
                 }
             }
         }
-        interrupt_show_profile = false;
+
+        {
+            std::lock_guard<std::mutex> lock(pr_mtx);
+            interrupt_show_profile = false;
+        }
     }
 
     void KMCProfile::ShowProfile(bool visible) {
+
+        if (KMCCT::KMCEventThread::GetSingleton()->GetShutDown() &&
+            KMCCT::KMCEventThread::GetSingleton()->forceendanim &&
+            !KMCCT::KMCEventThread::GetSingleton()->GetProfileInitEnd()) {
+            return;
+        }
+
         bool show_p = false;
         {
             std::lock_guard<std::mutex> lock(pr_mtx);
@@ -438,16 +478,20 @@ namespace KMCCT {
     }
 
     void KMCProfile::TryShowProfile() {
-        if (!interrupt_show_profile) {
-            KMCCT::KMCEventThread::GetSingleton()->TryShowProfile();
-        }
+        KMCCT::KMCEventThread::GetSingleton()->TryShowProfile();
     }
 
     int KMCProfile::GetStateProfileEvent() {
         bool sh_p = false;
+        bool up = false;
+        bool fpu = false;
+        bool isp = false;
         {
             std::lock_guard<std::mutex> lock(pr_mtx);
             sh_p = showing_profile;
+            up = update_prifile;
+            fpu = first_profile_update;
+            isp = interrupt_show_profile;
         }
 
         if (!KMCCT::KMCEventThread::GetSingleton()->GetInitFirstFlag()) {
@@ -457,13 +501,13 @@ namespace KMCCT {
         } else if (KMCCT::KMCEventThread::GetSingleton()->GetShutDown() ||
                    !KMCCT::KMCEventThread::GetSingleton()->GetProfileInitEnd()) {
             return -3;  // init now
-        } else if (interrupt_show_profile || sh_p) {
+        } else if (isp || sh_p) {
             return -2;  // interrupt now
-        } else if (update_prifile) {
+        } else if (up) {
             return -1;  // profile update now
-        } else if (!first_profile_update) {
+        } else if (!fpu) {
             return 0;
-        }          // else if (!show_prifile) {
+        }               // else if (!show_prifile) {
         return 1;  // profile updated
         //} else {
         //    return 0;

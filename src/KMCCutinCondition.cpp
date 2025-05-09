@@ -19,6 +19,7 @@ namespace KMCCT {
     using std::chrono::time_point;
     using namespace std::literals::chrono_literals;
 
+    KMCCCStartArg s_args;
     std::mutex aaaakmc_main_pushed_pop_mtx_;
     std::mutex aaaakmc_main_update_mtx_;
     using json = nlohmann::json;
@@ -292,8 +293,9 @@ namespace KMCCT {
         }
     }
 
-    int KMCCutinCondition::ToMove() {
+    int KMCCutinCondition::ToMove(const KMCCCStartArg &args) {
         int result = 0;
+        s_args = args;
         if (!KMCCT::KMCEventThread::GetSingleton()->GetInitEndFlag()) {
             return result;
         }
@@ -752,13 +754,26 @@ namespace KMCCT {
     void KMCCustomCondMain::PreCommit() {
         pre_commit_nodes = checked_nodes;
 
-        for (auto &node : checked_nodes) {
+        std::chrono::duration<float> diff = Clock::now() - s_args.start_time;
+        float dur = diff.count();
+        float correction = 0.0f;
+        if (dur > DELAY_THRESHHOLD) {
+            correction = round_n(dur, ROUND_N);
+            LOG("[CORRECTION] [CORRECTION][{}] [DUR][{}]", correction, dur);
+        }
+
+        for (auto &m_node : checked_nodes) {
             if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
                 KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
                 return;
             }
 
-            for (auto &sbt : node.second->node_relations) {
+            auto node = m_node.second;
+            // 補正
+            LOG("[CORRECTION] TARGET_NODE ===> [{}] * [CORRECTION][{}] [DURATION][{}] ", m_node.first, correction, dur);
+            node->task_hub->Correction(correction);
+
+            for (auto &sbt : node->node_relations) {
                 if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
                     KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
                     return;
@@ -767,12 +782,12 @@ namespace KMCCT {
                 if (sbt.relations.timing == 1) {
                     // timing = 1は状態が続く限り 関係するノードの処理を行う
                     if (!sbt.rnode->task_hub->Completed()) {
-                        LOG("[{}] CALC ==> [{}]", node.first, sbt.rnode->project_name);
+                        LOG("[{}] CALC ==> [{}]", m_node.first, sbt.rnode->project_name);
                         if (sbt.relations.calc) {
-                            sbt.rnode->task_hub->Add(sbt.relations.add_value);
-                            sbt.rnode->task_hub->Subtract(sbt.relations.subtract_value);
-                            sbt.rnode->task_hub->Div(sbt.relations.div_value);
-                            sbt.rnode->task_hub->Mult(sbt.relations.mult_value);
+                            sbt.rnode->task_hub->Add(sbt.relations.add_value, correction);
+                            sbt.rnode->task_hub->Subtract(sbt.relations.subtract_value, correction);
+                            sbt.rnode->task_hub->Div(sbt.relations.div_value, correction);
+                            sbt.rnode->task_hub->Mult(sbt.relations.mult_value, correction);
 
                             if (!sbt.rnode->task_hub->IsEpsilon()) {
                                 std::string pushk = sbt.rnode->post_commit_push_key;
@@ -799,13 +814,14 @@ namespace KMCCT {
 
             if (node->task_hub->IsEpsilon()) continue;
 
+            LOG("[COMMIT1] [{}]", node->post_commit_push_key);
+            node->task_hub->Commit();
+
             if (node->task_hub->CompPercent() > percent) {
                 // カットインするものがどれくらいの進捗率となっているか
                 percent = node->task_hub->CompPercent();
             }
 
-            LOG("[COMMIT1] [{}]", node->post_commit_push_key);
-            node->task_hub->Commit();
             if (node->task_hub->Completed()) {
                 pre_completed_nodes.emplace(mpushed_key, node);
 
@@ -833,6 +849,15 @@ namespace KMCCT {
 
     void KMCCustomCondMain::Commit() {
         completed_nodes = pre_completed_nodes;
+
+        std::chrono::duration<float> diff = Clock::now() - s_args.start_time;
+        float dur = diff.count();
+        float correction = 0.0f;
+        if (dur > DELAY_THRESHHOLD) {
+            correction = round_n(dur, ROUND_N);
+            LOG("[correction] correction {} dur {}", correction, dur);
+        }
+
         for (auto &m_node : pre_completed_nodes) {
             if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
                 KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
@@ -853,10 +878,10 @@ namespace KMCCT {
                     if (!sbt.rnode->task_hub->Completed()) {
                         LOG("[{}] CALC ==> [{}]", mpushed_key, sbt.rnode->project_name);
                         if (sbt.relations.calc) {
-                            sbt.rnode->task_hub->Add(sbt.relations.add_value);
-                            sbt.rnode->task_hub->Subtract(sbt.relations.subtract_value);
-                            sbt.rnode->task_hub->Div(sbt.relations.div_value);
-                            sbt.rnode->task_hub->Mult(sbt.relations.mult_value);
+                            sbt.rnode->task_hub->Add(sbt.relations.add_value, correction);
+                            sbt.rnode->task_hub->Subtract(sbt.relations.subtract_value, correction);
+                            sbt.rnode->task_hub->Div(sbt.relations.div_value, correction);
+                            sbt.rnode->task_hub->Mult(sbt.relations.mult_value, correction);
 
                             if (!sbt.rnode->task_hub->IsEpsilon()) {
                                 std::string pushk = sbt.rnode->post_commit_push_key;

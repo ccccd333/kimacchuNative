@@ -216,6 +216,8 @@ namespace KMCCT {
         const std::string GET_CELL_NAME_TELEPORT_LINKED_DOOR = "GetCellNameTeleportLinkedDoor";
         const std::string GET_NAME = "GetName";
 
+        const std::string NOT_FOUND = "<<<NOT FOUND>>>";
+
         std::set<std::string> tags = {"GetCellNameTeleportLinkedDoor", "GetName"};
 
         enum class kmc_pattern_mat {
@@ -254,8 +256,9 @@ namespace KMCCT {
         }
 
     private:
-        bool GetCellNameTeleportLinkedDoor(const KMCPattern& p);
-        bool GetName(const KMCPattern& p);
+        bool GetCellNameTeleportLinkedDoor(const KMCPattern& p, std::string& Obtained);
+        bool GetName(const KMCPattern& p, std::string& Obtained);
+        bool IsMatch(const std::string& name, const KMCPattern& p);
 
         KMCCCheckSource o_source;
         std::vector<KMCPattern> ifs;

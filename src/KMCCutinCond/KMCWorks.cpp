@@ -86,7 +86,7 @@ namespace KMCCT {
 
         {
             std::lock_guard<std::mutex> lock(mtx);
-            wrk_value_add += amount;
+            wrk_value_add = amount;
             amount = 0.0f;
             LOG("[Amount.ToMove] av {}", std::to_string(wrk_value_add));
         }

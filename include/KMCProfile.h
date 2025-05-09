@@ -11,10 +11,9 @@ namespace KMCCT {
         void Init();
         void InitProfile(std::string skyroot, std::vector<float> *floatArray);
         void Reset() {
-            BefResultModifiedContainer.clear();
-            ResultModifiedContainer.clear();
-            update_prifile = false;
-            first_profile_update = false;
+            //BefResultModifiedContainer.clear();
+            //ResultModifiedContainer.clear();
+            
             show_prifile = false;
             showing_profile = false;
             interrupt_show_profile = false;
