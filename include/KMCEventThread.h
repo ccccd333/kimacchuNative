@@ -91,7 +91,6 @@ namespace KMCCT {
                          std::vector<std::pair<uint64_t, int>> *loadedText);
 
         void Reset();
-        bool GetShutDown();
         bool GetProfileInitEnd();
         bool GetInitFirstFlag();
         bool GetEnableProfileFlag();

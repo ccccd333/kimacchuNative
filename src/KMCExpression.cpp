@@ -173,8 +173,7 @@ namespace KMCCT {
 
                     int loop_count = 1;
                     while (end) {
-                        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                             return;
                         }
 
@@ -193,8 +192,7 @@ namespace KMCCT {
             }
         }
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
 
@@ -203,8 +201,7 @@ namespace KMCCT {
 
         KMCCT::KMCTimer(mfg->time * KMCCT::WHILE_WAIT_TIME);
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
 
@@ -217,8 +214,7 @@ namespace KMCCT {
 
         if (!end) {
             while (!end) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                    KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     return;
                 }
 
@@ -231,8 +227,7 @@ namespace KMCCT {
             }
         }
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
 
@@ -261,8 +256,7 @@ namespace KMCCT {
                     LOG("KMCExpression Follower(Player) == Player Conflict");
                     int loop_count = 1;
                     while (end) {
-                        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                             return;
                         }
 
@@ -282,8 +276,7 @@ namespace KMCCT {
             }
         }
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
 
@@ -292,8 +285,7 @@ namespace KMCCT {
 
         KMCCT::KMCTimer(mfg->time * KMCCT::WHILE_WAIT_TIME);
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
 
@@ -306,8 +298,7 @@ namespace KMCCT {
 
         if (!end) {
             while (!end) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                    KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     return;
                 }
 
@@ -320,8 +311,7 @@ namespace KMCCT {
             }
         }
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
 

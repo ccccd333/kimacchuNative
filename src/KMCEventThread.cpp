@@ -21,7 +21,6 @@ SINGLETONBODY(KMCCT::KMCEventThread)
 
 // thread poolの管理場所、他のモジュールはスレッドを起動する際にwrapメソッドでアクセスする
 
-bool shutdown = false;
 std::string aaaakmcroot = "";
 float aaaakmcvolum = 0.5f;
 long long aaaakmcAnimtime = 4;
@@ -77,7 +76,7 @@ void KMCCT::KMCTimer(long long limit) {
     long long dur = 0;
     // sleep
     while (true) {
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             break;
         }
         end = Clock::now();
@@ -97,7 +96,7 @@ void KMCCT::KMCTimerWithWaitTask(long long limit) {
     long long dur = 0;
     // sleep
     while (true) {
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             break;
         }
         end = Clock::now();
@@ -120,17 +119,17 @@ void KMCCT::KMCTimerWithWaitTask(long long limit) {
 void KMCCT::CutInPeriodicCall() {
     
     while (true) {
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             break;
         }
         std::string cutin_name = "";
         STCutinSetting cutin_setting;
-        if (!shutdown && isInitEnd && KMCCT::KMCWaitTask::GetSingleton()->KMCCheckWait()) {
+        if (isInitEnd && KMCCT::KMCWaitTask::GetSingleton()->KMCCheckWait()) {
             // std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::WHILE_WAIT_TIME));
             continue;
         }
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             break;
         }
         // auto func_arg = RE::MakeFunctionArguments();
@@ -140,20 +139,20 @@ void KMCCT::CutInPeriodicCall() {
         cutin_setting.anim_time = aaaakmcAnimtime;
         cutin_setting.volume = aaaakmcvolum;
 
-        if (!shutdown && isInitEnd && !KMCCT::KMCCutin::GetSingleton()->GetAnimNow()) {
+        if (isInitEnd && !KMCCT::KMCCutin::GetSingleton()->GetAnimNow()) {
             KMCCutinValues cutin_values =
                 KMCCutinValues(cutin_name, cutin_setting.time, cutin_setting.anim_time, cutin_setting.volume);
 
             KMCCT::KMCCutin::GetSingleton()->CondCutIn(cutin_values);
         }
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             break;
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::WHILE_WAIT_TIME / 2));
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             break;
         }
     }
@@ -162,28 +161,28 @@ void KMCCT::CutInPeriodicCall() {
 void KMCCT::CutInConditionPeriodicCall() {
     while (true) {
         LOG("[CutInConditionPeriodicCall]")
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             break;
         }
         int result = 0;
-        if (!shutdown && isInitEnd && KMCCT::KMCWaitTask::GetSingleton()->GetIsinSceneState() == -3) {
+        if (isInitEnd && KMCCT::KMCWaitTask::GetSingleton()->GetIsinSceneState() == -3) {
             std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CUT_IN_COND_WHILE_WAIT_TIME));
             continue;
         }
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             break;
         }
 
         result = KMCCT::KMCCutinCondition::GetSingleton()->ToMove(KMCCCStartArg(Clock::now()));
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             break;
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CUT_IN_COND_WHILE_WAIT_TIME));
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             break;
         }
     }
@@ -191,11 +190,11 @@ void KMCCT::CutInConditionPeriodicCall() {
 
 void KMCCT::ProfilePeriodicCall() {
     while (true) {
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             break;
         }
 
-        if (!shutdown && isProfileInitEnd) {
+        if (isProfileInitEnd) {
             if (!KMCCT::KMCProfile::GetSingleton()->Get_update_prifile() &&
                 KMCCT::KMCProfile::GetSingleton()->Get_show_prifile() &&
                 !KMCCT::KMCProfile::GetSingleton()->Get_showing_profile() &&
@@ -207,13 +206,13 @@ void KMCCT::ProfilePeriodicCall() {
             }
         }
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             break;
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::INSPECTION_LOOP_MS));
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             break;
         }
     }
@@ -249,14 +248,14 @@ void KMCCT::InitMain(std::vector<float> *floatArray) {
     if (enable_profile) {
         KMCCT::KMCProfile::GetSingleton()->InitProfile(aaaakmcroot, floatArray);
         isProfileInitEnd = true;
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
     }
 
     if (enable_cutin) {
         KMCCT::KMCWaitTask::GetSingleton()->InitWaitTask(aaaakmcroot, floatArray);
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
 
@@ -314,7 +313,6 @@ void KMCCT::LaunchFLExp(STMFGPair &mfg_pair) { executor.submit(TryKMCFLExp, &mfg
 namespace KMCCT {
 
     KMCEventThread::~KMCEventThread() { 
-        shutdown = true;
         forceendanim = true;
     }
 
@@ -402,7 +400,7 @@ namespace KMCCT {
     }
 
     void KMCEventThread::CutInCreate(std::vector<std::string> variableArray) {
-        if (!shutdown && isInitEnd && !KMCCT::KMCCutin::GetSingleton()->GetAnimNow() &&
+        if (isInitEnd && !KMCCT::KMCCutin::GetSingleton()->GetAnimNow() &&
             !KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag()) {
             // if (cutinArg.size() != variableArray.size()) {
             //     cutinArg.resize(variableArray.size());
@@ -431,7 +429,6 @@ namespace KMCCT {
         KMCCT::KMCExpression::GetSingleton()->Reset();
     }
 
-    bool KMCEventThread::GetShutDown() { return shutdown; }
     bool KMCEventThread::GetProfileInitEnd() { return isProfileInitEnd; }
     bool KMCEventThread::GetInitFirstFlag() { return init_first; }
     bool KMCEventThread::GetEnableProfileFlag() { return enable_profile; }

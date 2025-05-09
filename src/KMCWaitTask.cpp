@@ -149,8 +149,7 @@ namespace KMCCT {
 
         aaaaWaitTextWidget = rwid;
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
         auto namep = KMCCT::KMCConfig::GetSingleton()->getINamePlate();
@@ -240,8 +239,7 @@ namespace KMCCT {
         if (suspensionRequest) {
             for (auto [key, value] : AnimWaitWidget) {
                 value(aaaaWaitTextWidget);
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                    KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     break;
                 }
             }

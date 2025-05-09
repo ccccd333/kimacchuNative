@@ -92,8 +92,7 @@ namespace KMCCT {
 
         KMCCT::KMCTimer(ocd->time * KMCCT::WHILE_WAIT_TIME);
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
 

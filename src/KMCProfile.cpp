@@ -94,8 +94,7 @@ namespace KMCCT {
             }
         }
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
 
@@ -114,8 +113,7 @@ namespace KMCCT {
                 int tid = IWW::MainFunctions::GetSingleton()->LoadText(aaaakmcroot, text, tid_form->font,
                                                                        tid_form->font_size, 10000, 10000, false);
                 int rtid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitLoadNamePlate(tid);
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                    KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     return;
                 }
                 tid_form->id = rtid;
@@ -195,8 +193,7 @@ namespace KMCCT {
             profile_start_index = 0;
         }
         if (mod_container->size() <= *ModEnIndex && *ModStIndex != *ModEnIndex) {
-            if (KMCCT::KMCEventThread::GetSingleton()->GetShutDown() ||
-                !KMCCT::KMCEventThread::GetSingleton()->GetProfileInitEnd()) {
+            if (!KMCCT::KMCEventThread::GetSingleton()->GetProfileInitEnd()) {
                 {
                     std::lock_guard<std::mutex> lock(pr_mtx);
                     ResultModifiedContainer.clear();
@@ -264,9 +261,7 @@ namespace KMCCT {
             (float)KMCCT::TIME_SCALE_MS;
         static int polling_count = KMCFindVector(KMCCT::KMCConfig::GetSingleton()->getISetting(),
                                                  KMCCT::PROFILE_POLLING_COUNT_CONFIG_KEY, KMCCT::PROFILE_POLLING_COUNT);
-        if (!KMCCT::KMCEventThread::GetSingleton()->GetShutDown() &&
-            !KMCCT::KMCEventThread::GetSingleton()->forceendanim &&
-            KMCCT::KMCEventThread::GetSingleton()->GetProfileInitEnd()) {
+        if (!KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             for (int i = 0; i < polling_count; i++) {
                 time_point<Clock> start = Clock::now();
                 time_point<Clock> end;
@@ -297,8 +292,7 @@ namespace KMCCT {
                 }
                 // sleep
                 while (true) {
-                    if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                        KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                    if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                         return;
                     }
 
@@ -322,8 +316,7 @@ namespace KMCCT {
 
     void KMCProfile::ShowProfile(bool visible) {
 
-        if (KMCCT::KMCEventThread::GetSingleton()->GetShutDown() &&
-            KMCCT::KMCEventThread::GetSingleton()->forceendanim &&
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim &&
             !KMCCT::KMCEventThread::GetSingleton()->GetProfileInitEnd()) {
             return;
         }
@@ -357,8 +350,7 @@ namespace KMCCT {
 
             // visible
             for (auto &value : PlayerProfil.wids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                    KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     return;
                 }
 
@@ -370,8 +362,7 @@ namespace KMCCT {
             }
 
             for (auto &[key, value] : PlayerProfil.tids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                    KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     return;
                 }
 
@@ -384,8 +375,7 @@ namespace KMCCT {
 
             // disp anim
             for (auto &value : PlayerProfil.wids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                    KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     return;
                 }
 
@@ -397,8 +387,7 @@ namespace KMCCT {
             }
 
             for (auto &[key, value] : PlayerProfil.tids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                    KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     return;
                 }
 
@@ -416,8 +405,7 @@ namespace KMCCT {
 
             // invisible anim
             for (auto &value : PlayerProfil.wids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                    KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     return;
                 }
 
@@ -428,8 +416,7 @@ namespace KMCCT {
                 }
             }
             for (auto &[key, value] : PlayerProfil.tids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                    KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     return;
                 }
 
@@ -445,8 +432,7 @@ namespace KMCCT {
 
             // invisible
             for (auto &value : PlayerProfil.wids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                    KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     return;
                 }
 
@@ -456,8 +442,7 @@ namespace KMCCT {
             }
 
             for (auto &[key, value] : PlayerProfil.tids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                    KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     return;
                 }
 
@@ -498,7 +483,7 @@ namespace KMCCT {
             return -4;  // not work iwant widget ng
         } else if (!KMCCT::KMCEventThread::GetSingleton()->GetEnableProfileFlag()) {
             return -5;  // profile disable
-        } else if (KMCCT::KMCEventThread::GetSingleton()->GetShutDown() ||
+        } else if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
                    !KMCCT::KMCEventThread::GetSingleton()->GetProfileInitEnd()) {
             return -3;  // init now
         } else if (isp || sh_p) {

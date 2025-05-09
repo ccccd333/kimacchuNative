@@ -293,7 +293,7 @@ namespace KMCCT {
         CategoryRandomizer();
 
         InitNamePlate();
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
 
@@ -305,7 +305,7 @@ namespace KMCCT {
                  &LoadedText, &LoadedTIDsConfigs, &LoadedWIDsConfigs,
                  std::stoi(aaaaPlayerTextX), std::stoi(aaaaPlayerTextY), std::stoi(aaaaPlayerWidgetX),
                  std::stoi(aaaaPlayerWidgetY), &KMCCT::PLAYER_WORD_PATH);
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
 
@@ -323,7 +323,7 @@ namespace KMCCT {
             InitLoop(fanimationRange, fautoWordWF, fAutoWord, &lw, &lt, &FLoadedTIDsConfigs, &FLoadedWIDsConfigs,
                      std::stoi(aaaaFollowerTextX), std::stoi(aaaaFollowerTextY), std::stoi(aaaaFollowerWidgetX),
                      std::stoi(aaaaFollowerWidgetY), &fwp);
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return;
             }
             FLoadedWT.push_back(std::make_pair(std::to_string(i + 1), KMCFLoadedWidget(lw, lt)));
@@ -336,7 +336,7 @@ namespace KMCCT {
                           KMCCT::INTERRUPT_EVENT_COOL_TIME) *
             KMCCT::TIME_SCALE_MS;
 
-        if (!KMCCT::KMCEventThread::GetSingleton()->GetShutDown() &&
+        if (!KMCCT::KMCEventThread::GetSingleton()->forceendanim &&
             KMCCT::KMCEventThread::GetSingleton()->GetInitEndFlag() &&
             !KMCCT::KMCCutin::GetSingleton()->GetAnimNow() &&
             !KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag()) {
@@ -367,15 +367,13 @@ namespace KMCCT {
         std::vector<std::pair<uint64_t, KMCLoadedWidgetData>>** loadedWedget) {
         std::string result = IWW::MainFunctions::GetSingleton()->GetOutput(*wid, "-1");
         while (result == "W8") {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return -1;
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
             result = IWW::MainFunctions::GetSingleton()->GetOutput(*wid, "-1");
         }
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return -1;
         }
         int loadedwid = std::stoi(result);
@@ -391,8 +389,7 @@ namespace KMCCT {
         std::vector<std::pair<uint64_t, KMCLoadedWidgetData>>** loadedWedget) {
         std::string result = IWW::MainFunctions::GetSingleton()->GetOutput(*wid, "-1");
         while (result == "W8") {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return -1;
             }
 
@@ -400,8 +397,7 @@ namespace KMCCT {
             result = IWW::MainFunctions::GetSingleton()->GetOutput(*wid, "-1");
         }
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return -1;
         }
 
@@ -421,15 +417,13 @@ namespace KMCCT {
         std::vector<std::pair<uint64_t, int>>** loadedText) {
         std::string result = IWW::MainFunctions::GetSingleton()->GetOutput(*wid, "-1");
         while (result == "W8") {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return -1;
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
             result = IWW::MainFunctions::GetSingleton()->GetOutput(*wid, "-1");
         }
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return -1;
         }
 
@@ -446,15 +440,13 @@ namespace KMCCT {
     int KMCCutin::WaitLoadNamePlate(int* wid) {
         std::string result = IWW::MainFunctions::GetSingleton()->GetOutput(*wid, "-1");
         while (result == "W8") {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-                KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return -1;
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
             result = IWW::MainFunctions::GetSingleton()->GetOutput(*wid, "-1");
         }
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
-            KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return -1;
         }
         int loadedwid = std::stoi(result);
@@ -798,7 +790,7 @@ namespace KMCCT {
             WARN("File path not found. If not intended, no problem. {}", filename);
         }
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
 
@@ -808,7 +800,7 @@ namespace KMCCT {
         int tid = IWW::MainFunctions::GetSingleton()->LoadText(ct_aaaakmcroot, pn, pnpsetting.font, pnpsetting.fontsize,
                                                                10000, 10000, false);
         int rtid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitLoadNamePlate(tid);
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
 
@@ -877,14 +869,14 @@ namespace KMCCT {
                 WARN("File path not found. If not intended, no problem. {}", filename);
             }
 
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return;
             }
 
             int ftid = IWW::MainFunctions::GetSingleton()->LoadText(ct_aaaakmcroot, fname, fnpsetting.font,
                                                                     fnpsetting.fontsize, 10000, 10000, false);
             int rftid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitLoadNamePlate(ftid);
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return;
             }
 
@@ -980,7 +972,7 @@ namespace KMCCT {
                             LOG("filename: {} root: {} category: {}", filename, ct_aaaakmcroot, k1);
                             wid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitMultLoad(wid, k, i,
                                                                                            loadedWedget);
-                            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                                 return;
                             }
 
@@ -1037,7 +1029,7 @@ namespace KMCCT {
                             IWW::MainFunctions::GetSingleton()->LoadWidget(ct_aaaakmcroot, filename, 10000, 10000, false);
 
                         wid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitLoad(wid, k, loadedWedget);
-                        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                             return;
                         }
                         IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, wid, wx + offset_wx);
@@ -1087,7 +1079,7 @@ namespace KMCCT {
                                                                        false);
 
                 wid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitLoadText(wid, k, loadedText);
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     return;
                 }
                 IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, wid, tx + offset_tx);
@@ -1238,7 +1230,7 @@ namespace KMCCT {
 
         for (auto [key, value] : *animmap) {
             value.func(&st, value.playerorfollower);
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return;
             }
         }
@@ -1263,7 +1255,7 @@ namespace KMCCT {
 
         for (auto [key, value] : *animmap) {
             value.func(&st, value.playerorfollower);
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return;
             }
         }
@@ -1281,13 +1273,13 @@ namespace KMCCT {
         std::vector<int>::iterator anim;
 
         while (true) {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return;
             }
 
             if (isloop == true) {
                 for (anim = it->second.animWedget.begin(); anim != it->second.animWedget.end(); ++anim) {
-                    if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                    if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                         return;
                     }
                     // int wid = *anim;
@@ -1330,13 +1322,13 @@ namespace KMCCT {
 
         std::string nrecord = record;
         while (true) {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return;
             }
 
             if (isloop == true) {
                 for (anim = it->second.animWedget.begin(); anim != it->second.animWedget.end(); ++anim) {
-                    if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+                    if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                         return;
                     }
                     // int wid = *anim;
@@ -1387,7 +1379,7 @@ namespace KMCCT {
 
         std::string nrecord = record;
         while (true) {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || KMCCT::KMCEventThread::GetSingleton()->GetShutDown()) {
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return;
             }
 
