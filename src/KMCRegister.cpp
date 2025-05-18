@@ -9,50 +9,55 @@
 #include "KMCCutinCondition.h"
 #include "KMCGameEventListener.h"
 #include "KMCExpression.h"
-#include "KMCVMTHook.h"
 
 #include <IWWPapyrus.h>
 
 SINGLETONBODY(KMCCT::KMCRegister)
 
 namespace KMCCT {
-    //struct root_interface {
-    //    enum {
-    //        version = 1,
-    //    };
 
-    //    uint32_t current_version;
+	//std::string GetJContainersPluginName() {
+ //       auto patchVersion = REL::Module::get().version().patch();
 
-    //    const void *(*_query_interface)(uint32_t id);
+ //       std::string pluginName{"JContainers64"};
+ //       if (REL::Module::IsVR()) {
+ //           pluginName = "JContainersVR";
+ //       } else if (patchVersion == 659 || patchVersion == 1179) {
+ //           pluginName = "JContainersGOG";
+ //       }
 
-    //    template <class Intrfc>
-    //    const Intrfc *query_interface() const {
-    //        auto intr = (const Intrfc *)_query_interface(Intrfc::type_id);
-    //        return intr->current_version == Intrfc::version ? intr : nullptr;
-    //    }
-
-    //    static const root_interface *from_void(void *root) {
-    //        return ((root_interface *)root)->current_version == version ? (root_interface *)root : nullptr;
-    //    }
-    //};
+ //       return pluginName;
+ //   }
 
     void KMCCT::OnMessageReceived(SKSE::MessagingInterface::Message* a_msg) {
         switch (a_msg->type) {
-            case SKSE::MessagingInterface::kPostLoad:
+            case SKSE::MessagingInterface::kPostLoad: 
+                //std::string pluginName = GetJContainersPluginName();
+          
+
+                //SKSE::GetMessagingInterface()->RegisterListener(
+                //    pluginName.c_str(), [](SKSE::MessagingInterface::Message* a_msg) {
+                //        LOG("a_msg={}, msgtype={}", (void*)a_msg,
+                //                     a_msg ? a_msg->type : -1);
+                //        if (a_msg && a_msg->type == KMCCT::message_root_interface) {
+                //            const root_interface* root = root_interface::from_void(a_msg->data);
+                //            LOG("root_interface={}", (void*)root);
+                //            if (root) {
+                //                KMCCT::JCWrapper::GetSingleton()->PreInit(root);
+                //            }
+                //        }
+                //    });
+                //}
+
                 IWW::Config::GetSingleton()->Setup();
                 KMCCT::KMCConfig::GetSingleton()->Setup();
                 KMCCT::KMCCutinCondition::GetSingleton()->Setup();
                 KMCCT::KMCExpression::GetSingleton()->Setup();
-            	//SKSE::GetMessagingInterface()->RegisterListener("SlaveTatsNG", [](SKSE::MessagingInterface::Message* a_msg) {
-             //       LOG("a_msg={}, msgtype={}, message_root_interface={}", (void*)a_msg, a_msg ? a_msg->type : -1, 1);
-             //       if (a_msg && a_msg->type == 1) {
-             //           const root_interface* root = root_interface::from_void(a_msg->data);
-             //           LOG("root_interface={}", (void*)root);
-             //       }
-             //   });
 
                 break;
             case SKSE::MessagingInterface::kDataLoaded:
+                //KMCCT::JCWrapper::GetSingleton()->Init();
+
                 KMCCT::KMCStateManager::GetSingleton()->Register();
 
                 KMCCT::KMCConfig::GetSingleton()->Init();

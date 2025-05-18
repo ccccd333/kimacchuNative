@@ -101,13 +101,13 @@ namespace KMCCT {
             auto sp = KMCSplit(v_value, '/');
             if (!(sp.at(0) == KMCCCMainCategory::PLAYER || sp.at(0) == KMCCCMainCategory::LOCATION ||
                   sp.at(0) == KMCCCMainCategory::NOTHING || sp.at(0) == KMCCCMainCategory::TEMP_KEYWORD ||
-                  sp.at(0) == KMCCCMainCategory::CROSS_HAIR)) {
+                  sp.at(0) == KMCCCMainCategory::CROSS_HAIR || sp.at(0) == KMCCCMainCategory::FORMULA)) {
                 wt = "Something is wrong with what you have designated as the main category. [now] " + sp.at(0);
                 return false;
             }
 
             if (!(sp.at(0) == KMCCCMainCategory::NOTHING) && !(sp.at(0) == KMCCCMainCategory::TEMP_KEYWORD) &&
-                !(sp.at(0) == KMCCCMainCategory::CROSS_HAIR)) {
+                !(sp.at(0) == KMCCCMainCategory::CROSS_HAIR) && !(sp.at(0) == KMCCCMainCategory::FORMULA)) {
                 if (!(sp.at(1) == KMCCCSubCategory::MOVE || sp.at(1) == KMCCCSubCategory::COMBAT ||
                       sp.at(1) == KMCCCSubCategory::KEYWORD || sp.at(1) == KMCCCSubCategory::RUNNING ||
                       sp.at(1) == KMCCCSubCategory::IDLE || sp.at(1) == KMCCCSubCategory::KILL ||

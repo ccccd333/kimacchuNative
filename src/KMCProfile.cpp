@@ -80,7 +80,9 @@ namespace KMCCT {
                     int wid =
                         IWW::MainFunctions::GetSingleton()->LoadWidget(aaaakmcroot, filename, 10000, 10000, false);
                     rwid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitLoadNamePlate(wid);
-
+                    if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                        return;
+                    }
                     values.id = rwid;
                     if (rwid > 0) {
                         IWW::MainFunctions::GetSingleton()->SetPosX(aaaakmcroot, rwid, values.defx);
@@ -243,10 +245,13 @@ namespace KMCCT {
     }
 
     void KMCProfile::KMCResetProfileContainer() {
-        BefResultModifiedContainer.clear();
-        ResultModifiedContainer.clear();
-        first_profile_update = false;
-        update_prifile = false;
+        {
+            std::lock_guard<std::mutex> lock(pr_mtx);
+            BefResultModifiedContainer.clear();
+            ResultModifiedContainer.clear();
+            first_profile_update = false;
+            update_prifile = false;
+        }
     }
 
     void KMCProfile::InterruptProfileEventManager() {

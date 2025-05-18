@@ -19,8 +19,9 @@ namespace KMCCT {
     KMCCCTCrossHair ctch;
     KMCCCTBodySlot ctbs;
     KMCCCTMagicEffectKeyword ctmek;
+    KMCCCTFormula ctform;
     std::vector<KMCCustomCondCheckHub*> Tasks = {&nothi, &pm, &pc,    &pr,   &pid,  &psn,  &pk,
-                                                 &lk,    &pkill, &tkey, &ctch, &ctbs, &ctmek};
+                                                 &lk,    &pkill, &tkey, &ctch, &ctbs, &ctmek, &ctform};
 
     bool GetCheckTaskDetail(KMCCCheckSource source, std::unique_ptr<KMCCustomCondCheckHub>* hub) {
         for (auto t : Tasks) {
@@ -466,5 +467,9 @@ namespace KMCCT {
         }
 
         return false;
+    }
+
+    bool KMCCCTFormula::Check(KMCCCheckSource source) { 
+        return source.EvaluateFormula();
     }
 }

@@ -111,7 +111,7 @@ namespace KMCCT {
                             pname);
                     }
 
-                    if (!itr->get()->disable) {
+                    if (!mnger->disable) {
                         for (int i = 0; i < sp_keyword_formid.size(); i++) {
                             auto keyword_tmp = (RE::BGSKeyword *)RE::TESDataHandler::GetSingleton()->LookupForm(
                                 std::stoll(sp_keyword_formid.at(i), NULL, 16), sp_keyword_plugin_name.at(i));
@@ -145,9 +145,26 @@ namespace KMCCT {
                 if (!mnger->disable) {
                     if (source.sub1_category == KMCCCSubCategory::BODY_SLOT) {
                         mnger->source.body_slot_build();
-                    }
+                    } else if (source.main_category == KMCCCMainCategory::FORMULA) {
+                        int andor_c = 0;
+                        for (int formi = 0; formi < mnger->source.formula.size(); formi++) {
+                            auto fm = &mnger->source.formula.at(formi);
+                            if (!fm->Build()) {
+                                mnger->disable = true;
+                                ERROR("The formula definition is incorrect. Please review it.");
+                                break;
+                            }
 
-                    if (source.main_category == KMCCCMainCategory::TEMP_KEYWORD) {
+                            mnger->source.cond_formula[andor_c].emplace_back(fm);
+                            if (fm->and_or == AndOr::isOr) {
+                                LOG("[FROMULA OR] {} EntryNo ==> {}", fm->cond, andor_c);
+                                ++andor_c;
+                            } else {
+                                LOG("[FROMULA AND] {} EntryNo ==> {}", fm->cond, andor_c);
+                            }
+                        }
+
+                    } else if (source.main_category == KMCCCMainCategory::TEMP_KEYWORD) {
                         if (!mnger->source.temp_keyword_has_nhas_build(source.sub1_category)) {
                             mnger->disable = true;
                             ERROR(
@@ -1243,11 +1260,11 @@ namespace KMCCT {
             }
 
             if (node->Check(source)) {
-                bool completed = node->task_hub->Completed();
-                if (!completed) {
-                    LOG("[{}]", node->project_name);
-                    node->task_hub->ToMove();
-                }
+                // bool completed = node->task_hub->Completed();
+                // if (!completed) {
+                LOG("[{}]", node->project_name);
+                node->task_hub->ToMove();
+                //}
 
                 main->checked_nodes.emplace(node->post_commit_push_key, node.get());
             }
@@ -1482,7 +1499,6 @@ namespace KMCCT {
                     if (manager->disable) {
                         ERROR("Level {} key {} Validate check error. force disable", level, now_json_node);
                     } else {
-
                     }
                 } else {
                     ERROR("Level {} key {} It's not in the format.", level, cond_main_key);
@@ -1575,7 +1591,7 @@ namespace KMCCT {
                     } else {
                         ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
-                    
+
                 } else if (k1 == KMCCCJsonTags::KEYWORD) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesKeyword(nested.get(), level, manager);
@@ -1594,6 +1610,29 @@ namespace KMCCT {
                             const std::string text = it->second.data();
                             manager->source.cross_hair_ref_name.emplace_back(text);
                             LOG(" cross_hair_ref_name = {}", text);
+                        }
+                    } else {
+                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    }
+                } else if (k1 == KMCCCJsonTags::FORMULAS) {
+                    // header
+                    path_mapping[project_name].emplace_back(KMCKEPath(key_detail.Build(now_json_node), level));
+                    // mcm
+                    path_mapping[project_name].emplace_back(
+                        KMCKEPath(key_detail.Build<std::string>(level, now_json_node, ""), k1, '/', level, true, true));
+                    if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
+                        for (auto it = nested.get().begin(); it != nested.get().end(); ++it) {
+                            const std::string text = it->second.data();
+                            KMCFormula formula;
+                            formula.cond = text;
+                            manager->source.formula.emplace_back(formula);
+
+                            // if (auto nested_form = it->second.get_child_optional("");
+                            //     nested_form && !nested_form.get().empty()) {
+                            //     SetupJsonNodesFormula(nested_form.get(), level, manager);
+                            // } else {
+                            //     ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                            // }
                         }
                     } else {
                         ERROR("Level {} key {} It's not in the format.", level, now_json_node);
@@ -1625,23 +1664,29 @@ namespace KMCCT {
                 LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::MAIN_CATEGORY) {
-                    manager->source.main_category =
-                        NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
+                    std::string re = NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
+                    std::transform(re.begin(), re.end(), re.begin(), ::tolower);
+                    manager->source.main_category = re;
                 } else if (k1 == KMCCCJsonTags::SUB_CATEGORY_1) {
-                    manager->source.sub1_category =
-                        NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
+                    std::string re = NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
+                    std::transform(re.begin(), re.end(), re.begin(), ::tolower);
+                    manager->source.sub1_category = re;
                 } else if (k1 == KMCCCJsonTags::SUB_CATEGORY_2) {
-                    manager->source.sub2_category =
-                        NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
+                    std::string re = NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
+                    std::transform(re.begin(), re.end(), re.begin(), ::tolower);
+                    manager->source.sub2_category = re;
                 } else if (k1 == KMCCCJsonTags::SUB_CATEGORY_3) {
-                    manager->source.sub3_category =
-                        NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
+                    std::string re = NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
+                    std::transform(re.begin(), re.end(), re.begin(), ::tolower);
+                    manager->source.sub3_category = re;
                 } else if (k1 == KMCCCJsonTags::SUB_CATEGORY_4) {
-                    manager->source.sub4_category =
-                        NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
+                    std::string re = NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
+                    std::transform(re.begin(), re.end(), re.begin(), ::tolower);
+                    manager->source.sub4_category = re;
                 } else if (k1 == KMCCCJsonTags::SUB_CATEGORY_5) {
-                    manager->source.sub5_category =
-                        NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
+                    std::string re = NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
+                    std::transform(re.begin(), re.end(), re.begin(), ::tolower);
+                    manager->source.sub5_category = re;
                 } else {
                     ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
@@ -1653,7 +1698,7 @@ namespace KMCCT {
         now_json_node = bef_now_json_node;
     }
     void KMCCutinCondition::SetupJsonNodesBodySlot(boost::property_tree::ptree pt, int level,
-        KMCCustomCondManager<KMCCustomCondMain>* manager) {
+                                                   KMCCustomCondManager<KMCCustomCondMain> *manager) {
         std::string bef_now_json_node = now_json_node;
         level = level + 1;
         try {
@@ -1669,7 +1714,8 @@ namespace KMCCT {
                 LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::IS_MATCH) {
-                    manager->source.body_slot.match = NodeTreesGetValue<int>(child.second, level, now_json_node, project_name);
+                    manager->source.body_slot.match =
+                        NodeTreesGetValue<int>(child.second, level, now_json_node, project_name);
                 } else if (k1 == KMCCCJsonTags::HEAD) {
                     manager->source.body_slot.Set(
                         k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
@@ -1806,6 +1852,40 @@ namespace KMCCT {
                     ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
+        } catch (std::exception ex) {
+            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+        }
+
+        now_json_node = bef_now_json_node;
+    }
+
+    void KMCCutinCondition::SetupJsonNodesFormula(boost::property_tree::ptree pt, int level,
+                                                  KMCCustomCondManager<KMCCustomCondMain> *manager) {
+        std::string bef_now_json_node = now_json_node;
+        level = level + 1;
+        try {
+            std::string project_name = manager->cond_custom_pro_name;
+            // header
+            // path_mapping[project_name].emplace_back(KMCKEPath(key_detail.Build(now_json_node), level));
+
+            KMCFormula formula;
+            for (auto &child : pt) {
+                now_json_node = bef_now_json_node;
+                std::string k1 = child.first;
+                now_json_node = now_json_node + "." + k1;
+
+                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+
+                if (k1 == KMCCCJsonTags::FORMULAS_NOT_EQUAL) {
+                    formula.not_equal = NodeTreesGetValue<int>(child.second, level) == 1;
+                } else if (k1 == KMCCCJsonTags::FORMULAS_COND) {
+                    formula.cond = NodeTreesGetValue<std::string>(child.second, level);
+                } else {
+                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                }
+            }
+
+            manager->source.formula.emplace_back(formula);
         } catch (std::exception ex) {
             ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
@@ -2244,8 +2324,10 @@ namespace KMCCT {
                 } else if (k1 == KMCCCJsonTags::COEF_2) {
                     (*task)->coef_2 = NodeTreesGetValue<float>(child.second, level, now_json_node, proj_name);
                 } else if (k1 == KMCCCJsonTags::COEF_RELATION) {
-                    (*task)->coef_relation =
-                        NodeTreesGetValue<std::string>(child.second, level, now_json_node, proj_name);
+                    std::string re = NodeTreesGetValue<std::string>(child.second, level, now_json_node, proj_name);
+
+                    std::transform(re.begin(), re.end(), re.begin(), ::tolower);
+                    (*task)->coef_relation = re;
                 } else if (k1 == KMCCCJsonTags::COOL_TIME) {
                     (*task)->cool_time = NodeTreesGetValue<float>(child.second, level, now_json_node, proj_name);
                 } else if (k1 == KMCCCJsonTags::UPPER_VALUE) {
@@ -2586,6 +2668,19 @@ namespace KMCCT {
             //         return default_value;
             //     }
             // }
+        } else {
+            ERROR("Level {} Key {} It's not in the format.", level, now_json_node);
+            throw std::exception();
+        }
+    }
+
+    template <typename T1>
+    T1 KMCCutinCondition::NodeTreesGetValue(boost::property_tree::ptree pt, int level) {
+        if (boost::optional<T1> value = pt.get_value_optional<T1>()) {
+            T1 checked_value = value.get();
+
+            LOG("Level {} Key {} target value {} type {}.", level, now_json_node, checked_value, typeid(T1).name());
+            return checked_value;
         } else {
             ERROR("Level {} Key {} It's not in the format.", level, now_json_node);
             throw std::exception();

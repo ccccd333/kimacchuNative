@@ -472,7 +472,17 @@ namespace KMCCT {
 
             KMCCT::KMCCutinCondition::GetSingleton()->Completed(node);
 
-            return CutIn(val);
+            // qu exp
+            if (KMCCT::KMCExpression::GetSingleton()->OnStandby() < 0) {
+                return 99;
+            }
+
+            int rslt = CutIn(val);
+
+            // pop exp
+            KMCCT::KMCExpression::GetSingleton()->OnFinished();
+
+            return rslt;
         }
 
         return 99;
@@ -524,7 +534,7 @@ namespace KMCCT {
         }
         LOG("CutIn type {}", aaaakmctype);
 
-        uint64_t exp_rand = -1;
+        int exp_rand = -1;
         std::string exp_type = val.aaaakmcExptype;
         LOG("EXP type ===> {}, CUTIN type ===> {}", exp_type, aaaakmctype);
         if (val.overri_fc_exp) {
@@ -554,8 +564,8 @@ namespace KMCCT {
         std::string frecord = "";
 
         // player
-        uint64_t rand = GetCutInID(aaaakmctype);
-        if (rand == 0) {
+        int rand = GetCutInID(aaaakmctype);
+        if (rand < 0) {
             std::lock_guard<std::mutex> lock(animnow_mtx);
             animnow = false;
             return 2;
@@ -1096,8 +1106,8 @@ namespace KMCCT {
         }
     }
 
-    uint64_t KMCCutin::GetCutInID(std::string aaaakmctype) {
-        uint64_t rand = 0;
+    int KMCCutin::GetCutInID(std::string aaaakmctype) {
+        int rand = -1;
 
         auto findit = aaaakmcCategoryRandMap.find(aaaakmctype);
         if (findit != aaaakmcCategoryRandMap.end()) {
@@ -1170,7 +1180,7 @@ namespace KMCCT {
 #pragma endregion
 
     void KMCCutin::DispPFWidget(KMCAnimST st) {
-        uint64_t r = st.rand;
+        int r = st.rand;
         std::string srnd = std::to_string(r);
         std::string timing = KMCCT::ST_AFTER;
 

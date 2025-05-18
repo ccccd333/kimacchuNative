@@ -18,6 +18,7 @@ namespace KMCCT {
     //void CutInPeriodicCall_Cycle();
     //void CutInPeriodicCall_Evaluation();
     void ProfilePeriodicCall();
+    void PapyrusPeriodicCall();
 #pragma region init function
     int WaitLoad(int *wid, uint64_t *rand, std::string *root,
                  std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> **loadedWedget);
@@ -99,7 +100,7 @@ namespace KMCCT {
         std::atomic<bool> forceendanim;
         
     private:
-
+        
         std::vector<float> papyrus_floatArray;
         std::vector<float> papyrus_mcm;
     };

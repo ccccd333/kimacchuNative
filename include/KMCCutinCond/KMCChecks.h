@@ -297,6 +297,20 @@ namespace KMCCT {
         }
     };
 
+    class KMCCCTFormula : public KMCCustomCondCheckHub {
+    public:
+        bool Init() override { return true; }
+        bool Check(KMCCCheckSource source) override;
+        void Reset() override {}
+        std::unique_ptr<KMCCustomCondCheckHub> GetDetail(KMCCCheckSource source) override {
+            if (source.main_category == KMCCCMainCategory::FORMULA) {
+                return std::make_unique<KMCCCTFormula>();
+            }
+
+            return nullptr;
+        }
+    };
+
     bool GetCheckTaskDetail(KMCCCheckSource source, std::unique_ptr<KMCCustomCondCheckHub>* hub);
 
 }

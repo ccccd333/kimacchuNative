@@ -7,6 +7,7 @@ namespace KMCCT {
         static constexpr const char* LOCATION = "location";
         static constexpr const char* TEMP_KEYWORD = "temp_keyword";
         static constexpr const char* CROSS_HAIR = "cross_hair";
+        static constexpr const char* FORMULA = "formula";
         
     };
 

@@ -36,6 +36,7 @@ add_commonlibsse_plugin(${PROJECT_NAME} SOURCES
     src/KMCCutinCond/KMCChecks.cpp
     src/KMCCutinCond/KMCWorks.cpp
     src/KMCCutinCond/KMCSubTask.cpp
+    src/KMCCutinCond/KMCCheckSource.cpp
     src/KMCGameEventListener.cpp
     src/KMCTempKeywordManager.cpp
     src/KMCExpression.cpp

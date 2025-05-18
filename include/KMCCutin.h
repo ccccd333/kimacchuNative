@@ -140,7 +140,7 @@ namespace KMCCT {
                       std::vector<std::pair<int, KMCDispConfigs>> *loadedWIDsConfigs, int offset_tx, int offset_ty,
                       int offset_wx, int offset_wy, const std::string *target);
 
-        uint64_t GetCutInID(std::string aaaakmctype);
+        int GetCutInID(std::string aaaakmctype);
         void CategoryRandomizer();
         void DispPFWidget(KMCAnimST st);
         void DispPWidget(KMCAnimST st);

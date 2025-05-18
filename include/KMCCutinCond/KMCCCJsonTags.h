@@ -58,6 +58,10 @@ namespace KMCCT {
         static constexpr const char* TEMP_KEYWORD_NAME = "temp_keyword_name";
         static constexpr const char* CROSS_HAIR_REF_NAME = "[011][cross_hair_ref_name]";
 
+        static constexpr const char* FORMULAS = "[013][formulas]";
+        static constexpr const char* FORMULAS_NOT_EQUAL = "not_equal";
+        static constexpr const char* FORMULAS_COND = "cond";
+
         static constexpr const char* CONDITION = "[02][condition]";
 
         static constexpr const char* OPERATION = "[03][operation]";
@@ -178,6 +182,8 @@ namespace KMCCT {
         static constexpr const char* T_KEYWORD_PLUGIN_NAME = "3.keyword_plugin_name";
         static constexpr const char* T_TEMP_KEYWORD_NAME = "3.temp_keyword_name";
         static constexpr const char* T_CROSS_HAIR_REF_NAME = "3.[011][cross_hair_ref_name]";
+
+        static constexpr const char* T_FORMULAS = "3.[013][formulas]";
 
         static constexpr const char* F_DISABLE = "5.disable";
         static constexpr const char* F_PRIORITY = "5.priority";

@@ -147,7 +147,64 @@ namespace KMCCT {
         CategoryRandomizer();
     }
 
-    void KMCExpression::PushExpFunc(uint64_t rand, uint64_t frand, bool force, float ex_exp_time) {
+    int KMCExpression::OnStandby() {
+        { 
+            std::lock_guard<std::mutex> lock(wit_mtx);
+            is_wait = true;
+        }
+
+        bool eln = false;
+        {
+            std::lock_guard<std::mutex> lock(mtx);
+            eln = exp_loop_now;
+        }
+
+        bool feln = false;
+        {
+            std::lock_guard<std::mutex> lock(f_mtx);
+            feln = f_exp_loop_now;
+        }
+
+        if (eln || feln) {
+            while (eln || feln) {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                    return -1;
+                }
+
+                LOG("KMCExpression::OnStandby Wait");
+                {
+                    std::lock_guard<std::mutex> lock(mtx);
+                    eln = exp_loop_now;
+                }
+
+                {
+                    std::lock_guard<std::mutex> lock(f_mtx);
+                    feln = f_exp_loop_now;
+                }
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(EXP_WAIT_LOOP));
+            }
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(wit_mtx);
+            // force exp
+            force_cool_time = 0.0f;
+            is_cutin = true;
+        }
+
+        return 0;
+    }
+
+    void KMCExpression::OnFinished() {
+        {
+            std::lock_guard<std::mutex> lock(wit_mtx);
+            is_wait = false;
+            is_cutin = false;
+        }
+    }
+
+    void KMCExpression::PushExpFunc(int rand, int frand, bool force, float ex_exp_time) {
         if (rand == -1) {
             ERROR("KMCExpression::PushExpFunc rand == -1");
         }
@@ -173,6 +230,14 @@ namespace KMCCT {
 
                     int loop_count = 1;
                     while (end) {
+                        if (GetWaitFlag()) {
+                            {
+                                std::lock_guard<std::mutex> lock(mtx);
+                                exp_loop_now = false;
+                            }
+                            return;
+                        }
+
                         if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                             return;
                         }
@@ -192,6 +257,14 @@ namespace KMCCT {
             }
         }
 
+        if (GetWaitFlag()) {
+            {
+                std::lock_guard<std::mutex> lock(mtx);
+                exp_loop_now = false;
+            }
+            return;
+        }
+
         if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
@@ -199,9 +272,11 @@ namespace KMCCT {
         PapyrusFuncCall("aaaKimachuuCutInMCMScripts", "KimachuuExpression", form, mfg->ac, mfg->type, mfg->exp,
                         mfg->str);
 
-        KMCCT::KMCTimer(mfg->time * KMCCT::WHILE_WAIT_TIME);
-
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+        if (KMCEXPTimer(mfg->time * KMCCT::WHILE_WAIT_TIME) < 0) {
+            {
+                std::lock_guard<std::mutex> lock(mtx);
+                exp_loop_now = false;
+            }
             return;
         }
 
@@ -256,6 +331,14 @@ namespace KMCCT {
                     LOG("KMCExpression Follower(Player) == Player Conflict");
                     int loop_count = 1;
                     while (end) {
+                        if (GetWaitFlag()) {
+                            {
+                                std::lock_guard<std::mutex> lock(mtx);
+                                exp_loop_now = false;
+                            }
+                            return;
+                        }
+
                         if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                             return;
                         }
@@ -276,6 +359,14 @@ namespace KMCCT {
             }
         }
 
+        if (GetWaitFlag()) {
+            {
+                std::lock_guard<std::mutex> lock(mtx);
+                exp_loop_now = false;
+            }
+            return;
+        }
+
         if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
@@ -283,9 +374,11 @@ namespace KMCCT {
         PapyrusFuncCall("aaaKimachuuCutInMCMScripts", "KimachuuFLExpression", form, mfg->ac, mfg->type, mfg->exp,
                         mfg->str);
 
-        KMCCT::KMCTimer(mfg->time * KMCCT::WHILE_WAIT_TIME);
-
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+        if (KMCEXPTimer(mfg->time * KMCCT::WHILE_WAIT_TIME) < 0) {
+            {
+                std::lock_guard<std::mutex> lock(f_mtx);
+                f_exp_loop_now = false;
+            }
             return;
         }
 
@@ -349,7 +442,7 @@ namespace KMCCT {
             std::lock_guard<std::mutex> lock(mtx);
             loop_now = exp_loop_now;
         }
-        if (loop_now) {
+        if (loop_now || GetWaitFlag()) {
             return -1;
         }
 
@@ -382,7 +475,7 @@ namespace KMCCT {
         return 0;
     }
 
-    void KMCExpression::PPushExpFunc(uint64_t rand, bool force, float ex_exp_time) {
+    void KMCExpression::PPushExpFunc(int rand, bool force, float ex_exp_time) {
         bool loop_now = true;
         {
             std::lock_guard<std::mutex> lock(mtx);
@@ -407,7 +500,7 @@ namespace KMCCT {
         }
     }
 
-    void KMCExpression::FPushExpFunc(uint64_t rand, uint64_t frand, bool force, float ex_exp_time) {
+    void KMCExpression::FPushExpFunc(int rand, int frand, bool force, float ex_exp_time) {
         bool loop_now = true;
         {
             std::lock_guard<std::mutex> lock(f_mtx);
@@ -440,8 +533,41 @@ namespace KMCCT {
         }
     }
 
-    uint64_t KMCExpression::GetCutInID(std::string aaaakmctype) {
-        uint64_t rand = 0;
+    bool KMCExpression::GetWaitFlag() {
+        {
+            std::lock_guard<std::mutex> lock(wit_mtx);
+            return is_wait == true && (is_cutin == false);
+        }
+    }
+
+    int KMCExpression::KMCEXPTimer(long long limit) {
+        time_point<Clock> start = Clock::now();
+        time_point<Clock> end;
+        long long dur = 0;
+        // sleep
+        while (true) {
+            if (GetWaitFlag()) {
+                return -1;
+            }
+
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                return -2;
+            }
+            end = Clock::now();
+            milliseconds diff = duration_cast<milliseconds>(end - start);
+            dur = diff.count();
+            if (dur >= limit) {
+                break;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(EXP_TIMER_LOOP));
+        }
+
+        return 0;
+    }
+
+    int KMCExpression::GetCutInID(std::string aaaakmctype) {
+        int rand = -1;
         auto findit = aaaakmcCategoryRandMap.find(aaaakmctype);
         if (findit != aaaakmcCategoryRandMap.end()) {
             auto* randData = &(findit->second);

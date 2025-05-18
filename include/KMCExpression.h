@@ -18,6 +18,8 @@ namespace KMCCT {
         SINGLETONHEADER(KMCExpression)
     public:
         const int EXP_NOT_END_LOOP = 100;
+        const int EXP_WAIT_LOOP = 250;
+        const int EXP_TIMER_LOOP = 500;
 
         ~KMCExpression();
         void Setup();
@@ -31,9 +33,14 @@ namespace KMCCT {
             force_exp_loop = false;
             force_cool_time = 0.0f;
             force_exp_time = 0.0f;
+
+            is_wait = false;
+            is_cutin = false;
         }
 
-        void PushExpFunc(uint64_t rand, uint64_t frand, bool force, float ex_exp_time);
+        int OnStandby();
+        void OnFinished();
+        void PushExpFunc(int rand, int frand, bool force, float ex_exp_time);
         void TryKMCExp(STMFGPair *mfg);
         void TryKMCFLExp(STMFGPair *mfg);
 
@@ -41,11 +48,13 @@ namespace KMCCT {
         void SetFLEndPapurusExp();
 
         int ForceExp(std::string exp_id, float cool_time, float exp_time);
-        uint64_t GetCutInID(std::string aaaakmctype);
+        int GetCutInID(std::string aaaakmctype);
     private:
-        void PPushExpFunc(uint64_t rand, bool force, float ex_exp_time);
-        void FPushExpFunc(uint64_t rand, uint64_t frand, bool force, float ex_exp_time);
-        
+        void PPushExpFunc(int rand, bool force, float ex_exp_time);
+        void FPushExpFunc(int rand, int frand, bool force, float ex_exp_time);
+        bool GetWaitFlag();
+        int KMCEXPTimer(long long limit);
+
         void CategoryRandomizer();
     private:
 
@@ -63,11 +72,15 @@ namespace KMCCT {
         RE::TESForm *form;
         std::mutex mtx;
         std::mutex f_mtx;
+        std::mutex wit_mtx;
 
         // force exp
         float force_cool_time = 0.0f;
         float force_exp_time = 0.0f;
         
         bool force_exp_loop = false;
+
+        bool is_wait = false;
+        bool is_cutin = false;
     };
 }

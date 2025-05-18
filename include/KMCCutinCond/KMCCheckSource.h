@@ -1,6 +1,8 @@
 #pragma once
 #include "KMCUtility.h"
 #include "KMCCCJsonTags.h"
+#include "IWWFunctions.h"
+#include <boost/algorithm/string/trim.hpp>
 
 namespace KMCCT {
 
@@ -8,6 +10,12 @@ namespace KMCCT {
         has,
         nhas,
         both
+    };
+
+    enum class AndOr {
+        isAnd,
+        isOr,
+        none
     };
 
     class KMCCSBodySlot {
@@ -108,6 +116,38 @@ namespace KMCCT {
         int match = 0;
     };
 
+    class KMCFormula {
+    public:
+        KMCFormula(){};
+
+        enum class KMCCompType {
+            value,
+            glob,
+            none
+        };
+
+        KMCCompType GetType(std::string v, std::vector<std::string> &r);
+        bool GetComp1Global(std::vector<std::string> &v, std::string a);
+        bool GetComp2Global(std::vector<std::string> &v, std::string a);
+        bool GetComp1Value(std::vector<std::string> &v, std::string a);
+        bool GetComp2Value(std::vector<std::string> &v, std::string a);
+        bool Build();
+
+        bool not_equal = false;
+        std::string cond = "";
+
+        RE::TESGlobal *glob_1 = nullptr;
+        RE::TESGlobal *glob_2 = nullptr;
+        float comp_v_1 = 0.0;
+        float comp_v_2 = 0.0;
+
+        std::function<float(void)> comp1;
+        std::function<float(void)> comp2;
+
+        KMCInequalitySign isign = KMCInequalitySign::equal;
+        AndOr and_or = AndOr::none;
+    };
+
     class KMCCCheckSource {
     public:
         std::string main_category;
@@ -120,6 +160,7 @@ namespace KMCCT {
         std::string keyword_plugin_name;
         std::string temp_keyword_name;
         std::vector<std::string> cross_hair_ref_name;
+        
 
         KMCCSBodySlot body_slot;
 
@@ -135,6 +176,11 @@ namespace KMCCT {
         std::set<std::string> thas;
         std::set<std::string> tnhas;
         HasNHan thsnhs;
+
+        // formula
+        std::vector<KMCFormula> formula;
+        std::map<int, std::vector<KMCFormula*>> cond_formula;
+        
     public:
         void body_slot_build() { 
             body_slot.Init();
@@ -196,6 +242,29 @@ namespace KMCCT {
             }
 
             return true;
+        }
+
+        bool EvaluateFormula() {
+            for (auto &[key, value] : cond_formula) {
+
+                bool t = false;
+                bool f = false;
+                for (auto &formv : value) {
+                    LOG("[Evaluate] EntryNo ==> {} Formula ==> {} comp1 ==> {} comp2 ==> {}", key, formv->cond,
+                        formv->comp1(), formv->comp2());
+                    if (JudgeKMCInequalitySign(formv->isign, formv->comp1(), formv->comp2())) {
+                        t = true;
+                    } else {
+                        f = true;
+                    }
+                }
+
+                if (t && !f) {
+                    LOG("[OK] Formula ==>  EntryNo ==> {}", key);
+                    return true;
+                }
+            }
+            return false;
         }
     };
 }

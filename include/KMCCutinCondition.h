@@ -220,6 +220,8 @@ namespace KMCCT {
                                    KMCCustomCondManager<KMCCustomCondMain>* manager);
         void SetupJsonNodesKeyword(boost::property_tree::ptree pt, int level,
                                     KMCCustomCondManager<KMCCustomCondMain>* manager);
+        void SetupJsonNodesFormula(boost::property_tree::ptree pt, int level,
+                                   KMCCustomCondManager<KMCCustomCondMain>* manager);
         void SetupJsonNodesLevel2(boost::property_tree::ptree pt, int level,
                                   KMCCustomCondManager<KMCCustomCondMain>* manager);
         void SetupJsonNodesLevel3(boost::property_tree::ptree pt, int level,
@@ -263,6 +265,8 @@ namespace KMCCT {
         template <typename T1>
         T1 NodeTreesGetValue(boost::property_tree::ptree pt, int level, std::string path, std::string name,
                              bool escape = false, char escp_c = '@', std::string escp_p = "");
+        template <typename T1>
+        T1 NodeTreesGetValue(boost::property_tree::ptree pt, int level);
 
         bool Validate_manager(KMCCustomCondManager<KMCCustomCondMain>* manager);
         bool Validate_node(KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>* node);

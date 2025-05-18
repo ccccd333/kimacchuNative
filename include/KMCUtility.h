@@ -20,6 +20,8 @@ namespace KMCCT {
     const int SET_ALPHA_MS = 8;
     const int WHILE_PROFILE_SHOW_WAIT_TIME = 500;
     const int INSPECTION_LOOP_MS = 1000;
+    const int PAPYRUS_UPDATE_WHILE_WAIT_TIME = 1000;
+    const int WHILE_WAIT_TIME_EXP = 500;
     // ms
     const long long TIME_SCALE_MS = 1000;
 
@@ -577,14 +579,14 @@ namespace KMCCT {
         long long time = 0;
         bool isAnim = false;
         bool isfAnim = false;
-        uint64_t rand = 0;
+        int rand = -1;
         int frand = -1;
         float volum = 0;
         float oar_time = 0.0f;
         bool overri_oar_time = false;
         bool overri_exp_time = false;
         float exp_time = 0.0f;
-        uint64_t exp_rand = 0;
+        int exp_rand = -1;
         std::vector<std::pair<std::string, std::string>> *ISpeechTiming;
         RE::TESObjectREFR *speakerp;
         RE::TESObjectREFR *speakerf;

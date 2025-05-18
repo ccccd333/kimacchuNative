@@ -24,6 +24,15 @@ namespace KMCCT {
             level = le;
             is_push = is_pu;
         }
+        KMCKEPath(std::string p, std::string esc_p, char esc_p_char, int le, bool is_pu_chi, bool is_pu) {
+            path = p;
+            escape_p = esc_p;
+            escape_char = esc_p_char;
+            escape = true;
+            level = le;
+            is_push_child = is_pu_chi;
+            is_push = is_pu;
+        }
     public:
         std::string path = "";
         std::string escape_p = "";
@@ -31,6 +40,7 @@ namespace KMCCT {
         bool escape = false;
         int level = 0;
         bool is_push = false;
+        bool is_push_child = false;
     };
 
     struct KMCKDElement {
