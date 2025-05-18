@@ -27,6 +27,7 @@ namespace KMCCT {
         glob_1 = (RE::TESGlobal *)RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll(gv1, NULL, 16), gv2);
         if (glob_1 == nullptr) {
             ERROR("ERROR The formula definition is incorrect {}", a);
+            return false;
         }
 
         comp1 = [this]() {
@@ -52,6 +53,7 @@ namespace KMCCT {
         glob_2 = (RE::TESGlobal *)RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll(gv1, NULL, 16), gv2);
         if (glob_2 == nullptr) {
             ERROR("ERROR The formula definition is incorrect {}", a);
+            return false;
         }
 
         comp2 = [this]() {
@@ -79,6 +81,7 @@ namespace KMCCT {
             };
         } catch (std::exception &e) {
             ERROR("ERROR ===> {}, wt = {}", a, e.what());
+            return false;
         }
 
         return true;
@@ -96,6 +99,7 @@ namespace KMCCT {
             comp2 = [this]() { return this->comp_v_2; };
         } catch (std::exception &e) {
             ERROR("ERROR ===> {}, wt = {}", a, e.what());
+            return false;
         }
 
         return true;

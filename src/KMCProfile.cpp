@@ -79,7 +79,7 @@ namespace KMCCT {
                 if (IsFileExist(KMCCT::PICT_ROOT + filename)) {
                     int wid =
                         IWW::MainFunctions::GetSingleton()->LoadWidget(aaaakmcroot, filename, 10000, 10000, false);
-                    rwid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitLoadNamePlate(wid);
+                    rwid = WaitLoadNamePlate(&wid);
                     if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                         return;
                     }
@@ -114,7 +114,7 @@ namespace KMCCT {
 
                 int tid = IWW::MainFunctions::GetSingleton()->LoadText(aaaakmcroot, text, tid_form->font,
                                                                        tid_form->font_size, 10000, 10000, false);
-                int rtid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitLoadNamePlate(tid);
+                int rtid = WaitLoadNamePlate(&tid);
                 if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     return;
                 }

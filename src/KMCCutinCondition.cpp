@@ -931,11 +931,7 @@ namespace KMCCT {
             auto node = m_node.second;
 
             // push
-            if (node->not_cutin) {
-                LOG("[PUSH] [NOT CUTIN] [{}], [NPUSH_KEY]===>[{}]", node->post_commit_push_key, node->push_key);
-                node->polling.timer = Clock::now();
-                node->Stop();
-            } else if (node->PushTask()) {
+            if (node->PushTask()) {
                 LOG("[PUSH] [{}], [PUSH_KEY]===>[{}]", node->post_commit_push_key, node->push_key);
                 node->polling.timer = Clock::now();
                 node->Stop();
@@ -981,6 +977,15 @@ namespace KMCCT {
 
     template <>
     bool KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>::PushTask() {
+        if (not_cutin) {
+            LOG("[PUSH] [NOT CUTIN] [{}], [NPUSH_KEY]===>[{}]", post_commit_push_key, push_key);
+            if (sub_task_hub && push_type == PushType::keyword) {
+                LOG("[PUSH TEMP_KEYWORD]")
+                return sub_task_hub->PushTask();
+            }
+            return true;
+        }
+
         if (push_type == PushType::cutin) {
             return manager->main->TryPush(this->push_key, this);
         } else if (sub_task_hub && push_type == PushType::keyword) {

@@ -244,27 +244,27 @@ namespace KMCCT {
             return true;
         }
 
-        bool EvaluateFormula() {
-            for (auto &[key, value] : cond_formula) {
+        //bool EvaluateFormula() {
+        //    for (auto &[key, value] : cond_formula) {
 
-                bool t = false;
-                bool f = false;
-                for (auto &formv : value) {
-                    LOG("[Evaluate] EntryNo ==> {} Formula ==> {} comp1 ==> {} comp2 ==> {}", key, formv->cond,
-                        formv->comp1(), formv->comp2());
-                    if (JudgeKMCInequalitySign(formv->isign, formv->comp1(), formv->comp2())) {
-                        t = true;
-                    } else {
-                        f = true;
-                    }
-                }
+        //        bool t = false;
+        //        bool f = false;
+        //        for (auto &formv : value) {
+        //            LOG("[Evaluate] EntryNo ==> {} Formula ==> {} comp1 ==> {} comp2 ==> {}", key, formv->cond,
+        //                formv->comp1(), formv->comp2());
+        //            if (JudgeKMCInequalitySign(formv->isign, formv->comp1(), formv->comp2())) {
+        //                t = true;
+        //            } else {
+        //                f = true;
+        //            }
+        //        }
 
-                if (t && !f) {
-                    LOG("[OK] Formula ==>  EntryNo ==> {}", key);
-                    return true;
-                }
-            }
-            return false;
-        }
+        //        if (t && !f) {
+        //            LOG("[OK] Formula ==>  EntryNo ==> {}", key);
+        //            return true;
+        //        }
+        //    }
+        //    return false;
+        //}
     };
 }

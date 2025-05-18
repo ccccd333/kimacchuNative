@@ -795,7 +795,7 @@ namespace KMCCT {
         std::string filename = KMCCT::PICT_PATH1 + "/" + KMCCT::NAME_PLATE_PICT_NAME + KMCCT::PICT_TYPE;
         if (IsFileExist(KMCCT::PICT_ROOT + filename)) {
             int wid = IWW::MainFunctions::GetSingleton()->LoadWidget(ct_aaaakmcroot, filename, 10000, 10000, false);
-            rwid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitLoadNamePlate(wid);
+            rwid = WaitLoadNamePlate(&wid);
         } else {
             WARN("File path not found. If not intended, no problem. {}", filename);
         }
@@ -809,7 +809,7 @@ namespace KMCCT {
         //  player name plate widget
         int tid = IWW::MainFunctions::GetSingleton()->LoadText(ct_aaaakmcroot, pn, pnpsetting.font, pnpsetting.fontsize,
                                                                10000, 10000, false);
-        int rtid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitLoadNamePlate(tid);
+        int rtid = WaitLoadNamePlate(&tid);
         if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
@@ -874,7 +874,7 @@ namespace KMCCT {
             int rfwid = -1;
             if (IsFileExist(KMCCT::PICT_ROOT + filename)) {
                 int fwid = IWW::MainFunctions::GetSingleton()->LoadWidget(ct_aaaakmcroot, filename, 10000, 10000, false);
-                rfwid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitLoadNamePlate(fwid);
+                rfwid = WaitLoadNamePlate(&fwid);
             } else {
                 WARN("File path not found. If not intended, no problem. {}", filename);
             }
@@ -885,7 +885,7 @@ namespace KMCCT {
 
             int ftid = IWW::MainFunctions::GetSingleton()->LoadText(ct_aaaakmcroot, fname, fnpsetting.font,
                                                                     fnpsetting.fontsize, 10000, 10000, false);
-            int rftid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitLoadNamePlate(ftid);
+            int rftid = WaitLoadNamePlate(&ftid);
             if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return;
             }
@@ -980,8 +980,7 @@ namespace KMCCT {
                             int wid = IWW::MainFunctions::GetSingleton()->LoadWidget(ct_aaaakmcroot, filename, 10000,
                                                                                      10000, false);
                             LOG("filename: {} root: {} category: {}", filename, ct_aaaakmcroot, k1);
-                            wid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitMultLoad(wid, k, i,
-                                                                                           loadedWedget);
+                            wid = WaitMultLoad(&wid, &k, &ct_aaaakmcroot, &i, &loadedWedget);
                             if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                                 return;
                             }
@@ -1038,7 +1037,7 @@ namespace KMCCT {
                         int wid =
                             IWW::MainFunctions::GetSingleton()->LoadWidget(ct_aaaakmcroot, filename, 10000, 10000, false);
 
-                        wid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitLoad(wid, k, loadedWedget);
+                        wid = WaitLoad(&wid, &k, &ct_aaaakmcroot, &loadedWedget);
                         if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                             return;
                         }
@@ -1088,7 +1087,7 @@ namespace KMCCT {
                 int wid = IWW::MainFunctions::GetSingleton()->LoadText(ct_aaaakmcroot, value, font, fontsize, 10000, 10000,
                                                                        false);
 
-                wid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitLoadText(wid, k, loadedText);
+                wid = WaitLoadText(&wid, &k, &ct_aaaakmcroot, &loadedText);
                 if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     return;
                 }

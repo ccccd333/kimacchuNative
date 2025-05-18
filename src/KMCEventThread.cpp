@@ -401,6 +401,8 @@ void KMCCT::InitMain(std::vector<float> *floatArray) {
 
         isInitEnd = true;
     }
+
+    RE::DebugNotification("KMC Init End");
 }
 #pragma endregion
 

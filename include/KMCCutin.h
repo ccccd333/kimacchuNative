@@ -88,6 +88,7 @@ namespace KMCCT {
             PlayerNamePlate.LoadedText = 0;
             PlayerNamePlate.LoadedWidget = 0;
             ResetIDsConfigs();
+            OutputContainer.clear();
         }
 
         void ResetLoadedWedget() { LoadedWedget.clear(); }
@@ -169,5 +170,7 @@ namespace KMCCT {
         std::vector<std::pair<int, KMCDispConfigs>> FLoadedWIDsConfigs;
         std::vector<std::pair<int, KMCDispConfigs>> FLoadedNTIDsConfigs;
         std::vector<std::pair<int, KMCDispConfigs>> FLoadedNWIDsConfigs;
+
+        std::map<int, int> OutputContainer;
     };
 }

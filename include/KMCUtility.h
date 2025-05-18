@@ -10,7 +10,7 @@ using namespace std::literals::chrono_literals;
 namespace KMCCT {
     // Frame Rate Setting
     const int ANIMATION_FRAME_MS = 60;
-    const int CALL_LOAD_FRAME_MS = 16;
+    const int CALL_LOAD_FRAME_MS = 8;
     const int CALL_INVISIBLE_MS = 8;
     const int WHILE_WAIT_TIME = 1000;
     const int CUT_IN_COND_WHILE_WAIT_TIME = 1000;

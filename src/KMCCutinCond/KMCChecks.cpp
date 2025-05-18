@@ -20,7 +20,7 @@ namespace KMCCT {
     KMCCCTBodySlot ctbs;
     KMCCCTMagicEffectKeyword ctmek;
     KMCCCTFormula ctform;
-    std::vector<KMCCustomCondCheckHub*> Tasks = {&nothi, &pm, &pc,    &pr,   &pid,  &psn,  &pk,
+    std::vector<KMCCustomCondCheckHub*> Tasks = {&nothi, &pm,    &pc,   &pr,   &pid,  &psn,   &pk,
                                                  &lk,    &pkill, &tkey, &ctch, &ctbs, &ctmek, &ctform};
 
     bool GetCheckTaskDetail(KMCCCheckSource source, std::unique_ptr<KMCCustomCondCheckHub>* hub) {
@@ -118,7 +118,7 @@ namespace KMCCT {
             auto cell = player->GetParentCell();
             if (cell != nullptr) {
                 auto loc = player->GetCurrentLocation();
-                if (loc != nullptr) {                    
+                if (loc != nullptr) {
                     if (source.hsnhs == HasNHan::both) {
                         if (loc->HasKeywordInArray(source.has, true) && !loc->HasKeywordInArray(source.nhas, true)) {
                             return true;
@@ -127,7 +127,7 @@ namespace KMCCT {
                         if (loc->HasKeywordInArray(source.has, true)) {
                             return true;
                         }
-                    } else if (source.hsnhs == HasNHan::nhas) {                        
+                    } else if (source.hsnhs == HasNHan::nhas) {
                         if (!loc->HasKeywordInArray(source.nhas, true)) {
                             return true;
                         }
@@ -241,23 +241,51 @@ namespace KMCCT {
     bool KMCCCTTempKeyword::Check(KMCCCheckSource source) {
         if (source.thsnhs == HasNHan::both) {
             bool hasm = KMCCT::KMCTempKeywordManager::GetSingleton()->HasTempKeyword(source.thas, true);
-            bool nhasm = KMCCT::KMCTempKeywordManager::GetSingleton()->HasTempKeyword(source.tnhas, true);
+            bool nhasm = KMCCT::KMCTempKeywordManager::GetSingleton()->NHasTempKeyword(source.tnhas, true);
             if (hasm && nhasm) {
                 return true;
+            }
+            LOG("[TEMP_KEYWORD_CHECK[BOTH]] no match");
+            if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
+                for (auto& has : source.thas) {
+                    LOG("[HAS] ==> {}", has);
+                }
+
+                for (auto& nhas : source.tnhas) {
+                    LOG("[NHAS] ==> {}", nhas);
+                }
+
+                KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
             }
         } else if (source.thsnhs == HasNHan::has) {
             bool hasm = KMCCT::KMCTempKeywordManager::GetSingleton()->HasTempKeyword(source.thas, true);
             if (hasm) {
                 return true;
             }
+            LOG("[TEMP_KEYWORD_CHECK[HAS]] no match");
+            if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
+                for (auto& has : source.thas) {
+                    LOG("[HAS] ==> {}", has);
+                }
+
+                KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
+            }
         } else if (source.thsnhs == HasNHan::nhas) {
-            bool nhasm = KMCCT::KMCTempKeywordManager::GetSingleton()->HasTempKeyword(source.tnhas, true);
+            bool nhasm = KMCCT::KMCTempKeywordManager::GetSingleton()->NHasTempKeyword(source.tnhas, true);
             if (nhasm) {
                 return true;
             }
-        } else {
-            return false;
+
+            LOG("[TEMP_KEYWORD_CHECK [NHAS]] no match");
+            if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
+                for (auto& nhas : source.tnhas) {
+                    LOG("[NHAS] ==> {}", nhas);
+                }
+
+                KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
+            }
         }
+
         return false;
     }
 
@@ -280,7 +308,7 @@ namespace KMCCT {
                                 ERROR("KMCCCTCrossHair::Init tag name NG");
                                 return false;
                             }
-                            
+
                             std::string ref_name = sp.back();
                             kmc_pattern.work = ref_name;
                             if (std::regex_match(ref_name, sm, pattern)) {
@@ -322,7 +350,7 @@ namespace KMCCT {
                 return false;
             }
         }
-        
+
         if (cpd) {
             if (cpd->target.get()) {
                 std::string get_cell_name_tld = "";
@@ -469,7 +497,25 @@ namespace KMCCT {
         return false;
     }
 
-    bool KMCCCTFormula::Check(KMCCCheckSource source) { 
-        return source.EvaluateFormula();
+    bool KMCCCTFormula::Check(KMCCCheckSource source) {
+        for (auto& [key, value] : source.cond_formula) {
+            bool t = false;
+            bool f = false;
+            for (auto& formv : value) {
+                LOG("[Evaluate] EntryNo ==> {} Formula ==> {} comp1 ==> {} comp2 ==> {}", key, formv->cond,
+                    formv->comp1(), formv->comp2());
+                if (JudgeKMCInequalitySign(formv->isign, formv->comp1(), formv->comp2())) {
+                    t = true;
+                } else {
+                    f = true;
+                }
+            }
+
+            if (t && !f) {
+                LOG("[OK] Formula ==>  EntryNo ==> {}", key);
+                return true;
+            }
+        }
+        return false;
     }
 }

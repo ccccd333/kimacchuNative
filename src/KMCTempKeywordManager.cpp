@@ -68,6 +68,36 @@ namespace KMCCT {
         }
     }
 
+    bool KMCTempKeywordManager::NHasTempKeyword(const std::set<std::string> &sorce, bool a_nmatch_all) {
+        {
+            std::lock_guard<std::mutex> lock(aaaakmc_temp_keyword_mtx_);
+            bool m = false;
+            bool nm = false;
+
+            for (auto &sk : sorce) {
+                if (temp_keywords.contains(sk)) {
+                    m = true;
+                } else {
+                    nm = true;
+                }
+            }
+
+            if (a_nmatch_all) {
+                if (nm && m)
+                    return false;
+                else if (m)
+                    return false;
+                else
+                    return true;
+            } else {
+                if (!nm)
+                    return false;
+                else
+                    return true;
+            }
+        }
+    }
+
     int KMCTempKeywordManager::HasTempKeyword(const std::set<std::string> &sorce) {
         {
             std::lock_guard<std::mutex> lock(aaaakmc_temp_keyword_mtx_);
@@ -104,6 +134,8 @@ namespace KMCCT {
                 } else {
                     ok = false;
                 }
+
+                LOG("[TEMP KEYWORD] ADD {}", sk);
             }
 
             return ok;
@@ -120,9 +152,22 @@ namespace KMCCT {
                 } else {
                     ok = false;
                 }
+
+                LOG("[TEMP KEYWORD] REMOVE {}", sk);
             }
 
             return ok;
         }
+    }
+
+    void KMCTempKeywordManager::ToLog() {
+        for (auto &tk : temp_keywords) {
+            LOG("[TEMP KEYWORD CONTAINER] {}", tk);
+        }
+    }
+
+    void KMCTempKeywordManager::Reset() { 
+        LOG("[TEMP KEYWORD] RESET");
+        temp_keywords.clear(); 
     }
 }
