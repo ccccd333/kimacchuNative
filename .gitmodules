@@ -7,3 +7,6 @@
 [submodule "extern/VMTHook"]
 	path = extern/VMTHook
 	url = https://github.com/gfreivasc/VMTHook
+[submodule "CLibUtil"]
+	path = CLibUtil
+	url = https://github.com/powerof3/CLibUtil.git
