@@ -176,7 +176,9 @@ void KMCCT::CutInConditionPeriodicCall() {
             break;
         }
 
-        result = KMCCT::KMCCutinCondition::GetSingleton()->ToMove(KMCCCStartArg(Clock::now()));
+        if (isInitEnd) {
+            result = KMCCT::KMCCutinCondition::GetSingleton()->ToMove(KMCCCStartArg(Clock::now()));
+        }
 
         if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             break;
@@ -374,6 +376,8 @@ int KMCCT::WaitLoadText(int *wid, uint64_t *rand, std::string *root,
 }
 
 int KMCCT::WaitLoadNamePlate(int *wid) { return KMCCT::KMCCutin::GetSingleton()->WaitLoadNamePlate(wid); }
+
+void KMCCT::WaitOutputLoop() { KMCCT::KMCCutin::GetSingleton()->OutputLoop(); }
 
 void KMCCT::InitMain(std::vector<float> *floatArray) {
     isInitEnd = false;
@@ -604,6 +608,10 @@ namespace KMCCT {
         auto lwID = executor.submit(WaitLoadText, &wid, &rand, &aaaakmcroot, &loadedText);
         lwID.wait();
         return lwID.get();
+    }
+
+    void KMCEventThread::wrap_OutputLoop() { 
+        executor.submit(WaitOutputLoop).wait_for(std::chrono::seconds(0));
     }
 
 }

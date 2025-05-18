@@ -5,7 +5,7 @@ namespace KMCCT {
     struct KMCCutinValues {
     public:
         KMCCutinValues() {}
-        KMCCutinValues(std::string type, float time, float animtime, float vol, float oar_time, bool overri_oar_flag) { 
+        KMCCutinValues(std::string type, float time, float animtime, float vol, float oar_time, bool overri_oar_flag) {
             aaaakmctype = type;
             aaaakmctime = time;
             aaaakmcAnimtime = animtime;
@@ -20,6 +20,7 @@ namespace KMCCT {
             aaaakmcvolum = vol;
             overri_oar_time = false;
         }
+
     public:
         std::string aaaakmctype = "";
         std::string aaaakmcExptype = "";
@@ -64,21 +65,20 @@ namespace KMCCT {
                          std::vector<std::pair<uint64_t, int>> **loadedText);
         int WaitLoadNamePlate(int *wid);
 
+        void OutputLoop();
+
         int CondCutIn(KMCCutinValues val);
         int IterCutIn(KMCCutinValues val);
-        
-        
+
         bool GetAnimNow();
         void SetAnimNow(bool set);
-        void AnimationLoop(long long time, std::vector<std::pair<uint64_t, KMCLoadedWidgetData>>::iterator it);
-        void AnimationLoop(long long time, std::vector<std::pair<uint64_t, KMCLoadedWidgetData>>::iterator it,
-                           std::string trackid, int frand, std::string record, float volume);
+        void AnimationLoop(long long time, KMCLoadedWidgetData it);
+        void AnimationLoop(long long time, KMCLoadedWidgetData it, std::string trackid, int frand, std::string record,
+                           float volume);
         void PlaySE(long long time, std::string trackid, int frand, std::string record, float volume);
         void MCMSettingChange(std::vector<float> *floatArray);
 
-        bool ExistCategory(std::string t) { 
-            return aaaakmcCategoryRandMap.contains(t);
-        }
+        bool ExistCategory(std::string t) { return aaaakmcCategoryRandMap.contains(t); }
 
         void Reset() {
             ResetLoadedWedget();
@@ -105,29 +105,29 @@ namespace KMCCT {
             FLoadedTIDsConfigs.clear();
             LoadedWIDsConfigs.clear();
             FLoadedWIDsConfigs.clear();
-            LoadedNWIDsConfigs.clear();
+            LoadedNTIDsConfigs.clear();
             LoadedNWIDsConfigs.clear();
             FLoadedNTIDsConfigs.clear();
             FLoadedNWIDsConfigs.clear();
         }
 
-        std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> *GetLoadedWedget() { return &LoadedWedget; }
-        std::vector<std::pair<uint64_t, int>> *GetLoadedText() { return &LoadedText; }
-        std::vector<std::pair<int, KMCDispConfigs>> *GetLoadedTIDsConfigs() { return &LoadedTIDsConfigs; }
-        std::vector<std::pair<int, KMCDispConfigs>> *GetLoadedWIDsConfigs() { return &LoadedWIDsConfigs; }
+        std::unordered_map<int, KMCLoadedWidgetData> *GetLoadedWedget() { return &LoadedWedget; }
+        std::unordered_map<int, KMCLoadedWidgetData> *GetLoadedText() { return &LoadedText; }
+        std::unordered_map<int, KMCDispConfigs> *GetLoadedTIDsConfigs() { return &LoadedTIDsConfigs; }
+        std::unordered_map<int, KMCDispConfigs> *GetLoadedWIDsConfigs() { return &LoadedWIDsConfigs; }
 
-        std::vector<std::pair<int, KMCDispConfigs>> *GetLoadedNTIDsConfigs() { return &LoadedNTIDsConfigs; }
-        std::vector<std::pair<int, KMCDispConfigs>> *GetLoadedNWIDsConfigs() { return &LoadedNWIDsConfigs; }
+        std::unordered_map<int, KMCDispConfigs> *GetLoadedNTIDsConfigs() { return &LoadedNTIDsConfigs; }
+        std::unordered_map<int, KMCDispConfigs> *GetLoadedNWIDsConfigs() { return &LoadedNWIDsConfigs; }
 
         KMCNPLoadedWidget *GetPlayerNamePlate() { return &PlayerNamePlate; }
 
         std::vector<std::pair<std::string, KMCFLoadedWidget>> *GetFLoadedWT() { return &FLoadedWT; }
         std::vector<KMCNPLoadedWidget> *GetFNamePlate() { return &FNamePlate; };
-        std::vector<std::pair<int, KMCDispConfigs>> *GetFLoadedTIDsConfigs() { return &FLoadedTIDsConfigs; }
-        std::vector<std::pair<int, KMCDispConfigs>> *GetFLoadedWIDsConfigs() { return &FLoadedWIDsConfigs; }
+        std::unordered_map<int, KMCDispConfigs> *GetFLoadedTIDsConfigs() { return &FLoadedTIDsConfigs; }
+        std::unordered_map<int, KMCDispConfigs> *GetFLoadedWIDsConfigs() { return &FLoadedWIDsConfigs; }
 
-        std::vector<std::pair<int, KMCDispConfigs>> *GetFLoadedNTIDsConfigs() { return &FLoadedNTIDsConfigs; }
-        std::vector<std::pair<int, KMCDispConfigs>> *GetFLoadedNWIDsConfigs() { return &FLoadedNWIDsConfigs; }
+        std::unordered_map<int, KMCDispConfigs> *GetFLoadedNTIDsConfigs() { return &FLoadedNTIDsConfigs; }
+        std::unordered_map<int, KMCDispConfigs> *GetFLoadedNWIDsConfigs() { return &FLoadedNWIDsConfigs; }
 
     private:
         int CutIn(KMCCutinValues val);
@@ -135,12 +135,16 @@ namespace KMCCT {
         void InitLoop(std::vector<std::pair<std::string, std::string>> *ar,
                       std::vector<std::pair<std::string, std::string>> *awwf,
                       std::vector<std::pair<std::string, std::string>> *aw,
-                      std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> *loadedWedget,
-                      std::vector<std::pair<uint64_t, int>> *loadedText,
-                      std::vector<std::pair<int, KMCDispConfigs>> *loadedTIDsConfigs,
-                      std::vector<std::pair<int, KMCDispConfigs>> *loadedWIDsConfigs, int offset_tx, int offset_ty,
-                      int offset_wx, int offset_wy, const std::string *target);
-
+                      std::unordered_map<int, KMCLoadedWidgetData> *loadedWedget,
+                      std::unordered_map<int, KMCLoadedWidgetData> *loadedText,
+                      std::unordered_map<int, KMCDispConfigs> *loadedTIDsConfigs,
+                      std::unordered_map<int, KMCDispConfigs> *loadedWIDsConfigs, int offset_tx, int offset_ty,
+                      int offset_wx, int offset_wy, WidgetType widget, WidgetType text_widget,
+                      const std::string *target);
+        void WidgetInitEnd(int rand, std::unordered_map<int, KMCLoadedWidgetData> *LWidget,
+                           std::unordered_map<int, KMCLoadedWidgetData> *LText,
+                           std::unordered_map<int, KMCDispConfigs> *LWConfig,
+                           std::unordered_map<int, KMCDispConfigs> *LTConfig);
         int GetCutInID(std::string aaaakmctype);
         void CategoryRandomizer();
         void DispPFWidget(KMCAnimST st);
@@ -149,28 +153,29 @@ namespace KMCCT {
     private:
         bool animnow = false;
         std::mutex animnow_mtx;
+        std::mutex output_mtx;
         time_point<Clock> event_start = Clock::now();
         float followerDetectRange = 1000.0;
         std::unordered_map<std::string, KMCRandomData> aaaakmcCategoryRandMap;
 
         // player
-        std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> LoadedWedget;
-        std::vector<std::pair<uint64_t, int>> LoadedText;
-        std::vector<std::pair<int, KMCDispConfigs>> LoadedTIDsConfigs;
-        std::vector<std::pair<int, KMCDispConfigs>> LoadedWIDsConfigs;
-        std::vector<std::pair<int, KMCDispConfigs>> LoadedNTIDsConfigs;
-        std::vector<std::pair<int, KMCDispConfigs>> LoadedNWIDsConfigs;
+        std::unordered_map<int, KMCLoadedWidgetData> LoadedWedget;
+        std::unordered_map<int, KMCLoadedWidgetData> LoadedText;
+        std::unordered_map<int, KMCDispConfigs> LoadedTIDsConfigs;
+        std::unordered_map<int, KMCDispConfigs> LoadedWIDsConfigs;
+        std::unordered_map<int, KMCDispConfigs> LoadedNTIDsConfigs;
+        std::unordered_map<int, KMCDispConfigs> LoadedNWIDsConfigs;
 
         KMCNPLoadedWidget PlayerNamePlate;
 
         // follower
         std::vector<std::pair<std::string, KMCFLoadedWidget>> FLoadedWT;
         std::vector<KMCNPLoadedWidget> FNamePlate;
-        std::vector<std::pair<int, KMCDispConfigs>> FLoadedTIDsConfigs;
-        std::vector<std::pair<int, KMCDispConfigs>> FLoadedWIDsConfigs;
-        std::vector<std::pair<int, KMCDispConfigs>> FLoadedNTIDsConfigs;
-        std::vector<std::pair<int, KMCDispConfigs>> FLoadedNWIDsConfigs;
+        std::unordered_map<int, KMCDispConfigs> FLoadedTIDsConfigs;
+        std::unordered_map<int, KMCDispConfigs> FLoadedWIDsConfigs;
+        std::unordered_map<int, KMCDispConfigs> FLoadedNTIDsConfigs;
+        std::unordered_map<int, KMCDispConfigs> FLoadedNWIDsConfigs;
 
-        std::map<int, int> OutputContainer;
+        std::unordered_map<int, KMCOutputContainer> OutputContainer;
     };
 }

@@ -26,6 +26,7 @@ namespace KMCCT {
                      std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> **loadedWedget);
     int WaitLoadText(int *wid, uint64_t *rand, std::string *root, std::vector<std::pair<uint64_t, int>> **loadedText);
     int WaitLoadNamePlate(int *wid);
+    void WaitOutputLoop();
     void InitMain(std::vector<float> *floatArray);
 #pragma endregion
 
@@ -90,6 +91,7 @@ namespace KMCCT {
                      std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> *loadedWedget);
         int wrap_WaitLoadText(int &wid, uint64_t &rand, 
                          std::vector<std::pair<uint64_t, int>> *loadedText);
+        void wrap_OutputLoop();
 
         void Reset();
         bool GetProfileInitEnd();

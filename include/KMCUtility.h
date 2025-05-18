@@ -29,6 +29,9 @@ namespace KMCCT {
     const float DELAY_THRESHHOLD = 0.01f;
     const double ROUND_N = 4;
 
+    const std::string IS_LOOP = "loop";
+    const std::string IS_NO_LOOP = "noloop";
+
     template <class Event>
     class CallbackEventSink : public RE::BSTEventSink<Event> {
         std::function<void(const Event *)> _callback;
@@ -80,6 +83,8 @@ namespace KMCCT {
         equal,  // TESGlobal == base_value
         unk
     };
+
+    enum class WidgetType { player_widget, player_text_widget, follower_widget, follower_text_widget, none };
 
     enum class KMCProfileSEType { open, end };
 
@@ -388,12 +393,21 @@ namespace KMCCT {
         int font_x, font_y;
     };
 
-    class KMCLoadedWidgetData {
+    struct KMCOutputContainer {
     public:
-        // animation setting
-        const std::string IS_LOOP = "loop";
-        const std::string IS_NO_LOOP = "noloop";
+        KMCOutputContainer() {}
+        KMCOutputContainer(int o, WidgetType w) { 
+            output = o;
+            wt = w;
+        }
 
+
+        int output = -99;
+        WidgetType wt = WidgetType::none;
+    };
+    // animation setting
+
+    class KMCLoadedWidgetData {
     public:
         KMCLoadedWidgetData(){};
 
@@ -414,7 +428,10 @@ namespace KMCCT {
         bool isAnim = false;
         bool isLoop = false;
         int wedget = -1;
+        int bef_widget_id = -1;
         std::vector<int> animWedget;
+        std::vector<int> bef_animWedget;
+        bool init = false;
     };
 
     struct KMCDispConfigs {
@@ -572,8 +589,8 @@ namespace KMCCT {
 
     struct KMCAnimST {
     public:
-        std::vector<std::pair<uint64_t, KMCLoadedWidgetData>>::iterator t;
-        std::vector<std::pair<uint64_t, KMCLoadedWidgetData>>::iterator ft;
+        KMCLoadedWidgetData t;
+        KMCLoadedWidgetData ft;
         int tid = -1;
         int ftid = -1;
         long long time = 0;
@@ -604,8 +621,8 @@ namespace KMCCT {
     public:
         KMCFLoadedWidget() {}
 
-        KMCFLoadedWidget(std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> lw,
-                         std::vector<std::pair<uint64_t, int>> lt) {
+        KMCFLoadedWidget(std::unordered_map<int, KMCLoadedWidgetData> lw,
+                         std::unordered_map<int, KMCLoadedWidgetData> lt) {
             LoadedWedget = std::move(lw);
             LoadedText = std::move(lt);
         }
@@ -616,8 +633,8 @@ namespace KMCCT {
         }
 
     public:
-        std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> LoadedWedget;
-        std::vector<std::pair<uint64_t, int>> LoadedText;
+        std::unordered_map<int, KMCLoadedWidgetData> LoadedWedget;
+        std::unordered_map<int, KMCLoadedWidgetData> LoadedText;
     };
     typedef void (*CutInFunction)(KMCAnimST *st, int &playerorfollower);
     struct KMCCutinOrder {

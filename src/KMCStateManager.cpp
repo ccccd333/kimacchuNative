@@ -551,11 +551,19 @@ namespace KMCCT {
 
                     if (success) {
                         if (b_ref.GetCurrentScene() != nullptr) {
-                            LOG("current scene {} range {}", b_ref.GetName(), isinsceneDetectRange);
-                            KMCCT::KMCWaitTask::GetSingleton()->KMCPushWaitTask(
-                                KMCWaitType::in_scene,
-                                            KMCWaitConfigs(inSceneMS, Clock::now(), KMCWaitType::in_scene, true));
-                            return RE::BSContainer::ForEachResult::kStop;
+                            auto scene = b_ref.GetCurrentScene();
+                            if (scene->flags.any(RE::BGSScene::Flag::kStopOnQuestEnd)) {
+                                LOG("current end scene {} range {} {}", b_ref.GetName(), isinsceneDetectRange,
+                                    (int)(scene->flags.get()));
+
+                            } else {
+                                LOG("current scene {} range {} {}", b_ref.GetName(), isinsceneDetectRange,
+                                    (int)(scene->flags.get()));
+                                KMCCT::KMCWaitTask::GetSingleton()->KMCPushWaitTask(
+                                    KMCWaitType::in_scene,
+                                    KMCWaitConfigs(inSceneMS, Clock::now(), KMCWaitType::in_scene, true));
+                                return RE::BSContainer::ForEachResult::kStop;
+                            }
                         }
                         // result.push_back(&b_ref);
                     }

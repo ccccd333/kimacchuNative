@@ -302,9 +302,9 @@ namespace KMCCT {
         auto *autoWordWF = KMCCT::KMCConfig::GetSingleton()->getIAutoWordWFConfigs();
         auto *playerAutoWord = KMCCT::KMCConfig::GetSingleton()->getIAutoWordConfigs();
         InitLoop(animationRange, autoWordWF, playerAutoWord, &LoadedWedget,
-                 &LoadedText, &LoadedTIDsConfigs, &LoadedWIDsConfigs,
-                 std::stoi(aaaaPlayerTextX), std::stoi(aaaaPlayerTextY), std::stoi(aaaaPlayerWidgetX),
-                 std::stoi(aaaaPlayerWidgetY), &KMCCT::PLAYER_WORD_PATH);
+                 &LoadedText, &LoadedTIDsConfigs, &LoadedWIDsConfigs, std::stoi(aaaaPlayerTextX), std::stoi(aaaaPlayerTextY),
+                 std::stoi(aaaaPlayerWidgetX), std::stoi(aaaaPlayerWidgetY), WidgetType::player_widget, WidgetType::player_text_widget,
+                 &KMCCT::PLAYER_WORD_PATH);
         if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return;
         }
@@ -315,19 +315,21 @@ namespace KMCCT {
             auto *fanimationRange = &(f.IAnimationRange);
             auto *fautoWordWF = &(f.IAutoWordWFConfigs);
             auto *fAutoWord = &(f.IAutoWordConfigs);
-            std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> lw;
-            std::vector<std::pair<uint64_t, int>> lt;
+            std::unordered_map<int, KMCLoadedWidgetData> lw;
+            std::unordered_map<int, KMCLoadedWidgetData> lt;
 
             std::string fwp = KMCCT::FOLLOWER_WORD_PATH + std::to_string(i + 1);
 
             InitLoop(fanimationRange, fautoWordWF, fAutoWord, &lw, &lt, &FLoadedTIDsConfigs, &FLoadedWIDsConfigs,
                      std::stoi(aaaaFollowerTextX), std::stoi(aaaaFollowerTextY), std::stoi(aaaaFollowerWidgetX),
-                     std::stoi(aaaaFollowerWidgetY), &fwp);
+                     std::stoi(aaaaFollowerWidgetY), WidgetType::follower_widget, WidgetType::follower_text_widget, &fwp);
             if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return;
             }
             FLoadedWT.push_back(std::make_pair(std::to_string(i + 1), KMCFLoadedWidget(lw, lt)));
         }
+
+        KMCCT::KMCEventThread::GetSingleton()->wrap_OutputLoop();
     }
 
     void KMCCutin::InterruptCutInEventManager(KMCInterruptPushCutInData data) {
@@ -456,6 +458,28 @@ namespace KMCCT {
         return loadedwid;
     }
 
+    void KMCCutin::OutputLoop() {
+        for (auto &id : OutputContainer) {
+            std::string result = IWW::MainFunctions::GetSingleton()->GetOutput(id.first, "-1");
+            while (result == "W8") {
+                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                    return;
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
+                result = IWW::MainFunctions::GetSingleton()->GetOutput(id.first, "-1");
+            }
+
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                return;
+            }
+            { 
+                std::lock_guard<std::mutex> lock(output_mtx);
+                id.second.output = std::stoi(result);
+            }
+            LOG("KMCCutin::OutputLoop WID = {} BWID = {}", result, id.first);
+        }
+    }
+
 
     int KMCCutin::CondCutIn(KMCCutinValues val) {
         auto node = KMCCT::KMCCutinCondition::GetSingleton()->GetTaskResult();
@@ -522,6 +546,11 @@ namespace KMCCT {
         // std::string aaaakmcvolum = (*variableArray)[7].c_str();
         long long t = c_time * KMCCT::TIME_SCALE_MS;
         bool isAnim = false;
+        std::unordered_map<int, KMCOutputContainer> oc;
+        {
+            std::lock_guard<std::mutex> lock(output_mtx);
+            oc = OutputContainer;
+        }
 
         if (aaaakmctype == "") {
             aaaakmctype = KMCCT::KMCStateManager::GetSingleton()->GetPlayerState();
@@ -572,7 +601,15 @@ namespace KMCCT {
         }
         std::string srand = std::to_string(rand);
 
-        std::vector<std::pair<uint64_t, KMCLoadedWidgetData>>::iterator target;
+
+
+        KMCLoadedWidgetData target;
+
+        WidgetInitEnd(rand, &LoadedWedget, &LoadedText, &LoadedWIDsConfigs, &LoadedTIDsConfigs);
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+            return -99;
+        }
+
         // LOG("KMCEventThread:CutIn PARAM root = {} type = {} aaaakmctime = {} aaaakmcposx = {} aaaakmcposy = {}",
         // skyUiBase, aaaakmctype, aaaakmctime, aaaakmcposx, aaaakmcposy);
 
@@ -586,30 +623,28 @@ namespace KMCCT {
         }
 
         if (pcf.Widget) {
-            auto itPlayerLoadedW = std::find_if(LoadedWedget.begin(), LoadedWedget.end(),
-                                                [rand](const auto &p) { return p.first == rand; });
-            if (itPlayerLoadedW != LoadedWedget.end()) {
-                if (itPlayerLoadedW->second.isAnim) {
+            //auto itPlayerLoadedW = std::find_if(LoadedWedget.begin(), LoadedWedget.end(),
+            //                                    [rand](const auto &p) { return p.first == rand; });
+            if (LoadedWedget.contains(rand)) {
+                target = LoadedWedget.at(rand);
+                if (target.isAnim) {
                     isAnim = true;
                     t = c_animtime * KMCCT::TIME_SCALE_MS;
                 } else {
-                    if (itPlayerLoadedW->second.wedget > 0) {
-                        wid = itPlayerLoadedW->second.wedget;
+                    if (target.wedget > 0) {
+                        wid = target.wedget;
                     } else {
                         pcf.Widget = false;
                     }
                 }
-                target = itPlayerLoadedW;
             } else {
                 pcf.Widget = false;
             }
         }
         if (pcf.Word) {
             // player text
-            auto itPlayerText =
-                std::find_if(LoadedText.begin(), LoadedText.end(), [rand](const auto &p) { return p.first == rand; });
-            if (itPlayerText != LoadedText.end()) {
-                tid = itPlayerText->second;
+            if (LoadedText.contains(rand)) {
+                tid = LoadedText.at(rand).wedget;
             } else {
                 pcf.Word = false;
             }
@@ -628,7 +663,7 @@ namespace KMCCT {
         }
 
         // follower
-        std::vector<std::pair<uint64_t, KMCLoadedWidgetData>>::iterator ftarget;
+        KMCLoadedWidgetData ftarget;
         int frand = -1;
         auto f = FollowerEffectiveDistance(KMCCT::KMCConfig::GetSingleton()->getPlayer(),
                                            KMCCT::KMCConfig::GetSingleton()->getFollowers(), followerDetectRange, rand);
@@ -652,22 +687,29 @@ namespace KMCCT {
                 fcf = itfHideComponents->second;
             }
 
+            WidgetInitEnd(rand, &(FLoadedWT)[frand].second.LoadedWedget, &(FLoadedWT)[frand].second.LoadedText,
+                          &FLoadedWIDsConfigs, &FLoadedTIDsConfigs);
+
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                return -99;
+            }
+
             if (fcf.Widget) {
                 auto *floadedWedget = &((FLoadedWT)[frand].second.LoadedWedget);
-                auto itFLoadedW = std::find_if(floadedWedget->begin(), floadedWedget->end(),
-                                               [rand](const auto &p) { return p.first == rand; });
-                if (itFLoadedW != floadedWedget->end()) {
-                    if (itFLoadedW->second.isAnim) {
+                //auto itFLoadedW = std::find_if(floadedWedget->begin(), floadedWedget->end(),
+                //                               [rand](const auto &p) { return p.first == rand; });
+                if (floadedWedget->contains(rand)) {
+                    ftarget = floadedWedget->at(rand);
+                    if (ftarget.isAnim) {
                         isfAnim = true;
                         t = c_animtime * KMCCT::TIME_SCALE_MS;
                     } else {
-                        if (itFLoadedW->second.wedget > 0) {
-                            fwid = itFLoadedW->second.wedget;
+                        if (ftarget.wedget > 0) {
+                            fwid = ftarget.wedget;
                         } else {
                             fcf.Widget = false;
                         }
                     }
-                    ftarget = itFLoadedW;
 
                     follower = f[target_index].follower;
                     speakTiming = &(f[target_index].ISpeachTiming);
@@ -677,10 +719,11 @@ namespace KMCCT {
             }
             if (fcf.Word) {
                 auto floadedText = (FLoadedWT)[frand].second.LoadedText;
-                auto itFLoadedT = std::find_if(floadedText.begin(), floadedText.end(),
-                                               [rand](const auto &p) { return p.first == rand; });
-                if (itFLoadedT != floadedText.end()) {
-                    ftid = itFLoadedT->second;
+                //auto itFLoadedT = std::find_if(floadedText.begin(), floadedText.end(),
+                //                               [rand](const auto &p) { return p.first == rand; });
+                if (floadedText.contains(rand)) {
+                    //ftid = floadedText.at(rand);
+                    ftid = floadedText.at(rand).wedget;
                 } else {
                     fcf.Word = false;
                 }
@@ -849,11 +892,10 @@ namespace KMCCT {
 
         PlayerNamePlate.set(rtid, rwid, pfont_x, pfont_y, pname_x, pname_y);
 
-        LoadedNTIDsConfigs.push_back(
-            std::make_pair(rtid, KMCDispConfigs(rtid, pfont_x, pfont_y, pnpsetting.r, pnpsetting.g, pnpsetting.b)));
+        LoadedNTIDsConfigs.emplace(rtid, KMCDispConfigs(rtid, pfont_x, pfont_y, pnpsetting.r, pnpsetting.g, pnpsetting.b));
 
         if (rwid > 0) {
-            LoadedNWIDsConfigs.push_back(std::make_pair(rwid, KMCDispConfigs(rwid, pname_x, pname_y)));
+            LoadedNWIDsConfigs.emplace(rwid, KMCDispConfigs(rwid, pname_x, pname_y));
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
@@ -923,10 +965,10 @@ namespace KMCCT {
 
             FNamePlate.push_back(KMCNPLoadedWidget(rftid, rfwid, ffont_x, ffont_y, fname_x, fname_y));
 
-            FLoadedNTIDsConfigs.push_back(std::make_pair(
-                rftid, KMCDispConfigs(rftid, ffont_x, ffont_y, fnpsetting.r, fnpsetting.g, fnpsetting.b)));
+            FLoadedNTIDsConfigs.emplace(
+                rftid, KMCDispConfigs(rftid, ffont_x, ffont_y, fnpsetting.r, fnpsetting.g, fnpsetting.b));
             if (rfwid > 0) {
-                FLoadedNWIDsConfigs.push_back(std::make_pair(rfwid, KMCDispConfigs(rfwid, fname_x, fname_y)));
+                FLoadedNWIDsConfigs.emplace(rfwid, KMCDispConfigs(rfwid, fname_x, fname_y));
             }
         }
     }
@@ -935,22 +977,24 @@ namespace KMCCT {
     void KMCCutin::InitLoop(std::vector<std::pair<std::string, std::string>> *ar,
                   std::vector<std::pair<std::string, std::string>> *awwf,
                   std::vector<std::pair<std::string, std::string>> *aw,
-                  std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> *loadedWedget,
-                  std::vector<std::pair<uint64_t, int>> *loadedText,
-                  std::vector<std::pair<int, KMCDispConfigs>> *loadedTIDsConfigs,
-                  std::vector<std::pair<int, KMCDispConfigs>> *loadedWIDsConfigs, int offset_tx, int offset_ty,
-                  int offset_wx, int offset_wy, const std::string *target) {
+                  std::unordered_map<int, KMCLoadedWidgetData> *loadedWedget, 
+                  std::unordered_map<int, KMCLoadedWidgetData> *loadedText,
+                            std::unordered_map<int, KMCDispConfigs> *loadedTIDsConfigs,
+                            std::unordered_map<int, KMCDispConfigs> *loadedWIDsConfigs, int offset_tx,
+                            int offset_ty,
+                            int offset_wx, int offset_wy, WidgetType widget, WidgetType text_widget,
+                            const std::string *target) {
         auto *autoWordCategories = KMCCT::KMCConfig::GetSingleton()->getIAutoWordCategoriesConfigs();
-        std::set<uint64_t> pushbackResult;
+        std::set<int> pushbackResult;
 
         LOG("Load animation widget");
         // animation widget
         for (auto [key, value] : *ar) {
             try {
                 auto be = KMCSplit(value, ',');
-                uint64_t awcKey = std::stoi(key);
-                uint64_t k = std::stoi(key);
-                loadedWedget->push_back(std::make_pair(k, KMCLoadedWidgetData(true, 0, std::stoi(be.at(1)), be.at(2))));
+                int awcKey = std::stoi(key);
+                int k = std::stoi(key);
+                loadedWedget->emplace(k, KMCLoadedWidgetData(true, 0, std::stoi(be.at(1)), be.at(2)));
                 LOG("InitLW push_back key: {} size: {}", k, be.at(1));
 
                 auto itf = std::find_if(autoWordCategories->begin(), autoWordCategories->end(),
@@ -979,17 +1023,19 @@ namespace KMCCT {
                         if (IsFileExist(KMCCT::PICT_ROOT + filename)) {
                             int wid = IWW::MainFunctions::GetSingleton()->LoadWidget(ct_aaaakmcroot, filename, 10000,
                                                                                      10000, false);
-                            LOG("filename: {} root: {} category: {}", filename, ct_aaaakmcroot, k1);
-                            wid = WaitMultLoad(&wid, &k, &ct_aaaakmcroot, &i, &loadedWedget);
+
+                            LOG("filename: {} root: {} category: {} id : {}", filename, ct_aaaakmcroot, k1, wid);
+                            //wid;  //WaitMultLoad(&wid, &k, &ct_aaaakmcroot, &i, &loadedWedget);
+                            (*loadedWedget)[k].animWedget.at(i) = wid;
+                            OutputContainer.emplace(wid, KMCOutputContainer(-1, widget));
                             if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                                 return;
                             }
 
-                            IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, wid, wx + offset_wx);
-                            IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, wid, wy + offset_wy);
+                            //IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, wid, wx + offset_wx);
+                            //IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, wid, wy + offset_wy);
 
-                            loadedWIDsConfigs->push_back(
-                                std::make_pair(wid, KMCDispConfigs(wid, wx + offset_wx, wy + offset_wy)));
+                            (*loadedWIDsConfigs)[wid] = KMCDispConfigs(wid, wx + offset_wx, wy + offset_wy);
                         } else {
                             WARN("File path not found. If not intended, no problem. {}", filename);
                         }
@@ -1011,7 +1057,7 @@ namespace KMCCT {
         // widget
         for (auto [key, value] : *autoWordCategories) {
             try {
-                uint64_t k = std::stoi(key);
+                int k = std::stoi(key);
 
                 if ((pushbackResult.find(k) != pushbackResult.end()) == false) {
                     std::string k1 = value;
@@ -1037,18 +1083,21 @@ namespace KMCCT {
                         int wid =
                             IWW::MainFunctions::GetSingleton()->LoadWidget(ct_aaaakmcroot, filename, 10000, 10000, false);
 
-                        wid = WaitLoad(&wid, &k, &ct_aaaakmcroot, &loadedWedget);
+                        //wid = WaitLoad(&wid, &k, &ct_aaaakmcroot, &loadedWedget);
+
+                        (*loadedWedget).emplace(k, KMCLoadedWidgetData(false, wid, 0, ""));
+                        OutputContainer.emplace(wid, KMCOutputContainer(-1, widget));
+
                         if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                             return;
                         }
-                        IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, wid, wx + offset_wx);
-                        IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, wid, wy + offset_wy);
+                        //IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, wid, wx + offset_wx);
+                        //IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, wid, wy + offset_wy);
 
-                        loadedWIDsConfigs->push_back(
-                            std::make_pair(wid, KMCDispConfigs(wid, wx + offset_wx, wy + offset_wy)));
+                        (*loadedWIDsConfigs)[wid] = KMCDispConfigs(wid, wx + offset_wx, wy + offset_wy);
                         LOG("KMCEventThread::LOAD fileName = {} id = {}", filename, wid);
                     } else {
-                        loadedWedget->push_back(std::make_pair(k, KMCLoadedWidgetData(false, -1, 0, "")));
+                        (*loadedWedget).emplace(k, KMCLoadedWidgetData(false, -1, 0, ""));
                         WARN("File path not found. If not intended, no problem. {}", filename);
                     }
                 }
@@ -1062,7 +1111,7 @@ namespace KMCCT {
         // Text
         for (auto [key, value] : *aw) {
             try {
-                uint64_t k = std::stoi(key);
+                int k = std::stoi(key);
 
                 std::string font = KMC_DEFAULT_FONT;
                 int fontsize = KMC_DEFAULT_FONT_SIZE;
@@ -1087,21 +1136,184 @@ namespace KMCCT {
                 int wid = IWW::MainFunctions::GetSingleton()->LoadText(ct_aaaakmcroot, value, font, fontsize, 10000, 10000,
                                                                        false);
 
-                wid = WaitLoadText(&wid, &k, &ct_aaaakmcroot, &loadedText);
+                (*loadedText).emplace(k, KMCLoadedWidgetData(false, wid, 0, ""));
+                OutputContainer.emplace(wid, KMCOutputContainer(-1, text_widget));
+
+                //wid = WaitLoadText(&wid, &k, &ct_aaaakmcroot, &loadedText);
                 if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     return;
                 }
-                IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, wid, tx + offset_tx);
-                IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, wid, ty + offset_ty);
-                IWW::MainFunctions::GetSingleton()->SetRGB(ct_aaaakmcroot, wid, r, g, b);
-
-                loadedTIDsConfigs->push_back(
-                    std::make_pair(wid, KMCDispConfigs(wid, tx + offset_tx, ty + offset_ty, r, g, b)));
+                //IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, wid, tx + offset_tx);
+                //IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, wid, ty + offset_ty);
+                //IWW::MainFunctions::GetSingleton()->SetRGB(ct_aaaakmcroot, wid, r, g, b);
+                
+                (*loadedTIDsConfigs)[wid] = KMCDispConfigs(wid, tx + offset_tx, ty + offset_ty, r, g, b);
                 LOG("KMCEventThread::LOAD TEXT = {} id = {} FONT = {} FONT SIZE = {}", value, wid, font, fontsize);
             } catch (...) {
                 ERROR("ERROR AutoWordWFConfig.json. The number of elements in the value is wrong. : {}", *target);
                 // return;
             }
+        }
+    }
+
+    void KMCCutin::WidgetInitEnd(int rand, std::unordered_map<int, KMCLoadedWidgetData> *LWidget,
+                                 std::unordered_map<int, KMCLoadedWidgetData> *LText,
+                                 std::unordered_map<int, KMCDispConfigs> *LWConfig,
+                                 std::unordered_map<int, KMCDispConfigs> *LTConfig) {
+        try {
+            if (LWidget->contains(rand)) {
+                auto *lw = &(LWidget->at(rand));
+                if (!lw->init) {
+                    if (lw->isAnim) {
+                        int index = 0;
+                        lw->bef_animWedget = lw->animWedget;
+
+                        for (auto bef_widget_id : lw->animWedget) {
+                            KMCOutputContainer oc;
+
+                            {
+                                std::lock_guard<std::mutex> lock(output_mtx);
+                                oc = OutputContainer.at(bef_widget_id);
+                            }
+
+                            if (oc.output == -99) {
+                                while (oc.output == -99) {
+                                    if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                                        return;
+                                    }
+                                    std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
+
+                                    {
+                                        std::lock_guard<std::mutex> lock(output_mtx);
+                                        oc = OutputContainer.at(bef_widget_id);
+                                    }
+                                    //LOG("[WIDGET][OUTPUTLOOP] STAY ==> in {} out {}", bef_widget_id, oc.output);
+                                }
+                            }
+                            int widget_id = oc.output;
+                            if (widget_id <= 0) {
+                                ERROR("[WIDGET ERROR] IWW returned less than 0 search id ==> {} new id ==> {}",
+                                      bef_widget_id, widget_id);
+                            } else {
+                                LOG("[WIDGET][OUTPUTLOOP] ==> in {} out {}", bef_widget_id, widget_id);
+
+                                lw->animWedget.at(index) = widget_id;
+
+                                if (LWConfig->contains(bef_widget_id)) {
+                                    auto *config = &(LWConfig->at(bef_widget_id));
+                                    config->id = widget_id;
+                                    IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, widget_id,
+                                                                                config->defx);
+                                    IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, widget_id,
+                                                                                config->defy);
+                                } else {
+                                    ERROR("aaaaaaaaaaaaaaaaaa");
+                                }
+                            }
+
+                            ++index;
+                        }
+                        lw->init = true;
+
+                    } else {
+                        int bef_widget_id = lw->wedget;
+                        KMCOutputContainer oc;
+                        {
+                            std::lock_guard<std::mutex> lock(output_mtx);
+                            oc = OutputContainer.at(bef_widget_id);
+                        }
+
+                        if (oc.output == -99) {
+                            while (oc.output == -99) {
+                                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                                    return;
+                                }
+                                std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
+
+                                {
+                                    std::lock_guard<std::mutex> lock(output_mtx);
+                                    oc = OutputContainer.at(bef_widget_id);
+                                }
+
+                                //LOG("[WIDGET][OUTPUTLOOP] STAY ==> in {} out {}", bef_widget_id, oc.output);
+                            }
+                        }
+
+                        int widget_id = oc.output;
+
+                        if (widget_id <= 0) {
+                            ERROR("[WIDGET ERROR] IWW returned less than 0 search id ==> {} new id ==> {}",
+                                  bef_widget_id, widget_id);
+                        } else {
+                            LOG("[WIDGET][OUTPUTLOOP] ==> in {} out {}", bef_widget_id, widget_id);
+                            lw->wedget = widget_id;
+                            lw->bef_widget_id = bef_widget_id;
+                            lw->init = true;
+                            if (LWConfig->contains(bef_widget_id)) {
+                                auto *config = &(LWConfig->at(bef_widget_id));
+                                config->id = widget_id;
+                                IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, widget_id, config->defx);
+                                IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, widget_id, config->defy);
+                            } else {
+                                ERROR("bbbbbbbbbbb");
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (LText->contains(rand)) {
+                auto *lt = &(LText->at(rand));
+                if (!lt->init) {
+                    int bef_text_id = lt->wedget;
+                    KMCOutputContainer oc;
+                    {
+                        std::lock_guard<std::mutex> lock(output_mtx);
+                        oc = OutputContainer.at(bef_text_id);
+                    }
+
+                    if (oc.output == -99) {
+                        while (oc.output == -99) {
+                            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                                return;
+                            }
+                            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
+
+                            {
+                                std::lock_guard<std::mutex> lock(output_mtx);
+                                oc = OutputContainer.at(bef_text_id);
+                            }
+
+                            //LOG("[TEXT WIDGET][OUTPUTLOOP] STAY ==> in {} out {}", bef_text_id, oc.output);
+                        }
+                    }
+
+                    int text_id = oc.output;
+                    if (text_id <= 0) {
+                        ERROR("[TEXT WIDGET ERROR] IWW returned less than 0 search id ==> {} new id ==> {}",
+                              bef_text_id, text_id);
+                    } else {
+                        LOG("[TEXT WIDGET][OUTPUTLOOP] ==> in {} out {}", bef_text_id, text_id);
+                        lt->wedget = text_id;
+                        lt->bef_widget_id = bef_text_id;
+                        lt->init = true;
+
+                        if (LTConfig->contains(bef_text_id)) {
+                            auto *config = &(LTConfig->at(bef_text_id));
+                            config->id = text_id;
+                            IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, text_id, config->defx);
+                            IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, text_id, config->defy);
+                            IWW::MainFunctions::GetSingleton()->SetRGB(ct_aaaakmcroot, text_id, config->r, config->g,
+                                                                       config->b);
+                        } else {
+                            ERROR("cccccccccc");
+                        }
+                    }
+                }
+            }
+        } catch (std::exception ex) {
+            ERROR("[WIDGET][TEXT WIDGET][OUTPUT LOOP] ERROR wt ==> {}", ex.what());
+            throw ex;
         }
     }
 
@@ -1271,14 +1483,14 @@ namespace KMCCT {
     }
 
 
-    void KMCCutin::AnimationLoop(long long time, std::vector<std::pair<uint64_t, KMCLoadedWidgetData>>::iterator it) {
+    void KMCCutin::AnimationLoop(long long time, KMCLoadedWidgetData it) {
         time_point<Clock> start = Clock::now();
         time_point<Clock> end;
         long long dur = 0;
 
         LOG("--------------KMCEventThread::AnimationLoop START------------");
 
-        bool isloop = it->second.isLoop;
+        bool isloop = it.isLoop;
         std::vector<int>::iterator anim;
 
         while (true) {
@@ -1287,7 +1499,7 @@ namespace KMCCT {
             }
 
             if (isloop == true) {
-                for (anim = it->second.animWedget.begin(); anim != it->second.animWedget.end(); ++anim) {
+                for (anim = it.animWedget.begin(); anim != it.animWedget.end(); ++anim) {
                     if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                         return;
                     }
@@ -1316,7 +1528,7 @@ namespace KMCCT {
         std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::ANIMATION_FRAME_MS));
     }
 
-    void KMCCutin::AnimationLoop(long long time, std::vector<std::pair<uint64_t, KMCLoadedWidgetData>>::iterator it,
+    void KMCCutin::AnimationLoop(long long time, KMCLoadedWidgetData it,
                        std::string trackid, int frand, std::string record, float volume) {
         time_point<Clock> start = Clock::now();
         long long now = 0;
@@ -1326,7 +1538,7 @@ namespace KMCCT {
 
         LOG("--------------KMCEventThread::AnimationLoop START------------");
 
-        bool isloop = it->second.isLoop;
+        bool isloop = it.isLoop;
         std::vector<int>::iterator anim;
 
         std::string nrecord = record;
@@ -1336,7 +1548,7 @@ namespace KMCCT {
             }
 
             if (isloop == true) {
-                for (anim = it->second.animWedget.begin(); anim != it->second.animWedget.end(); ++anim) {
+                for (anim = it.animWedget.begin(); anim != it.animWedget.end(); ++anim) {
                     if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                         return;
                     }
@@ -1529,10 +1741,10 @@ namespace KMCCT {
         int wid;
         if (playerorfollower == 0) {
             if (!st->pcf.Widget) return;
-            wid = st->t->second.wedget;
+            wid = st->t.wedget;
         } else {
             if (!st->fcf.Widget) return;
-            wid = st->ft->second.wedget;
+            wid = st->ft.wedget;
         }
 
         if (wid > 0) {
@@ -1544,10 +1756,10 @@ namespace KMCCT {
         int wid;
         if (playerorfollower == 0) {
             if (!st->pcf.Widget) return;
-            wid = st->t->second.wedget;
+            wid = st->t.wedget;
         } else {
             if (!st->fcf.Widget) return;
-            wid = st->ft->second.wedget;
+            wid = st->ft.wedget;
         }
 
         if (wid > 0) {
@@ -1556,7 +1768,7 @@ namespace KMCCT {
     }
 
     void AnimWidgetVisible(KMCAnimST *st, int &playerorfollower) {
-        std::vector<std::pair<uint64_t, KMCLoadedWidgetData>>::iterator it;
+        KMCLoadedWidgetData it;
         if (playerorfollower == 0) {
             if (!st->pcf.Widget) return;
             it = st->t;
@@ -1566,7 +1778,7 @@ namespace KMCCT {
         }
 
         std::vector<int>::iterator anim;
-        for (anim = it->second.animWedget.begin(); anim != it->second.animWedget.end(); ++anim) {
+        for (anim = it.animWedget.begin(); anim != it.animWedget.end(); ++anim) {
             // int wid = *anim;
             if (*anim > 0) {
                 IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, *anim, true);
@@ -1576,7 +1788,7 @@ namespace KMCCT {
     }
 
     void AnimWidgetInVisible(KMCAnimST *st, int &playerorfollower) {
-        std::vector<std::pair<uint64_t, KMCLoadedWidgetData>>::iterator it;
+        KMCLoadedWidgetData it;
         if (playerorfollower == 0) {
             if (!st->pcf.Widget) return;
             it = st->t;
@@ -1586,7 +1798,7 @@ namespace KMCCT {
         }
 
         std::vector<int>::iterator anim;
-        for (anim = it->second.animWedget.begin(); anim != it->second.animWedget.end(); ++anim) {
+        for (anim = it.animWedget.begin(); anim != it.animWedget.end(); ++anim) {
             if (*anim > 0) {
                 IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, *anim, false);
                 std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_INVISIBLE_MS));
@@ -1647,7 +1859,7 @@ namespace KMCCT {
             KMCCompsFlag cf;
             int frand;
             long long time;
-            std::vector<std::pair<uint64_t, KMCLoadedWidgetData>>::iterator t;
+            KMCLoadedWidgetData t;
             std::string record = "0.0";
             if (playerorfollower == 0) {
                 // player
@@ -1815,7 +2027,7 @@ namespace KMCCT {
 
 
     void KMCMoveWidgetWaitTask(KMCWaitTaskParam st) {
-        std::vector<std::pair<int, KMCDispConfigs>> *loadedIDsConfigs = nullptr;
+        std::unordered_map<int, KMCDispConfigs> *loadedIDsConfigs = nullptr;
         KMCNPLoadedWidget *pnp = KMCCutin::GetSingleton()->GetPlayerNamePlate();
         std::vector<KMCNPLoadedWidget> *fnp = KMCCutin::GetSingleton()->GetFNamePlate();
 
@@ -1840,10 +2052,10 @@ namespace KMCCT {
         }
 
         for (int i = 0; i < loadedIDsConfigs->size(); i++) {
-            std::pair<int, KMCDispConfigs> *configp = &(loadedIDsConfigs->at(i));
-            int id = configp->first;
-            int defx = configp->second.defx;
-            int defy = configp->second.defy;
+            KMCDispConfigs configp = loadedIDsConfigs->at(i);
+            int id = configp.id;
+            int defx = configp.defx;
+            int defy = configp.defy;
             int tox = std::stoi(st.value1);
             int toy = std::stoi(st.value2);
 
