@@ -85,6 +85,7 @@ namespace KMCCT {
         static constexpr const char* PUSH_TEMP_KEYWORDS = "[07][push_temp_keywords]";
         static constexpr const char* PUSH_TEMP_KEYWORD_NAME = "keyword_name";
         static constexpr const char* PUSH_KEYWORD_CATEGORY = "category";
+        static constexpr const char* DISABLE_KEYWORD_CHECK = "disable_keyword_check";
 
         static constexpr const char* TYPE_ADD = "[10][type_add]";
         static constexpr const char* ADD_VALUE = "add_value";
@@ -204,6 +205,7 @@ namespace KMCCT {
         // type keyword
         static constexpr const char* S_TYPE_TEMP_KEYWORD_NAME = "6.keyword_name";
         static constexpr const char* S_TYPE_KEYWORD_CATEGORY = "6.category";
+        static constexpr const char* S_DISABLE_KEYWORD_CHECK = "6.disable_keyword_check";
 
         // type add
         static constexpr const char* F_ADD_VALUE = "5.add_value";

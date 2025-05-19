@@ -11,6 +11,7 @@ namespace KMCCT {
     public:
         std::string category = "";
         std::string keyword_name = "";
+        bool disable_keyword_check = false;
 
         //std::vector<std::string> keywords;
 

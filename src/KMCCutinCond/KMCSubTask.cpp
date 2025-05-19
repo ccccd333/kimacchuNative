@@ -20,6 +20,10 @@ namespace KMCCT {
     }
 
     bool KMCCCKeyword::Check() { 
+        if (this->sub_task_source.disable_keyword_check) {
+            return true;
+        }
+
         if (sub_task_source.adrm == AdRm::both) {
             LOG("[TEMP_KEYWORD_CHECK] add remove both");
             int adm = KMCCT::KMCTempKeywordManager::GetSingleton()->HasTempKeyword(sub_task_source.ad);

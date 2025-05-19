@@ -932,7 +932,6 @@ namespace KMCCT {
 
             // push
             if (node->PushTask()) {
-                LOG("[PUSH] [{}], [PUSH_KEY]===>[{}]", node->post_commit_push_key, node->push_key);
                 node->polling.timer = Clock::now();
                 node->Stop();
             } else {
@@ -980,15 +979,17 @@ namespace KMCCT {
         if (not_cutin) {
             LOG("[PUSH] [NOT CUTIN] [{}], [NPUSH_KEY]===>[{}]", post_commit_push_key, push_key);
             if (sub_task_hub && push_type == PushType::keyword) {
-                LOG("[PUSH TEMP_KEYWORD]")
+                LOG("[PUSH TEMP_KEYWORD] [{}]", post_commit_push_key);
                 return sub_task_hub->PushTask();
             }
             return true;
         }
 
         if (push_type == PushType::cutin) {
+            LOG("[PUSH] [{}], [PUSH_KEY]===>[{}]", post_commit_push_key, push_key);
             return manager->main->TryPush(this->push_key, this);
         } else if (sub_task_hub && push_type == PushType::keyword) {
+            LOG("[PUSH TEMP_KEYWORD] [{}]", post_commit_push_key);
             return sub_task_hub->PushTask();
         }
 
@@ -1106,6 +1107,13 @@ namespace KMCCT {
             this->force_cutin = elem.ivalue == 1;
         } else if (end_name == KMCCLevelTags::S_CUTIN_NAME) {
             this->force_cutin_name = elem.value;
+#pragma endregion
+
+#pragma region[07][push_temp_keywords]
+        } else if (end_name == KMCCLevelTags::S_DISABLE_KEYWORD_CHECK) {
+            if (this->sub_task_hub) {
+                this->sub_task_hub->sub_task_source.disable_keyword_check = elem.ivalue == 1;
+            }
 #pragma endregion
 
 #pragma region[030][flag]
@@ -2387,6 +2395,9 @@ namespace KMCCT {
                 } else if (k1 == KMCCCJsonTags::PUSH_KEYWORD_CATEGORY) {
                     (*sub_task)->sub_task_source.category =
                         NodeTreesGetValue<std::string>(child.second, level, now_json_node, proj_name);
+                } else if (k1 == KMCCCJsonTags::DISABLE_KEYWORD_CHECK) {
+                    (*sub_task)->sub_task_source.disable_keyword_check =
+                        NodeTreesGetValue<int>(child.second, level, now_json_node, proj_name) == 1;
                 } else {
                     ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
