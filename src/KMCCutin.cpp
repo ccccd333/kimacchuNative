@@ -892,10 +892,10 @@ namespace KMCCT {
 
         PlayerNamePlate.set(rtid, rwid, pfont_x, pfont_y, pname_x, pname_y);
 
-        LoadedNTIDsConfigs.emplace(rtid, KMCDispConfigs(rtid, pfont_x, pfont_y, pnpsetting.r, pnpsetting.g, pnpsetting.b));
+        LoadedNTIDsConfigs[rtid] = KMCDispConfigs(rtid, pfont_x, pfont_y, pnpsetting.r, pnpsetting.g, pnpsetting.b);
 
         if (rwid > 0) {
-            LoadedNWIDsConfigs.emplace(rwid, KMCDispConfigs(rwid, pname_x, pname_y));
+            LoadedNWIDsConfigs[rwid] = KMCDispConfigs(rwid, pname_x, pname_y);
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
@@ -965,10 +965,9 @@ namespace KMCCT {
 
             FNamePlate.push_back(KMCNPLoadedWidget(rftid, rfwid, ffont_x, ffont_y, fname_x, fname_y));
 
-            FLoadedNTIDsConfigs.emplace(
-                rftid, KMCDispConfigs(rftid, ffont_x, ffont_y, fnpsetting.r, fnpsetting.g, fnpsetting.b));
+            FLoadedNTIDsConfigs[rftid] = KMCDispConfigs(rftid, ffont_x, ffont_y, fnpsetting.r, fnpsetting.g, fnpsetting.b);
             if (rfwid > 0) {
-                FLoadedNWIDsConfigs.emplace(rfwid, KMCDispConfigs(rfwid, fname_x, fname_y));
+                FLoadedNWIDsConfigs[rfwid] = KMCDispConfigs(rfwid, fname_x, fname_y);
             }
         }
     }
@@ -994,7 +993,7 @@ namespace KMCCT {
                 auto be = KMCSplit(value, ',');
                 int awcKey = std::stoi(key);
                 int k = std::stoi(key);
-                loadedWedget->emplace(k, KMCLoadedWidgetData(true, 0, std::stoi(be.at(1)), be.at(2)));
+                (*loadedWedget)[k] = KMCLoadedWidgetData(true, 0, std::stoi(be.at(1)), be.at(2));
                 LOG("InitLW push_back key: {} size: {}", k, be.at(1));
 
                 auto itf = std::find_if(autoWordCategories->begin(), autoWordCategories->end(),
@@ -1027,7 +1026,7 @@ namespace KMCCT {
                             LOG("filename: {} root: {} category: {} id : {}", filename, ct_aaaakmcroot, k1, wid);
                             //wid;  //WaitMultLoad(&wid, &k, &ct_aaaakmcroot, &i, &loadedWedget);
                             (*loadedWedget)[k].animWedget.at(i) = wid;
-                            OutputContainer.emplace(wid, KMCOutputContainer(-1, widget));
+                            OutputContainer[wid] = KMCOutputContainer(-1, widget);
                             if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                                 return;
                             }
@@ -1085,8 +1084,8 @@ namespace KMCCT {
 
                         //wid = WaitLoad(&wid, &k, &ct_aaaakmcroot, &loadedWedget);
 
-                        (*loadedWedget).emplace(k, KMCLoadedWidgetData(false, wid, 0, ""));
-                        OutputContainer.emplace(wid, KMCOutputContainer(-1, widget));
+                        (*loadedWedget)[k] = KMCLoadedWidgetData(false, wid, 0, "");
+                        OutputContainer[wid] = KMCOutputContainer(-1, widget);
 
                         if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                             return;
@@ -1097,7 +1096,7 @@ namespace KMCCT {
                         (*loadedWIDsConfigs)[wid] = KMCDispConfigs(wid, wx + offset_wx, wy + offset_wy);
                         LOG("KMCEventThread::LOAD fileName = {} id = {}", filename, wid);
                     } else {
-                        (*loadedWedget).emplace(k, KMCLoadedWidgetData(false, -1, 0, ""));
+                        (*loadedWedget)[k] = KMCLoadedWidgetData(false, -1, 0, "");
                         WARN("File path not found. If not intended, no problem. {}", filename);
                     }
                 }
@@ -1136,8 +1135,8 @@ namespace KMCCT {
                 int wid = IWW::MainFunctions::GetSingleton()->LoadText(ct_aaaakmcroot, value, font, fontsize, 10000, 10000,
                                                                        false);
 
-                (*loadedText).emplace(k, KMCLoadedWidgetData(false, wid, 0, ""));
-                OutputContainer.emplace(wid, KMCOutputContainer(-1, text_widget));
+                (*loadedText)[k] = KMCLoadedWidgetData(false, wid, 0, "");
+                OutputContainer[wid] = KMCOutputContainer(-1, text_widget);
 
                 //wid = WaitLoadText(&wid, &k, &ct_aaaakmcroot, &loadedText);
                 if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
@@ -1173,6 +1172,13 @@ namespace KMCCT {
 
                             {
                                 std::lock_guard<std::mutex> lock(output_mtx);
+                                if (!OutputContainer.contains(bef_widget_id)) {
+                                    ERROR(
+                                        "[WIDGET ERROR] Widget ID not found. Please check if there is a warning "
+                                        "message saying that the file cannot be found. search ID ==> {}",
+                                        bef_widget_id);
+                                    return;
+                                }
                                 oc = OutputContainer.at(bef_widget_id);
                             }
 
@@ -1207,7 +1213,7 @@ namespace KMCCT {
                                     IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, widget_id,
                                                                                 config->defy);
                                 } else {
-                                    ERROR("aaaaaaaaaaaaaaaaaa");
+                                    ERROR("[ERROR][WIDGET][OUTPUTLOOP] ==> in {} out {}", bef_widget_id, widget_id);
                                 }
                             }
 
@@ -1220,6 +1226,14 @@ namespace KMCCT {
                         KMCOutputContainer oc;
                         {
                             std::lock_guard<std::mutex> lock(output_mtx);
+
+                            if (!OutputContainer.contains(bef_widget_id)) {
+                                ERROR(
+                                    "[WIDGET ERROR] Widget ID not found. Please check if there is a warning "
+                                    "message saying that the file cannot be found. search ID ==> {}",
+                                    bef_widget_id);
+                                return;
+                            }
                             oc = OutputContainer.at(bef_widget_id);
                         }
 
@@ -1255,7 +1269,7 @@ namespace KMCCT {
                                 IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, widget_id, config->defx);
                                 IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, widget_id, config->defy);
                             } else {
-                                ERROR("bbbbbbbbbbb");
+                                ERROR("[ERROR][WIDGET][OUTPUTLOOP] ==> in {} out {}", bef_widget_id, widget_id);
                             }
                         }
                     }
@@ -1269,6 +1283,14 @@ namespace KMCCT {
                     KMCOutputContainer oc;
                     {
                         std::lock_guard<std::mutex> lock(output_mtx);
+                        if (!OutputContainer.contains(bef_text_id)) {
+                            ERROR(
+                                "[TEXT WIDGET ERROR] Widget ID not found. Please check if there is a warning "
+                                "message saying that the file cannot be found. search ID ==> {}",
+                                bef_text_id);
+                            return;
+                        }
+
                         oc = OutputContainer.at(bef_text_id);
                     }
 
@@ -1306,14 +1328,14 @@ namespace KMCCT {
                             IWW::MainFunctions::GetSingleton()->SetRGB(ct_aaaakmcroot, text_id, config->r, config->g,
                                                                        config->b);
                         } else {
-                            ERROR("cccccccccc");
+                            ERROR("[ERROR][TEXT WIDGET][OUTPUTLOOP] ==> in {} out {}", bef_text_id, text_id);
                         }
                     }
                 }
             }
         } catch (std::exception ex) {
             ERROR("[WIDGET][TEXT WIDGET][OUTPUT LOOP] ERROR wt ==> {}", ex.what());
-            throw ex;
+            //throw ex;
         }
     }
 

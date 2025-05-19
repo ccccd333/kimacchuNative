@@ -559,7 +559,8 @@ namespace KMCCT {
         float add_value = 0.0f;
         float subtract_value = 0.0f;
         float div_value = 0.0f;
-        float mult_value = 0.0f;
+        float mult_value = 1.0f;
+        float mult_to_commited_value = 1.0f;
     };
 
     struct STPolling {

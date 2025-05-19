@@ -800,7 +800,7 @@ namespace KMCCT {
                             sbt.rnode->task_hub->Subtract(sbt.relations.subtract_value, correction);
                             sbt.rnode->task_hub->Div(sbt.relations.div_value, correction);
                             sbt.rnode->task_hub->Mult(sbt.relations.mult_value, correction);
-
+                            sbt.rnode->task_hub->MultToCMValue(sbt.relations.mult_to_commited_value, correction);
                             if (!sbt.rnode->task_hub->IsEpsilon()) {
                                 std::string pushk = sbt.rnode->post_commit_push_key;
                                 if (!pre_commit_nodes.contains(pushk)) {
@@ -891,7 +891,7 @@ namespace KMCCT {
                             sbt.rnode->task_hub->Subtract(sbt.relations.subtract_value, correction);
                             sbt.rnode->task_hub->Div(sbt.relations.div_value, correction);
                             sbt.rnode->task_hub->Mult(sbt.relations.mult_value, correction);
-
+                            sbt.rnode->task_hub->MultToCMValue(sbt.relations.mult_to_commited_value, correction);
                             if (!sbt.rnode->task_hub->IsEpsilon()) {
                                 std::string pushk = sbt.rnode->post_commit_push_key;
                                 completed_nodes.emplace(sbt.rnode->post_commit_push_key, sbt.rnode);
@@ -1167,7 +1167,6 @@ namespace KMCCT {
                 auto *relation = &this->node_relations.at(i).relations;
                 if (elem.kd_path.escape_p == relation->key_name) {
                     relation->add_value = round_n(elem.dvalue, n);
-                    break;
                 }
             }
         } else if (end_name == KMCCLevelTags::S_CALC_SUBTRACT_VALUE) {
@@ -1175,7 +1174,6 @@ namespace KMCCT {
                 auto *relation = &this->node_relations.at(i).relations;
                 if (elem.kd_path.escape_p == relation->key_name) {
                     relation->subtract_value = round_n(elem.dvalue, n);
-                    break;
                 }
             }
         } else if (end_name == KMCCLevelTags::S_CALC_DIV_VALUE) {
@@ -1183,7 +1181,6 @@ namespace KMCCT {
                 auto *relation = &this->node_relations.at(i).relations;
                 if (elem.kd_path.escape_p == relation->key_name) {
                     relation->div_value = round_n(elem.dvalue, n);
-                    break;
                 }
             }
         } else if (end_name == KMCCLevelTags::S_CALC_MULT_VALUE) {
@@ -1191,7 +1188,13 @@ namespace KMCCT {
                 auto *relation = &this->node_relations.at(i).relations;
                 if (elem.kd_path.escape_p == relation->key_name) {
                     relation->mult_value = round_n(elem.dvalue, n);
-                    break;
+                }
+            }
+        } else if (end_name == KMCCLevelTags::S_MULT_TO_COMMITED_VALUE) {
+            for (int i = 0; i < this->node_relations.size(); i++) {
+                auto *relation = &this->node_relations.at(i).relations;
+                if (elem.kd_path.escape_p == relation->key_name) {
+                    relation->mult_to_commited_value = round_n(elem.dvalue, n);
                 }
             }
         } else if (end_name == KMCCLevelTags::F_STAY_TIME) {
@@ -2455,6 +2458,10 @@ namespace KMCCT {
                                         subt.calc = true;
                                     } else if (k3 == KMCCCJsonTags::CALC_MULT_VALUE) {
                                         subt.mult_value = NodeTreesGetValue<float>(
+                                            calc_detail.second, ncdlevel, escape3, project_name, true, '@', k1);
+                                        subt.calc = true;
+                                    } else if (k3 == KMCCCJsonTags::MULT_TO_COMMITED_VALUE) {
+                                        subt.mult_to_commited_value = NodeTreesGetValue<float>(
                                             calc_detail.second, ncdlevel, escape3, project_name, true, '@', k1);
                                         subt.calc = true;
                                     } else {

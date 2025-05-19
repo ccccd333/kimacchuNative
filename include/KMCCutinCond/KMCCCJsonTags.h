@@ -114,6 +114,7 @@ namespace KMCCT {
         static constexpr const char* CALC_SUBTRACT_VALUE = "subtract_value";
         static constexpr const char* CALC_DIV_VALUE = "div_value";
         static constexpr const char* CALC_MULT_VALUE = "mult_value";
+        static constexpr const char* MULT_TO_COMMITED_VALUE = "mult_to_commited_value";
 
         static constexpr const char* TARGET_NODE = "target_node";
         static constexpr const char* CALC_TIMING = "calc_timing";
@@ -227,6 +228,7 @@ namespace KMCCT {
         static constexpr const char* S_CALC_SUBTRACT_VALUE = "6.subtract_value";
         static constexpr const char* S_CALC_DIV_VALUE = "6.div_value";
         static constexpr const char* S_CALC_MULT_VALUE = "6.mult_value";
+        static constexpr const char* S_MULT_TO_COMMITED_VALUE = "6.mult_to_commited_value";
 
         static constexpr const char* S_TARGET_NODE = "6.target_node";
         static constexpr const char* S_CALC_TIMING = "6.calc_timing";
