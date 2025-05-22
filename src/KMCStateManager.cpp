@@ -8,6 +8,7 @@
 #include "KMCWaitTask.h"
 #include "KMCCutin.h"
 #include "KMCGameEventListener.h"
+#include "RE/Misc.h"
 
 SINGLETONBODY(KMCCT::KMCStateManager)
 
@@ -519,7 +520,7 @@ namespace KMCCT {
             }
         }
     }
-
+    
     int KMCStateManager::IsInScene() { 
         if (actorNPC == nullptr) return -1;
         auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
@@ -551,19 +552,31 @@ namespace KMCCT {
 
                     if (success) {
                         if (b_ref.GetCurrentScene() != nullptr) {
-                            auto scene = b_ref.GetCurrentScene();
-                            if (scene->flags.any(RE::BGSScene::Flag::kStopOnQuestEnd)) {
-                                LOG("current end scene {} range {} {}", b_ref.GetName(), isinsceneDetectRange,
-                                    (int)(scene->flags.get()));
+                            auto act = b_ref.As<RE::Actor>();
+                            if (act) {
+                                auto charc = act->As<RE::Character>();
+                                if (charc && RE::IsTalking(charc)) {
+                                    LOG("[CURRENT SCENE] name {} range {}", b_ref.GetName(), isinsceneDetectRange);
 
-                            } else {
-                                LOG("current scene {} range {} {}", b_ref.GetName(), isinsceneDetectRange,
-                                    (int)(scene->flags.get()));
-                                KMCCT::KMCWaitTask::GetSingleton()->KMCPushWaitTask(
-                                    KMCWaitType::in_scene,
-                                    KMCWaitConfigs(inSceneMS, Clock::now(), KMCWaitType::in_scene, true));
-                                return RE::BSContainer::ForEachResult::kStop;
+                                    KMCCT::KMCWaitTask::GetSingleton()->KMCPushWaitTask(
+                                        KMCWaitType::in_scene,
+                                        KMCWaitConfigs(inSceneMS, Clock::now(), KMCWaitType::in_scene, true));
+                                    return RE::BSContainer::ForEachResult::kStop;
+                                }
                             }
+                            //auto scene = b_ref.GetCurrentScene();
+                            //if (scene->flags.any(RE::BGSScene::Flag::kStopOnQuestEnd)) {
+                            //    LOG("current end scene {} range {} {}", b_ref.GetName(), isinsceneDetectRange,
+                            //        (int)(scene->flags.get()));
+
+                            //} else {
+                            //    LOG("current scene {} range {} {}", b_ref.GetName(), isinsceneDetectRange,
+                            //        (int)(scene->flags.get()));
+                            //    KMCCT::KMCWaitTask::GetSingleton()->KMCPushWaitTask(
+                            //        KMCWaitType::in_scene,
+                            //        KMCWaitConfigs(inSceneMS, Clock::now(), KMCWaitType::in_scene, true));
+                            //    return RE::BSContainer::ForEachResult::kStop;
+                            //}
                         }
                         // result.push_back(&b_ref);
                     }
