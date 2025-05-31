@@ -10,3 +10,6 @@
 [submodule "CLibUtil"]
 	path = CLibUtil
 	url = https://github.com/powerof3/CLibUtil.git
+[submodule "skse/SKSE-CMakeModules"]
+	path = skse/SKSE-CMakeModules
+	url = https://github.com/Exit-9B/SKSE-CMakeModules.git
