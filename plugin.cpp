@@ -1,5 +1,6 @@
 #include "KMCRegister.h"
 #include <IWWPapyrus.h>
+//#include "src/hooks/hooks.h"
 
 //#include <SkyrimScripting/Plugin.h>
 
@@ -21,6 +22,11 @@ namespace KMCCT {
 
         SKSE::GetMessagingInterface()->RegisterListener(KMCCT::OnMessageReceived);
         SKSE::GetPapyrusInterface()->Register(KMCCT::PapyrusRegister);
+
+	    //if (!KMCCT::Install()) {
+     //       ERROR("Failed to install necessary hooks.");
+     //   }
+
         //const auto serialization = SKSE::GetSerializationInterface();
         //RE::ScriptEventSourceHolder::GetSingleton()->AddEventSink<EventType>(
         //    new CallbackEventSink<EventType>(callback));

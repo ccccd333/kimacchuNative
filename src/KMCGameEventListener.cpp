@@ -13,6 +13,7 @@ namespace KMCCT {
     std::vector<std::function<void(const RE::TESFastTravelEndEvent*)>> callback_fast_travel_end_event;
     std::vector<std::function<void(const RE::MenuOpenCloseEvent*)>> callback_menu_open_close_event;
     std::vector<std::function<void(const RE::TESDeathEvent*)>> callback_death_event_event;
+    std::vector<std::function<void(const RE::TESEquipEvent*)>> callback_equip_event;
 
     void KMCGameEventListener::Init() {
         if (callback_container_change_event.size() > 0) {
@@ -54,6 +55,14 @@ namespace KMCCT {
                 }
             });
         }
+
+        if (callback_equip_event.size() > 0) {
+            On<RE::TESEquipEvent>([](const RE::TESEquipEvent* event) {
+                for (auto callback : callback_equip_event) {
+                    callback(event);
+                }
+            });
+        }
     }
 
     void KMCGameEventListener::SetCallBack(std::function<void(const RE::TESContainerChangedEvent*)> callback) {
@@ -70,5 +79,8 @@ namespace KMCCT {
     }
     void KMCGameEventListener::SetCallBack(std::function<void(const RE::TESDeathEvent*)> callback) {
         callback_death_event_event.emplace_back(callback);
+    }
+    void KMCGameEventListener::SetCallBack(std::function<void(const RE::TESEquipEvent*)> callback) {
+        callback_equip_event.emplace_back(callback);
     }
 }

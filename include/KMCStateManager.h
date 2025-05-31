@@ -140,6 +140,7 @@ namespace KMCCT {
         void SetResultStrageUtil(std::vector<std::string> result);
         std::vector<MultiTypeValue> *GetStrageUtilResult() { return &strage_util_access_map.results; }
         std::vector<KMCValueType>* GetStrageUtilValueType() { return &strage_util_access_map.results_value_type; }
+        //void AllowDialogue(RE::Actor* a_speaker, RE::TESTopic* a_topic);
 
         // event 
         void AddItemEvent(const RE::TESContainerChangedEvent* event);
@@ -151,7 +152,6 @@ namespace KMCCT {
         void InitDetectionItems(std::vector<std::pair<std::string, std::string>>* dconfig, RE::Actor* actor,
                                 StateFunc f, KMCDetectionType type, std::vector<std::string> messages);
         void InitDetectionStrageUtil(std::vector<std::pair<std::string, std::string>>* dconfig, RE::Actor* actor);
-
     private:
         
         std::vector<RE::BGSKeyword*> keywordsExcludeDuringScene;

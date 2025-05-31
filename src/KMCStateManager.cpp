@@ -8,7 +8,6 @@
 #include "KMCWaitTask.h"
 #include "KMCCutin.h"
 #include "KMCGameEventListener.h"
-#include "RE/Misc.h"
 
 SINGLETONBODY(KMCCT::KMCStateManager)
 
@@ -555,7 +554,7 @@ namespace KMCCT {
                             auto act = b_ref.As<RE::Actor>();
                             if (act) {
                                 auto charc = act->As<RE::Character>();
-                                if (charc && RE::IsTalking(charc)) {
+                                if (charc && KMCCT::IsTalking(charc)) {
                                     LOG("[CURRENT SCENE] name {} range {}", b_ref.GetName(), isinsceneDetectRange);
 
                                     KMCCT::KMCWaitTask::GetSingleton()->KMCPushWaitTask(
@@ -564,21 +563,7 @@ namespace KMCCT {
                                     return RE::BSContainer::ForEachResult::kStop;
                                 }
                             }
-                            //auto scene = b_ref.GetCurrentScene();
-                            //if (scene->flags.any(RE::BGSScene::Flag::kStopOnQuestEnd)) {
-                            //    LOG("current end scene {} range {} {}", b_ref.GetName(), isinsceneDetectRange,
-                            //        (int)(scene->flags.get()));
-
-                            //} else {
-                            //    LOG("current scene {} range {} {}", b_ref.GetName(), isinsceneDetectRange,
-                            //        (int)(scene->flags.get()));
-                            //    KMCCT::KMCWaitTask::GetSingleton()->KMCPushWaitTask(
-                            //        KMCWaitType::in_scene,
-                            //        KMCWaitConfigs(inSceneMS, Clock::now(), KMCWaitType::in_scene, true));
-                            //    return RE::BSContainer::ForEachResult::kStop;
-                            //}
                         }
-                        // result.push_back(&b_ref);
                     }
                 }
                 return RE::BSContainer::ForEachResult::kContinue;
@@ -632,6 +617,33 @@ namespace KMCCT {
         }
         StrageUtilReady = true;
     }
+
+    //void KMCStateManager::AllowDialogue(RE::Actor* a_speaker, RE::TESTopic* a_topic) {
+    //    using DialogueData = RE::DIALOGUE_DATA::Subtype;
+    //    using DialogueType = RE::DIALOGUE_TYPE;
+
+    //    bool isFollower = a_speaker->IsPlayer();
+    //    if (!a_speaker->IsPlayer()) {
+    //        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+    //        float isinsceneDetectRange = isinsceneDetectRangeExterior;
+    //        auto cell = player->GetParentCell();
+    //        if (cell != nullptr && cell->IsInteriorCell()) {
+    //            isinsceneDetectRange = isinsceneDetectRangeInterior;
+    //        }
+
+    //        float dist = a_speaker->data.location.GetDistance(player->data.location);
+
+    //        if (dist < isinsceneDetectRange) {
+    //            LOG("[CURRENT SCENE] name {} range {}", a_speaker->GetName(), isinsceneDetectRange);
+
+    //            KMCCT::KMCWaitTask::GetSingleton()->KMCPushWaitTask(
+    //                KMCWaitType::in_scene, KMCWaitConfigs(inSceneMS, Clock::now(), KMCWaitType::in_scene, true));
+    //            return;
+    //        } else {
+    //            LOG("[N CURRENT SCENE] name {} range {} dist {}", a_speaker->GetName(), isinsceneDetectRange, dist);
+    //        }
+    //    }
+    //}
 
     std::string KMCStateManager::GetPlayerState() {
         std::string state = GetHighestPriorityPlayer();

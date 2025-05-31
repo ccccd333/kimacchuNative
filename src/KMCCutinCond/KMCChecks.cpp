@@ -3,6 +3,7 @@
 #include <boost/any.hpp>
 
 #include "KMCConfig.h"
+#include "KMCCutinCondition.h"
 #include "KMCTempKeywordManager.h"
 
 namespace KMCCT {
@@ -504,10 +505,42 @@ namespace KMCCT {
             for (auto& formv : value) {
                 LOG("[Evaluate] EntryNo ==> {} Formula ==> {} comp1 ==> {} comp2 ==> {}", key, formv->cond,
                     formv->comp1(), formv->comp2());
-                if (JudgeKMCInequalitySign(formv->isign, formv->comp1(), formv->comp2())) {
-                    t = true;
+                if (formv->isCacheable) {
+                    if (formv->cache_type == KMCCacheType::armo) {
+                        auto worn_armo_r =
+                            KMCCT::KMCCutinCondition::GetSingleton()->GetMain()->cache_container.GetWornArmorResult();
+
+                        auto f_v = [&worn_armo_r, &t, &f](RE::FormID formid, int idx, bool worn) {
+                            if (worn_armo_r.contains(idx)) {
+                                bool res = worn_armo_r[idx];
+                                if (worn) {
+                                    if (res) {
+                                        t = true;
+                                    } else {
+                                        f = true;
+                                    }
+                                } else {
+                                    if (res) {
+                                        f = true;
+                                    } else {
+                                        t = true;
+                                    }
+                                }
+                            } else {
+                                ERROR("armo of formula, but it does not exist");
+                            }
+                        };
+
+                        f_v(formv->c_form_id, formv->c_index, formv->c_is_worn);
+                    } else {
+                        ERROR("Unknown classification even though the target is a cache in FORMULA.");
+                    }
                 } else {
-                    f = true;
+                    if (JudgeKMCInequalitySign(formv->isign, formv->comp1(), formv->comp2())) {
+                        t = true;
+                    } else {
+                        f = true;
+                    }
                 }
             }
 

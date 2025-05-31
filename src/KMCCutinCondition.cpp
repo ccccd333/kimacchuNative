@@ -70,22 +70,6 @@ namespace KMCCT {
     void KMCCutinCondition::Init() {
         // formid‚È‚Ç‚Ì‰ðŒˆ‚ðs‚¤
 
-        // disable manager and nodes
-        for (auto &manager : custom_cond.managers) {
-            if (manager.get()->disable) {
-                WARN("[Disable] Path : {}", manager.get()->cond_custom_pro_name);
-            } else {
-                WARN("[Enable] Path : {}", manager.get()->cond_custom_pro_name);
-                for (auto &node : manager.get()->nodes) {
-                    if (node.get()->disable) {
-                        WARN("[Disable] Path : {}", node.get()->project_name);
-                    } else {
-                        WARN("[Enable] Path : {}", node.get()->project_name);
-                    }
-                }
-            }
-        }
-
         auto itr = custom_cond.managers.begin();
         while (itr != custom_cond.managers.end()) {
             if (!itr->get()->disable) {
@@ -146,22 +130,9 @@ namespace KMCCT {
                     if (source.sub1_category == KMCCCSubCategory::BODY_SLOT) {
                         mnger->source.body_slot_build();
                     } else if (source.main_category == KMCCCMainCategory::FORMULA) {
-                        int andor_c = 0;
-                        for (int formi = 0; formi < mnger->source.formula.size(); formi++) {
-                            auto fm = &mnger->source.formula.at(formi);
-                            if (!fm->Build()) {
-                                mnger->disable = true;
-                                ERROR("The formula definition is incorrect. Please review it.");
-                                break;
-                            }
-
-                            mnger->source.cond_formula[andor_c].emplace_back(fm);
-                            if (fm->and_or == AndOr::isOr) {
-                                LOG("[FROMULA OR] {} EntryNo ==> {}", fm->cond, andor_c);
-                                ++andor_c;
-                            } else {
-                                LOG("[FROMULA AND] {} EntryNo ==> {}", fm->cond, andor_c);
-                            }
+                        if (!mnger->source.build_formula(mnger->source)) {
+                            mnger->disable = true;
+                            ERROR("An error has occurred in formula");
                         }
 
                     } else if (source.main_category == KMCCCMainCategory::TEMP_KEYWORD) {
@@ -308,6 +279,10 @@ namespace KMCCT {
                 }
             }
         }
+
+        if (custom_cond.cache_container.isCacheable) {
+            custom_cond.cache_container.PreCache();
+        }
     }
 
     int KMCCutinCondition::ToMove(const KMCCCStartArg &args) {
@@ -379,6 +354,10 @@ namespace KMCCT {
     void KMCCutinCondition::ResetAll() {
         for (auto &[k, wnv] : work_nodes) {
             wnv->Reset();
+        }
+
+        if (custom_cond.cache_container.isCacheable) {
+            custom_cond.cache_container.CacheReset();
         }
     }
 
@@ -580,8 +559,9 @@ namespace KMCCT {
             }
         }
         //}
-        return -1;
         LOG("KMCCutinCondition::SetResultMCM NG: option[{}] : result_value[{}]", option, result_value);
+        return -1;
+
     }
 
     bool KMCCutinCondition::IsUpdateMCM() { return result_array.size() > 0; }
@@ -704,8 +684,6 @@ namespace KMCCT {
         //    ERROR("[SAVE ERROR] wt:{}", ex.what());
         //    return ex.what();
         //}
-
-        return "";
     }
 
     void KMCCutinCondition::Update() {

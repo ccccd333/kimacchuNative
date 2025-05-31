@@ -15,6 +15,7 @@ namespace KMCCT {
         void SetCallBack(std::function<void(const RE::TESFastTravelEndEvent*)> callback);
         void SetCallBack(std::function<void(const RE::MenuOpenCloseEvent*)> callback);
         void SetCallBack(std::function<void(const RE::TESDeathEvent*)> callback);
+        void SetCallBack(std::function<void(const RE::TESEquipEvent*)> callback);
 
         void Init();
     private:

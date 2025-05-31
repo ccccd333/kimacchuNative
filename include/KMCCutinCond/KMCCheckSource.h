@@ -2,6 +2,7 @@
 #include "KMCUtility.h"
 #include "KMCCCJsonTags.h"
 #include "IWWFunctions.h"
+#include "KMCCutinCond/KMCCache.h"
 #include <boost/algorithm/string/trim.hpp>
 
 namespace KMCCT {
@@ -123,21 +124,59 @@ namespace KMCCT {
         enum class KMCCompType {
             value,
             glob,
+            armo,
             none
         };
 
         KMCCompType GetType(std::string v, std::vector<std::string> &r);
         bool GetComp1Global(std::vector<std::string> &v, std::string a);
         bool GetComp2Global(std::vector<std::string> &v, std::string a);
+
+        bool GetComp1Armo(std::vector<std::string> &v, std::string a);
+        bool GetComp2Armo(std::vector<std::string> &v, std::string a);
+
         bool GetComp1Value(std::vector<std::string> &v, std::string a);
         bool GetComp2Value(std::vector<std::string> &v, std::string a);
         bool Build();
 
+        void Cache(int& index, KMCCacheContainer& cc) {
+            Cache(0, index, cc);
+            Cache(1, index, cc);
+        }
+
+        void Cache(int target, int &index, KMCCacheContainer &cc) {
+            if (target == 0) {
+                if (comp_type1 == KMCCompType::armo) {
+                    index = cc.Add(armo_1);
+                    idx_armo_1 = index;
+                    cache_type = KMCCacheType::armo;
+                    isCacheable = true;
+                }
+            } else {
+                if (comp_type2 == KMCCompType::armo) {
+                    index = cc.Add(armo_2);
+                    idx_armo_2 = index;
+                    cache_type = KMCCacheType::armo;
+                    isCacheable = true;
+                }
+            }
+        }
+
+        void EndProc();
+
+        KMCCompType comp_type1 = KMCCompType::none;
+        KMCCompType comp_type2 = KMCCompType::none;
         bool not_equal = false;
         std::string cond = "";
 
         RE::TESGlobal *glob_1 = nullptr;
         RE::TESGlobal *glob_2 = nullptr;
+        RE::TESObjectARMO *p_armo_1 = nullptr;
+        RE::FormID armo_1 = 0;
+        int idx_armo_1 = -1;
+        RE::TESObjectARMO *p_armo_2 = nullptr;
+        RE::FormID armo_2 = 0;
+        int idx_armo_2 = -1;
         float comp_v_1 = 0.0;
         float comp_v_2 = 0.0;
 
@@ -146,6 +185,15 @@ namespace KMCCT {
 
         KMCInequalitySign isign = KMCInequalitySign::equal;
         AndOr and_or = AndOr::none;
+
+        // chace
+        bool isCacheable = false;
+        KMCCacheType cache_type = KMCCacheType::none;
+
+        // armo
+        RE::FormID c_form_id = 0;
+        int c_index = -1;
+        bool c_is_worn = false;
     };
 
     class KMCCCheckSource {
@@ -180,6 +228,9 @@ namespace KMCCT {
         // formula
         std::vector<KMCFormula> formula;
         std::map<int, std::vector<KMCFormula*>> cond_formula;
+
+    private:
+        int cache_index = 0;
         
     public:
         void body_slot_build() { 
@@ -243,6 +294,8 @@ namespace KMCCT {
 
             return true;
         }
+
+        bool build_formula(KMCCCheckSource &source);
 
         //bool EvaluateFormula() {
         //    for (auto &[key, value] : cond_formula) {

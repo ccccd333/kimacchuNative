@@ -702,7 +702,7 @@ namespace KMCCT {
 
     template <class... Args>
     void PapyrusFuncCall(std::string script_n, std::string func_n, RE::TESForm *form, Args... a_args) {
-        if (form) {
+        if (form && form->formType) {
             auto vm = RE::BSScript::Internal::VirtualMachine::GetSingleton();
             auto policy = vm->GetObjectHandlePolicy();
             RE::VMHandle handle = policy->GetHandleForObject(form->GetFormType(), form);
@@ -724,7 +724,10 @@ namespace KMCCT {
         }
     }
 
+    bool IsTalking(RE::Character *a_character);
+
     void KMCIsWorn(RE::Actor *actor, std::vector<std::uint32_t> worn_slot, std::vector<bool> &result);
+    bool KMCIsWorn(RE::Actor *actor, RE::TESObjectARMO *armo);
 
     void NamePlateSimplyWipe(KMCNPLoadedWidget id, std::string aaaakmcroot);
     void NamePlateFadeOut(KMCNPLoadedWidget id, std::string aaaakmcroot);

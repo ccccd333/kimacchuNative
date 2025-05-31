@@ -460,8 +460,15 @@ namespace KMCCT {
     //     }
     // }
 
+    using Slot = RE::BIPED_MODEL::BipedObjectSlot;
+    bool IsTalking(RE::Character *a_character) {
+        using func_t = decltype(&IsTalking);
+        static REL::Relocation<func_t> func{RELOCATION_ID(36277, 37266)};
+        return func(a_character);
+    }
+
     void KMCIsWorn(RE::Actor *actor, std::vector<std::uint32_t> worn_slot, std::vector<bool> &result) {
-        using Slot = RE::BIPED_MODEL::BipedObjectSlot;
+        
         if (worn_slot.empty()) {
             return;
         }
@@ -494,6 +501,22 @@ namespace KMCCT {
                 }
             }
         }
+    }
+
+    bool KMCIsWorn(RE::Actor* actor, RE::TESObjectARMO* armo) {
+        auto inv = actor->GetInventory();
+
+        for (auto &[item, data] : inv) {
+            const auto &[count, entry] = data;
+            if (count > 0 && entry->IsWorn()) {
+                const auto armor = entry->GetObject()->As<RE::TESObjectARMO>();
+                if (armor->GetFormID() == armo->GetFormID()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     void NamePlateSimplyWipe(KMCNPLoadedWidget id, std::string aaaakmcroot) {

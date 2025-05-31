@@ -6,6 +6,7 @@
 #include "KMCCutinCond/KMCValidator.h"
 #include "KMCCutinCond/KMCSubTask.h"
 #include "KMCCutinCond/KMCCKeyDetail.h"
+#include "KMCCutinCond/KMCCache.h"
 #include "KMCCutin.h"
 
 namespace KMCCT {
@@ -173,7 +174,9 @@ namespace KMCCT {
         std::map<std::string, KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>*> pre_completed_nodes;
         std::map<std::string, KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>*> completed_nodes;
 
-        std::map<std::string, KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>*> post_nodes;        
+        std::map<std::string, KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>*> post_nodes;    
+
+        KMCCacheContainer cache_container;
     };
 
     class KMCCutinCondition {
@@ -202,6 +205,8 @@ namespace KMCCT {
         int SetResultMCM(std::string root_name, std::string work_name, int option, std::string result_value);
         bool IsUpdateMCM();
         std::string SaveKMCMCM();
+
+        KMCCustomCondMain* GetMain() { return &custom_cond; }
     private:
         void Update();
         void PreProcess();
