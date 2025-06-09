@@ -9,7 +9,7 @@ namespace KMCCT {
 
     void InitLoop(std::vector<std::pair<std::string, RE::BGSSoundDescriptorForm*>> *target,
                   std::vector<std::pair<std::string, std::string>>* sdfc,
-                  std::vector<std::pair<std::string, KMCSECond>>* targetSE,
+                  std::map<std::string, std::map<std::string, KMCSECond>>* targetSE,
                   std::vector<std::pair<std::string, std::map<std::string, std::string>>>* sdse, RE::Actor* player,
                   RE::Actor* follower) {
         {
@@ -68,8 +68,9 @@ namespace KMCCT {
                                 if (std::stoi(spvalue.at(3)) != PLAY_SE_PLAYER_POS) {
                                     if (follower == nullptr) {
                                         ERROR(
-                                            "ERROR LOADING SoundDescriptorSEFormId.json. Error at nested node. not found follower {}",
+                                            "ERROR LOADING SoundEffect.json. Error at nested node. not found follower {}",
                                             key3);
+                                        continue;
                                     } else {
                                         SEPoint = follower;
                                     }
@@ -77,7 +78,16 @@ namespace KMCCT {
                             } catch (...) {
                             }
                             std::string record = spvalue.at(2);
-                            targetSE->push_back(std::make_pair(trackid + "," + record, KMCSECond(sd, SEPoint)));
+                            if (targetSE->contains(trackid)) {
+                                auto recordmap = (*targetSE)[trackid];
+                                if (recordmap.contains(record)) {
+                                    LOG("SoundDiscription SE Sound effects cannot be played at the same time.Please use different values. = key:{} FORM ID:{} record:{}",
+                                        trackid, value3,
+                                        record);
+                                    continue;
+                                }
+                            }
+                            (*targetSE)[trackid][record] = KMCSECond(sd, SEPoint);
 
                             LOG("SoundDiscription SE Loaded = key:{} FORM ID:{} record:{}", trackid, value3, record);
                         } catch (...) {
@@ -92,52 +102,52 @@ namespace KMCCT {
         }
     }
     
-    void BuildIndex(std::vector<std::pair<std::string, KMCSECond>>* SE,
-                    std::vector<std::pair<std::string, size_t>>* target) {
-        std::vector<std::pair<std::string, KMCSECond>> copy(SE->size()); 
-        std::copy(SE->begin(), SE->end(), copy.begin());
+    //void BuildIndex(std::vector<std::pair<std::string, KMCSECond>>* SE,
+    //                std::vector<std::pair<std::string, size_t>>* target) {
+    //    std::vector<std::pair<std::string, KMCSECond>> copy(SE->size()); 
+    //    std::copy(SE->begin(), SE->end(), copy.begin());
 
-        size_t offset = 0;
-        size_t origin = 0;
-        
-        auto i = SE->begin();
-        for (; i != SE->end();) {
-            std::vector<std::pair<std::string, size_t>> vec;
-            auto sp = KMCSplit(i->first, ',');
-            std::string tid = sp[0];
-            std::string rid = sp[1];
-            std::string irid = "";
+    //    size_t offset = 0;
+    //    size_t origin = 0;
+    //    
+    //    auto i = SE->begin();
+    //    for (; i != SE->end();) {
+    //        std::vector<std::pair<std::string, size_t>> vec;
+    //        auto sp = KMCSplit(i->first, ',');
+    //        std::string tid = sp[0];
+    //        std::string rid = sp[1];
+    //        std::string irid = "";
 
-            auto it = copy.begin() + offset;
-            for (; it != copy.end(); ++it) {
-                auto isp = KMCSplit(it->first, ',');
-                std::string iitid = isp[0];
-                std::string iirid = isp[1];
-                if (tid == iitid && rid == iirid) {
-                    irid = iirid;
-                    ++offset;
-                } else {
-                    vec.push_back(std::make_pair(rid, origin));
-                    LOG("BuildIndex k1 {} v1 {} k2 {} v2 {} of {} or {}", tid, rid, iitid, iirid, offset, origin);
-                    break;
-                }
-            }
+    //        auto it = copy.begin() + offset;
+    //        for (; it != copy.end(); ++it) {
+    //            auto isp = KMCSplit(it->first, ',');
+    //            std::string iitid = isp[0];
+    //            std::string iirid = isp[1];
+    //            if (tid == iitid && rid == iirid) {
+    //                irid = iirid;
+    //                ++offset;
+    //            } else {
+    //                vec.push_back(std::make_pair(rid, origin));
+    //                LOG("BuildIndex k1 {} v1 {} k2 {} v2 {} of {} or {}", tid, rid, iitid, iirid, offset, origin);
+    //                break;
+    //            }
+    //        }
 
-            if (it == copy.end()) {
-                LOG("BuildIndex k1 {} v1 {} of {} or {}", tid, rid, offset, origin);
-                target->push_back(std::make_pair(tid + "," + irid, origin));
-                break;
-            } else {
-                target->push_back(std::make_pair(tid + "," + irid, origin));
-                i = i + offset - origin;
-                origin = offset;
-            }
-        }
-    }
+    //        if (it == copy.end()) {
+    //            LOG("BuildIndex k1 {} v1 {} of {} or {}", tid, rid, offset, origin);
+    //            target->push_back(std::make_pair(tid + "," + irid, origin));
+    //            break;
+    //        } else {
+    //            target->push_back(std::make_pair(tid + "," + irid, origin));
+    //            i = i + offset - origin;
+    //            origin = offset;
+    //        }
+    //    }
+    //}
     
-    bool compare(std::pair<std::string, KMCSECond>& p1, std::pair<std::string, KMCSECond>& p2) {
-        return p1.first < p2.first;
-    }
+    //bool compare(std::pair<std::string, KMCSECond>& p1, std::pair<std::string, KMCSECond>& p2) {
+    //    return p1.first < p2.first;
+    //}
     void KMCSound::Init() {
         // sound desc mapping
         
@@ -145,20 +155,20 @@ namespace KMCCT {
         auto soundDescriptorSEFormId = KMCCT::KMCConfig::GetSingleton()->getISoundDescriptorSEFormIdConfigs();
         InitLoop(&SoundDescriptorMap, soundDescriptorFormId, &SoundDescriptorSEMap, soundDescriptorSEFormId,
                  KMCCT::KMCConfig::GetSingleton()->getPlayer(), nullptr);
-        std::sort(SoundDescriptorSEMap.begin(), SoundDescriptorSEMap.end(), compare);
-        BuildIndex(&SoundDescriptorSEMap, &SEIndex);
+        //std::sort(SoundDescriptorSEMap.begin(), SoundDescriptorSEMap.end(), compare);
+        //BuildIndex(&SoundDescriptorSEMap, &SEIndex);
 
         auto* followers = KMCCT::KMCConfig::GetSingleton()->getFollowers();
         for (int i = 0; i < followers->size(); i++) {
             KMCFollower f = (*followers)[i];
 
             std::vector<std::pair<std::string, RE::BGSSoundDescriptorForm*>> sd;
-            std::vector<std::pair<std::string, KMCSECond>> SDSEMap;
+            std::map<std::string, std::map<std::string, KMCSECond>> SDSEMap;
             std::vector<std::pair<std::string, size_t>> si;
             InitLoop(&sd, &(f.ISoundDescriptorFormIdConfigs), &SDSEMap, &(f.ISoundDescriptorSEFormIdConfigs),
                      KMCCT::KMCConfig::GetSingleton()->getPlayer(), f.follower);
-            std::sort(SDSEMap.begin(), SDSEMap.end(), compare);
-            BuildIndex(&SDSEMap, &si);
+            //std::sort(SDSEMap.begin(), SDSEMap.end(), compare);
+            //BuildIndex(&SDSEMap, &si);
 
             FSoundDescriptiorMap.push_back(std::make_pair(i, KMCFSoundDescription(sd, SDSEMap, si)));
         }
@@ -292,12 +302,18 @@ namespace KMCCT {
         auto itf = std::find_if(FSoundDescriptiorMap.begin(), FSoundDescriptiorMap.end(),
                                 [frand](const auto& p) { return p.first == frand; });
         if (itf != FSoundDescriptiorMap.end()) {
-            auto si = itf->second.SEIndex;
-            auto it = std::find_if(si.begin(), si.end(),
-                                   [trackid](const auto& p) { return KMCSplit(p.first, ',').at(0) == trackid; });
-            if (it != si.end()) {
-                return KMCSplit(it->first, ',').at(1);
+            auto semap = itf->second.SDSEMap;
+
+            if (semap.contains(trackid)) {
+                auto recordmap = semap[trackid];
+                return recordmap.begin()->first;
             }
+
+            //auto it = std::find_if(si.begin(), si.end(),
+            //                       [trackid](const auto& p) { return KMCSplit(p.first, ',').at(0) == trackid; });
+            //if (it != si.end()) {
+            //    return KMCSplit(it->first, ',').at(1);
+            //}
         }
 
         return "";
@@ -305,12 +321,16 @@ namespace KMCCT {
 
     std::string KMCSound::GetFirstSEIndex(std::string trackid) {
 
-        auto it = std::find_if(SEIndex.begin(), SEIndex.end(), [trackid](const auto& p) { 
-            return KMCSplit(p.first, ',').at(0) == trackid;
-        });
-        if (it != SEIndex.end()) {
-            return KMCSplit(it->first, ',').at(1);
+        if (SoundDescriptorSEMap.contains(trackid)) {
+            auto recordmap = SoundDescriptorSEMap[trackid];
+            return recordmap.begin()->first;
         }
+        //auto it = std::find_if(SEIndex.begin(), SEIndex.end(), [trackid](const auto& p) { 
+        //    return KMCSplit(p.first, ',').at(0) == trackid;
+        //});
+        //if (it != SEIndex.end()) {
+        //    return KMCSplit(it->first, ',').at(1);
+        //}
 
         return "";
     }
@@ -321,38 +341,66 @@ namespace KMCCT {
         auto itf = std::find_if(FSoundDescriptiorMap.begin(), FSoundDescriptiorMap.end(),
                         [frand](const auto& p) { return p.first == frand; });
         if (itf != FSoundDescriptiorMap.end()) {
-            auto si = itf->second.SEIndex;
-            auto it = std::find_if(si.begin(), si.end(), [findid](const auto& p) { return p.first == findid; });
-            if (it != si.end()) {
-                size_t offset = it->second;
-                auto sdsem = itf->second.SDSEMap;
-                LOG("PlaySE Follower : Found findid {} offset {}", findid, offset);
-                auto it_sdsem = sdsem.begin() + offset;
-                for (; it_sdsem != sdsem.end(); ++it_sdsem) {
-                    std::string k = it_sdsem->first;
-                    auto v = it_sdsem->second;
-                    auto sp = KMCSplit(k, ',');
-                    std::string tid = sp.at(0);
-                    std::string rid = sp.at(1);
+            auto semap = itf->second.SDSEMap;
+            if (semap.contains(trackid)) {
+                auto recordmap = semap[trackid];
 
-                    LOG("PlaySE Follower : tid {} rid {} trackid{} record{}", tid, rid, trackid, record);
+                if (recordmap.contains(record)) {
+                    auto v = recordmap[record];
+                    LOG("PlaySE Follower : trackid {} record {} pos {}", trackid, record,
+                        v.SEPoint->GetName());
+                    RE::BSSoundHandle handle;
+                    AudioManager->BuildSoundDataFromDescriptor(handle, v.sd);
+                    handle.SetVolume(volume);
+                    handle.SetObjectToFollow(v.SEPoint->Get3D());
+                    handle.Play();
 
-                    if (tid == trackid && rid == record) {
-                        LOG("PlaySE Follower : trackid {} record {} play_now {} pos {}", trackid, record, k,
-                            v.SEPoint->GetName());
-                        RE::BSSoundHandle handle;
-                        AudioManager->BuildSoundDataFromDescriptor(handle, v.sd);
-                        handle.SetVolume(volume);
-                        handle.SetObjectToFollow(v.SEPoint->Get3D());
-                        handle.Play();
-                    } else if (tid == trackid && rid != record) {
-                        LOG("PlaySE Follower : Next Record {}", rid);
-                        return rid;
-                    } else {
-                        break;
+                    // next record
+                    bool is_next = false;
+                    for (auto& [record_key, record_value] : recordmap) {
+                        if (is_next) {
+                            return record_key;
+                        }
+
+                        if (record_key == record) {
+                            is_next = true;
+                        }
                     }
                 }
             }
+
+            // auto si = itf->second.SEIndex;
+            //auto it = std::find_if(si.begin(), si.end(), [findid](const auto& p) { return p.first == findid; });
+            //if (it != si.end()) {
+            //    size_t offset = it->second;
+            //    auto sdsem = itf->second.SDSEMap;
+            //    LOG("PlaySE Follower : Found findid {} offset {}", findid, offset);
+            //    auto it_sdsem = sdsem.begin() + offset;
+            //    for (; it_sdsem != sdsem.end(); ++it_sdsem) {
+            //        std::string k = it_sdsem->first;
+            //        auto v = it_sdsem->second;
+            //        auto sp = KMCSplit(k, ',');
+            //        std::string tid = sp.at(0);
+            //        std::string rid = sp.at(1);
+
+            //        LOG("PlaySE Follower : tid {} rid {} trackid{} record{}", tid, rid, trackid, record);
+
+            //        if (tid == trackid && rid == record) {
+            //            LOG("PlaySE Follower : trackid {} record {} play_now {} pos {}", trackid, record, k,
+            //                v.SEPoint->GetName());
+            //            RE::BSSoundHandle handle;
+            //            AudioManager->BuildSoundDataFromDescriptor(handle, v.sd);
+            //            handle.SetVolume(volume);
+            //            handle.SetObjectToFollow(v.SEPoint->Get3D());
+            //            handle.Play();
+            //        } else if (tid == trackid && rid != record) {
+            //            LOG("PlaySE Follower : Next Record {}", rid);
+            //            return rid;
+            //        } else {
+            //            break;
+            //        }
+            //    }
+            //}
         }
 
         return "";
@@ -360,37 +408,62 @@ namespace KMCCT {
 
     std::string KMCSound::PlaySE(std::string trackid, std::string record, std::string findid, float volume) {    
 
-        auto it = std::find_if(SEIndex.begin(), SEIndex.end(), [findid](const auto& p) { return p.first == findid; });
-        if (it != SEIndex.end()) {
-            size_t offset = it->second;
+        if (SoundDescriptorSEMap.contains(trackid)) {
+            auto recordmap = SoundDescriptorSEMap[trackid];
 
-            LOG("PlaySE Player : Found findid {} offset {}", findid, offset);
-            auto it_sdsem = SoundDescriptorSEMap.begin() + offset;
-            for (; it_sdsem != SoundDescriptorSEMap.end(); ++it_sdsem) {
-                std::string k = it_sdsem->first;
-                auto v = it_sdsem->second;
-                auto sp = KMCSplit(k, ',');
-                std::string tid = sp.at(0);
-                std::string rid = sp.at(1);
+            if (recordmap.contains(record)) {
+                auto v = recordmap[record];
+                LOG("PlaySE Player : trackid{} record{}", trackid, record);
+                RE::BSSoundHandle handle;
+                AudioManager->BuildSoundDataFromDescriptor(handle, v.sd);
+                handle.SetVolume(volume);
+                handle.SetObjectToFollow(v.SEPoint->Get3D());
+                handle.Play();
 
-                LOG("PlaySE Player : tid {} rid {} trackid{} record{}", tid, rid, trackid, record);
+                // next record
+                bool is_next = false;
+                for (auto& [record_key, record_value] : recordmap) {
+                    if (is_next) {
+                        return record_key;
+                    }
 
-                if (tid == trackid && rid == record) {
-                    LOG("PlaySE Player : trackid {} record {} play_now {} pos {}", trackid, record, k,
-                        v.SEPoint->GetName());
-                    RE::BSSoundHandle handle;
-                    AudioManager->BuildSoundDataFromDescriptor(handle, v.sd);
-                    handle.SetVolume(volume);
-                    handle.SetObjectToFollow(v.SEPoint->Get3D());
-                    handle.Play();
-                } else if (tid == trackid && rid != record) {
-                    LOG("PlaySE Player : Next Record {}", rid);
-                    return rid;
-                } else {
-                    break;
+                    if (record_key == record) {
+                        is_next = true;
+                    }
                 }
             }
         }
+        //auto it = std::find_if(SEIndex.begin(), SEIndex.end(), [findid](const auto& p) { return p.first == findid; });
+        //if (it != SEIndex.end()) {
+        //    size_t offset = it->second;
+
+        //    LOG("PlaySE Player : Found findid {} offset {}", findid, offset);
+        //    auto it_sdsem = SoundDescriptorSEMap.begin() + offset;
+        //    for (; it_sdsem != SoundDescriptorSEMap.end(); ++it_sdsem) {
+        //        std::string k = it_sdsem->first;
+        //        auto v = it_sdsem->second;
+        //        auto sp = KMCSplit(k, ',');
+        //        std::string tid = sp.at(0);
+        //        std::string rid = sp.at(1);
+
+        //        LOG("PlaySE Player : tid {} rid {} trackid{} record{}", tid, rid, trackid, record);
+
+        //        if (tid == trackid && rid == record) {
+        //            LOG("PlaySE Player : trackid {} record {} play_now {} pos {}", trackid, record, k,
+        //                v.SEPoint->GetName());
+        //            RE::BSSoundHandle handle;
+        //            AudioManager->BuildSoundDataFromDescriptor(handle, v.sd);
+        //            handle.SetVolume(volume);
+        //            handle.SetObjectToFollow(v.SEPoint->Get3D());
+        //            handle.Play();
+        //        } else if (tid == trackid && rid != record) {
+        //            LOG("PlaySE Player : Next Record {}", rid);
+        //            return rid;
+        //        } else {
+        //            break;
+        //        }
+        //    }
+        //}
         return "";
     }
 

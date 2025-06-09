@@ -209,6 +209,7 @@ namespace KMCCT {
         KMCCustomCondMain* GetMain() { return &custom_cond; }
     private:
         void Update();
+        void RetryCache();
         void PreProcess();
         void StartEvaluation();
         void Commit();

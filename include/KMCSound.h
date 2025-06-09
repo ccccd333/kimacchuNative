@@ -29,7 +29,7 @@ class KMCFSoundDescription {
 public:
     KMCFSoundDescription() {}
     KMCFSoundDescription(std::vector<std::pair<std::string, RE::BGSSoundDescriptorForm *>> sd,
-                         std::vector<std::pair<std::string, KMCSECond>> sse,
+                         std::map<std::string, std::map<std::string, KMCSECond>> sse,
                          std::vector<std::pair<std::string, size_t>> si) {
         SoundDescriptorMap = sd;
         SDSEMap = sse;
@@ -40,7 +40,7 @@ public:
 
 public:
     std::vector<std::pair<std::string, RE::BGSSoundDescriptorForm *>> SoundDescriptorMap;
-    std::vector<std::pair<std::string, KMCSECond>> SDSEMap;
+    std::map<std::string, std::map<std::string, KMCSECond>> SDSEMap;
     std::vector<std::pair<std::string, size_t>> SEIndex;
 };
 
@@ -76,7 +76,7 @@ namespace KMCCT {
         const std::string SD_EDITORID_NAME2 = "SD";
 
         std::vector<std::pair<std::string, RE::BGSSoundDescriptorForm *>> SoundDescriptorMap;
-        std::vector<std::pair<std::string, KMCSECond>> SoundDescriptorSEMap;
+        std::map<std::string, std::map<std::string, KMCSECond>> SoundDescriptorSEMap;
         std::vector<std::pair<std::string, size_t>> SEIndex;
 
         std::vector<std::pair<int, KMCFSoundDescription>> FSoundDescriptiorMap;

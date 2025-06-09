@@ -499,6 +499,8 @@ namespace KMCCT {
     }
 
     bool KMCCCTFormula::Check(KMCCCheckSource source) {
+        auto* main = KMCCT::KMCCutinCondition::GetSingleton()->GetMain();
+
         for (auto& [key, value] : source.cond_formula) {
             bool t = false;
             bool f = false;
@@ -506,9 +508,10 @@ namespace KMCCT {
                 LOG("[Evaluate] EntryNo ==> {} Formula ==> {} comp1 ==> {} comp2 ==> {}", key, formv->cond,
                     formv->comp1(), formv->comp2());
                 if (formv->isCacheable) {
-                    if (formv->cache_type == KMCCacheType::armo) {
-                        auto worn_armo_r =
-                            KMCCT::KMCCutinCondition::GetSingleton()->GetMain()->cache_container.GetWornArmorResult();
+                    
+                    if (formv->cache_type == KMCCacheType::armo && main->cache_container.PreInitWornArmo()) {
+                        auto worn_armo_r = main->cache_container.GetWornArmorResult();
+                        if (worn_armo_r.size() == 0) return false;
 
                         auto f_v = [&worn_armo_r, &t, &f](RE::FormID formid, int idx, bool worn) {
                             if (worn_armo_r.contains(idx)) {
@@ -533,7 +536,7 @@ namespace KMCCT {
 
                         f_v(formv->c_form_id, formv->c_index, formv->c_is_worn);
                     } else {
-                        ERROR("Unknown classification even though the target is a cache in FORMULA.");
+                        ERROR("This expression cannot be used because it is not initialized.");
                     }
                 } else {
                     if (JudgeKMCInequalitySign(formv->isign, formv->comp1(), formv->comp2())) {

@@ -288,19 +288,17 @@ namespace KMCCT {
     int KMCCutinCondition::ToMove(const KMCCCStartArg &args) {
         int result = 0;
         s_args = args;
-        if (!KMCCT::KMCEventThread::GetSingleton()->GetInitEndFlag()) {
-            return result;
-        }
-
         Update();
 
-        if (!KMCCT::KMCEventThread::GetSingleton()->GetInitEndFlag()) {
+        RetryCache();
+
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return result;
         }
 
         PreProcess();
 
-        if (!KMCCT::KMCEventThread::GetSingleton()->GetInitEndFlag()) {
+        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return result;
         }
 
@@ -708,6 +706,8 @@ namespace KMCCT {
             mcm_update.clear();
         }
     }
+
+    void KMCCutinCondition::RetryCache() { custom_cond.cache_container.RetryCache(); }
 
     void KMCCutinCondition::PreProcess() { custom_cond.PlayFcExp(); }
 
