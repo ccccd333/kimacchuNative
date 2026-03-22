@@ -2,6 +2,7 @@
 #include "KMCEventThread.h"
 #include <IWWConfig.h>
 
+
 SINGLETONBODY(KMCCT::KMCConfig)
 
 namespace KMCCT {
@@ -9,6 +10,7 @@ namespace KMCCT {
 
     void KMCConfig::Setup() { 
         player = RE::PlayerCharacter::GetSingleton();
+
         //player->As<RE::BGSKeywordForm>()->
         //player->As<RE::BGSKeywordForm>()->
         // AutoWordRange.json

@@ -9,6 +9,7 @@
 #include "KMCCutinCondition.h"
 #include "KMCGameEventListener.h"
 #include "KMCExpression.h"
+#include "KMCStrageUtilHook.h"
 
 #include <IWWPapyrus.h>
 
@@ -53,7 +54,7 @@ namespace KMCCT {
                 KMCCT::KMCConfig::GetSingleton()->Setup();
                 KMCCT::KMCCutinCondition::GetSingleton()->Setup();
                 KMCCT::KMCExpression::GetSingleton()->Setup();
-
+                KMCStrageUtilHook::InstallStorageUtilHooks();
                 break;
             case SKSE::MessagingInterface::kDataLoaded:
                 //KMCCT::JCWrapper::GetSingleton()->Init();

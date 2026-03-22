@@ -1,5 +1,6 @@
 #include "KMCRegister.h"
 #include <IWWPapyrus.h>
+
 //#include "src/hooks/hooks.h"
 
 //#include <SkyrimScripting/Plugin.h>
@@ -19,6 +20,8 @@ namespace KMCCT {
         spdlog::set_default_logger(std::move(loggerPtr));
         spdlog::set_level(spdlog::level::trace);
         spdlog::flush_on(spdlog::level::trace);
+
+        
 
         SKSE::GetMessagingInterface()->RegisterListener(KMCCT::OnMessageReceived);
         SKSE::GetPapyrusInterface()->Register(KMCCT::PapyrusRegister);

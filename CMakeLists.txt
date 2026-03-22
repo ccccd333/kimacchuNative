@@ -17,6 +17,7 @@ add_subdirectory(IWW/iWantWidgetsNG)
 find_package(CommonLibSSE CONFIG REQUIRED)
 find_package(Boost REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(minhook CONFIG REQUIRED)
 
 add_commonlibsse_plugin(${PROJECT_NAME} SOURCES 
     src/KMCConfig.cpp
@@ -41,12 +42,17 @@ add_commonlibsse_plugin(${PROJECT_NAME} SOURCES
     src/KMCGameEventListener.cpp
     src/KMCTempKeywordManager.cpp
     src/KMCExpression.cpp
+    src/KMCStrageUtilHook.cpp
     plugin.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ./include)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC IWantWidgetsNative) 
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+    minhook::minhook
+    IWantWidgetsNative
+)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 target_precompile_headers(${PROJECT_NAME} PUBLIC PCH.h)

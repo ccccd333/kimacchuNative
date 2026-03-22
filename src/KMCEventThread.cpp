@@ -17,6 +17,8 @@
 #include "KMCExpression.h"
 #include "thread_pool.h"
 
+#include "KMCStrageUtilHook.h"
+
 SINGLETONBODY(KMCCT::KMCEventThread)
 
 // thread poolの管理場所、他のモジュールはスレッドを起動する際にwrapメソッドでアクセスする
@@ -455,7 +457,6 @@ void KMCCT::LaunchFLExp(STMFGPair &mfg_pair) { executor.submit(TryKMCFLExp, &mfg
 #pragma endregion
 
 namespace KMCCT {
-
     KMCEventThread::~KMCEventThread() { 
         forceendanim = true;
     }
@@ -478,6 +479,7 @@ namespace KMCCT {
             std::lock_guard<std::mutex> lock(aaaakmc_wait_init_mtx_);
             if (init_first) return;
             init_first = true;
+
             // if (aaaakmcroot == skyroot.c_str()) return;
             aaaakmcroot = skyroot.c_str();
             aaaakmcvolum = floatArray.at(0);
