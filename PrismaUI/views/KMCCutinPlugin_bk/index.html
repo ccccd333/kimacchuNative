@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        #player_canvas {
+            width: 400px;
+            height: 400px;
+            display: block;
+            background: black;
+        }
+
+        #follower_canvas {
+            width: 400px;
+            height: 400px;
+            display: red;
+            background: red;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="player_canvas"></canvas>
+    <canvas id="follower_canvas"></canvas>
+
+    <script type="module">
+        import { DisplayManager } from "./DisplayManager.js";
+
+        //------------------実行テスト-----------
+        // C++からの想定
+
+
+        const playerJson = {
+            base_path: "../../textures/player/cutin/",
+            display_type: 0,
+            entries: {
+                "1": {
+                    texture_range: { start: 1, end: 1 }
+                }
+            }
+        };
+
+        const followerJson = {
+            base_path: "../../textures/follower/cutin/",
+            display_type: 1,
+            entries: {
+                "1": {
+                    texture_range: { start: 1, end: 1 }
+                }
+            }
+        };
+
+        KMCAddCutinPaths(playerJson);
+        KMCAddCutinPaths(followerJson);
+
+        setTimeout(() => {
+            KMCPlayPlayerCutin(1);
+        }, 500);
+
+        setTimeout(() => {
+            KMCPlayFollowerCutin({
+                follower_id: 1,
+                group: 1
+            });
+        }, 1500);
+
+    </script>
+
+</body>
+
+</html>

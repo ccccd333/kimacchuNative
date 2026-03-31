@@ -142,6 +142,22 @@ namespace KMCCT {
             return result;
         }
 
+        void SetIntValue(int value) {
+            iv = value;
+            value_type = KMCValueType::KM_INT;
+        }
+
+
+        void SetFloatValue(float value) {
+            fv = value;
+            value_type = KMCValueType::KM_FLOAT;
+        }
+
+        void SetStringValue(std::string value) {
+            sv = value;
+            value_type = KMCValueType::KM_STRING;
+        }
+
     public:
         KMCValueType value_type = KMCValueType::UNK;
         float fv = 0.0f;
@@ -724,10 +740,14 @@ namespace KMCCT {
         }
     }
 
+    uint64_t StorageUtilCalcID(void *stack_id);
+
     bool IsTalking(RE::Character *a_character);
 
     void KMCIsWorn(RE::Actor *actor, std::vector<std::uint32_t> worn_slot, std::vector<bool> &result);
     bool KMCIsWorn(RE::Actor *actor, RE::TESObjectARMO *armo);
+
+    std::string EscapeStringForJavaScript(const std::string &input);
 
     void NamePlateSimplyWipe(KMCNPLoadedWidget id, std::string aaaakmcroot);
     void NamePlateFadeOut(KMCNPLoadedWidget id, std::string aaaakmcroot);

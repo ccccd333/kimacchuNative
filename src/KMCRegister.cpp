@@ -9,7 +9,9 @@
 #include "KMCCutinCondition.h"
 #include "KMCGameEventListener.h"
 #include "KMCExpression.h"
-#include "KMCStrageUtilHook.h"
+#include "KMCStorageUtilTracker.h"
+#include "KMCPrismaUIBridge.h"
+#include "KMCDisplayWordAndTexture.h"
 
 #include <IWWPapyrus.h>
 
@@ -17,47 +19,17 @@ SINGLETONBODY(KMCCT::KMCRegister)
 
 namespace KMCCT {
 
-	//std::string GetJContainersPluginName() {
- //       auto patchVersion = REL::Module::get().version().patch();
-
- //       std::string pluginName{"JContainers64"};
- //       if (REL::Module::IsVR()) {
- //           pluginName = "JContainersVR";
- //       } else if (patchVersion == 659 || patchVersion == 1179) {
- //           pluginName = "JContainersGOG";
- //       }
-
- //       return pluginName;
- //   }
-
     void KMCCT::OnMessageReceived(SKSE::MessagingInterface::Message* a_msg) {
         switch (a_msg->type) {
             case SKSE::MessagingInterface::kPostLoad: 
-                //std::string pluginName = GetJContainersPluginName();
-          
-
-                //SKSE::GetMessagingInterface()->RegisterListener(
-                //    pluginName.c_str(), [](SKSE::MessagingInterface::Message* a_msg) {
-                //        LOG("a_msg={}, msgtype={}", (void*)a_msg,
-                //                     a_msg ? a_msg->type : -1);
-                //        if (a_msg && a_msg->type == KMCCT::message_root_interface) {
-                //            const root_interface* root = root_interface::from_void(a_msg->data);
-                //            LOG("root_interface={}", (void*)root);
-                //            if (root) {
-                //                KMCCT::JCWrapper::GetSingleton()->PreInit(root);
-                //            }
-                //        }
-                //    });
-                //}
 
                 IWW::Config::GetSingleton()->Setup();
                 KMCCT::KMCConfig::GetSingleton()->Setup();
                 KMCCT::KMCCutinCondition::GetSingleton()->Setup();
                 KMCCT::KMCExpression::GetSingleton()->Setup();
-                KMCStrageUtilHook::InstallStorageUtilHooks();
+                
                 break;
             case SKSE::MessagingInterface::kDataLoaded:
-                //KMCCT::JCWrapper::GetSingleton()->Init();
 
                 KMCCT::KMCStateManager::GetSingleton()->Register();
 
@@ -69,8 +41,14 @@ namespace KMCCT {
                 KMCCT::KMCProfile::GetSingleton()->Init();
                 KMCCT::KMCCutinCondition::GetSingleton()->Init();
 
+                StorageUtilTracker::Init();
+
+                KMCPrismaUIBridge::GetSingleton()->Init();
+                
+
                 KMCCT::KMCGameEventListener::GetSingleton()->Init();
                 KMCCT::KMCExpression::GetSingleton()->Init();
+
                 break;
             case SKSE::MessagingInterface::kPreLoadGame:  // set reload flag, so we can prevent in papyrus calls of
                                                           // native function untill view get reset by invoking _reset
@@ -82,7 +60,6 @@ namespace KMCCT {
                 KMCCT::KMCOAR::GetSingleton()->Reset();
 
                 KMCCT::KMCProfile::GetSingleton()->KMCResetProfileContainer();
-                //while (KMCGetAnimNow()) {}
                 
                 IWW::MainFunctions::GetSingleton()->SetReseting(true);
 

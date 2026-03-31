@@ -11,6 +11,8 @@ namespace KMCCT {
 
     // json path (common)
     const std::string COMMON_PATH = "Data\\skse\\plugins\\KimachuuCutIn\\";
+    // prisma ui html path
+    const std::string PRISMA_UI_HTML_PATH = "Data\\PrismaUI\\views\\KMCCutinPlugin\\";
     // json path (player or Follower1Å`n)
     const std::string PLAYER_WORD_PATH = "Player";
     const std::string FOLLOWER_WORD_PATH = "Follower";
@@ -179,6 +181,7 @@ namespace KMCCT {
         std::vector<std::pair<std::string, std::string>> IConditions;
         std::vector<std::pair<std::string, KMCCompsFlag>> IHideComponents;
         std::vector<std::pair<std::string, std::string>> IConnectOAR;
+
         // Player profil
         std::vector<std::pair<std::string, std::string>> IWidgetSetting;
         std::vector<std::pair<std::string, std::string>> ITextSetting;

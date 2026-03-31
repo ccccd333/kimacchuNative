@@ -467,6 +467,19 @@ namespace KMCCT {
         return func(a_character);
     }
 
+    uint64_t StorageUtilCalcID(void *stack_id) {
+        uint64_t strage_util_key_id = 0;
+        uint32_t low = 0;
+        if (stack_id) {
+            low = *(uint32_t *)((uintptr_t)stack_id + 0x14);
+            auto high = *(uint8_t *)((uintptr_t)stack_id + 0x1A);
+
+            strage_util_key_id = ((uint64_t)high << 32) | low;
+        }
+
+        return strage_util_key_id;
+    }
+
     void KMCIsWorn(RE::Actor *actor, std::vector<std::uint32_t> worn_slot, std::vector<bool> &result) {
         
         if (worn_slot.empty()) {
@@ -517,6 +530,46 @@ namespace KMCCT {
         }
 
         return false;
+    }
+
+
+    std::string EscapeStringForJavaScript(const std::string &input) {
+        std::ostringstream ss;
+        for (char c : input) {
+            switch (c) {
+                case '\'':
+                    ss << "\\'";
+                    break;
+                case '\"':
+                    ss << "\\\"";
+                    break;
+                case '\\':
+                    ss << "\\\\";
+                    break;
+                case '\n':
+                    ss << "\\n";
+                    break;
+                case '\r':
+                    ss << "\\r";
+                    break;
+                case '\t':
+                    ss << "\\t";
+                    break;
+                case '\b':
+                    ss << "\\b";
+                    break;
+                case '\f':
+                    ss << "\\f";
+                    break;
+                case '/':
+                    ss << "\\/";
+                    break;
+                default:
+                    ss << c;
+                    break;
+            }
+        }
+        return ss.str();
     }
 
     void NamePlateSimplyWipe(KMCNPLoadedWidget id, std::string aaaakmcroot) {

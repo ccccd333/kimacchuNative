@@ -1361,57 +1361,6 @@ namespace KMCCT {
         return rand;
     }
 
-#pragma region Randomizer Widget Function
-    void KMCCutin::CategoryRandomizer() {
-        aaaakmcCategoryRandMap.clear();
-
-        std::vector<std::pair<std::string, std::string>> *autoWordRangeConfigs =
-            KMCCT::KMCConfig::GetSingleton()->getIAutoWordRangeConfigs();
-        std::vector<std::pair<std::string, std::string>> *autoWordCategoriesConfigs =
-            KMCCT::KMCConfig::GetSingleton()->getIAutoWordCategoriesConfigs();
-
-        // animation widget
-        for (auto [key, value] : *autoWordCategoriesConfigs) {
-            auto findit = aaaakmcCategoryRandMap.find(value);
-            if (findit != aaaakmcCategoryRandMap.end()) {
-                continue;
-            }
-
-            std::string k1 = value;
-            std::string k2 = k1;
-            std::transform(k1.begin(), k1.end(), k2.begin(), [](char c) { return std::tolower(c); });
-            std::string tLow = k2 + "low";
-            std::string tHigh = k2 + "high";
-            auto it1 = std::find_if(autoWordRangeConfigs->begin(), autoWordRangeConfigs->end(),
-                                    [tLow](const auto &p) { return p.first == tLow; });
-            auto it2 = std::find_if(autoWordRangeConfigs->begin(), autoWordRangeConfigs->end(),
-                                    [tHigh](const auto &p) { return p.first == tHigh; });
-            if (it1 != autoWordRangeConfigs->end() && it2 != autoWordRangeConfigs->end()) {
-                int l = std::stoi(it1->second);
-                int h = std::stoi(it2->second);
-
-                if ((h - l) + 1 <= 0) {
-                    ERROR("Error KMCEventThread::CategoryRandomizer range error type = {} low = {} high = {}", k2, tLow,
-                          tHigh);
-                }
-
-                size_t size = (h - l) + 1;
-                auto randomValue = MakeRandArraySelect(size, l, h);
-
-                aaaakmcCategoryRandMap.insert(std::make_pair(value, KMCRandomData(0, h - l, randomValue, h, l, size)));
-
-                // for (int i = 0; i < randomValue.size(); i++) {
-                //     LOG("KMCEventThread::CategoryRandomizer type = {} rand = {}", value, randomValue[i]);
-                // }
-
-            } else {
-                ERROR("Error KMCEventThread::CategoryRandomizer auto word range configs type = {} low = {} high = {}",
-                      k2, tLow, tHigh);
-            }
-        }
-    }
-#pragma endregion
-
     void KMCCutin::DispPFWidget(KMCAnimST st) {
         int r = st.rand;
         std::string srnd = std::to_string(r);
@@ -1728,6 +1677,57 @@ namespace KMCCT {
             KMCCT::KMCWaitTask::GetSingleton()->KMCPushWaitTask(KMCWaitType::move_widget, task);
         }
     }
+
+#pragma region Randomizer Widget Function
+    void KMCCutin::CategoryRandomizer() {
+        aaaakmcCategoryRandMap.clear();
+
+        std::vector<std::pair<std::string, std::string>> *autoWordRangeConfigs =
+            KMCCT::KMCConfig::GetSingleton()->getIAutoWordRangeConfigs();
+        std::vector<std::pair<std::string, std::string>> *autoWordCategoriesConfigs =
+            KMCCT::KMCConfig::GetSingleton()->getIAutoWordCategoriesConfigs();
+
+        // animation widget
+        for (auto [key, value] : *autoWordCategoriesConfigs) {
+            auto findit = aaaakmcCategoryRandMap.find(value);
+            if (findit != aaaakmcCategoryRandMap.end()) {
+                continue;
+            }
+
+            std::string k1 = value;
+            std::string k2 = k1;
+            std::transform(k1.begin(), k1.end(), k2.begin(), [](char c) { return std::tolower(c); });
+            std::string tLow = k2 + "low";
+            std::string tHigh = k2 + "high";
+            auto it1 = std::find_if(autoWordRangeConfigs->begin(), autoWordRangeConfigs->end(),
+                                    [tLow](const auto &p) { return p.first == tLow; });
+            auto it2 = std::find_if(autoWordRangeConfigs->begin(), autoWordRangeConfigs->end(),
+                                    [tHigh](const auto &p) { return p.first == tHigh; });
+            if (it1 != autoWordRangeConfigs->end() && it2 != autoWordRangeConfigs->end()) {
+                int l = std::stoi(it1->second);
+                int h = std::stoi(it2->second);
+
+                if ((h - l) + 1 <= 0) {
+                    ERROR("Error KMCEventThread::CategoryRandomizer range error type = {} low = {} high = {}", k2, tLow,
+                          tHigh);
+                }
+
+                size_t size = (h - l) + 1;
+                auto randomValue = MakeRandArraySelect(size, l, h);
+
+                aaaakmcCategoryRandMap.insert(std::make_pair(value, KMCRandomData(0, h - l, randomValue, h, l, size)));
+
+                // for (int i = 0; i < randomValue.size(); i++) {
+                //     LOG("KMCEventThread::CategoryRandomizer type = {} rand = {}", value, randomValue[i]);
+                // }
+
+            } else {
+                ERROR("Error KMCEventThread::CategoryRandomizer auto word range configs type = {} low = {} high = {}",
+                      k2, tLow, tHigh);
+            }
+        }
+    }
+#pragma endregion
 
 #pragma region interrupt event
     void KMCCT::InterruptEventAddItem() {

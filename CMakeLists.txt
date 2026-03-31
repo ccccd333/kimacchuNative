@@ -42,7 +42,9 @@ add_commonlibsse_plugin(${PROJECT_NAME} SOURCES
     src/KMCGameEventListener.cpp
     src/KMCTempKeywordManager.cpp
     src/KMCExpression.cpp
-    src/KMCStrageUtilHook.cpp
+    src/KMCStorageUtilTracker.cpp
+    src/KMCPrismaUIBridge.cpp
+    src/KMCDisplayWordAndTexture.cpp
     plugin.cpp
 )
 

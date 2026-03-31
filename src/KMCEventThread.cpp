@@ -17,7 +17,8 @@
 #include "KMCExpression.h"
 #include "thread_pool.h"
 
-#include "KMCStrageUtilHook.h"
+#include "KMCStorageUtilTracker.h"
+#include "KMCPrismaUIBridge.h"
 
 SINGLETONBODY(KMCCT::KMCEventThread)
 
@@ -126,6 +127,7 @@ void KMCCT::CutInPeriodicCall() {
         if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             break;
         }
+
         std::string cutin_name = "";
         STCutinSetting cutin_setting;
         if (isInitEnd && KMCCT::KMCWaitTask::GetSingleton()->KMCCheckWait()) {
@@ -488,6 +490,8 @@ namespace KMCCT {
             aaaakmcCycle = floatArray.at(3);
             aaaakmcUpdatePapyrusCycle = floatArray.at(20);
 
+            
+
             // LOG("Player POS {} {} {} {} {} {} {} {}", aaaaPlayerTextX, aaaaPlayerTextY, aaaaPlayerWidgetX,
             //     aaaaPlayerWidgetY, aaaaPlayerNTextX, aaaaPlayerNTextY, aaaaPlayerNWidgetX, aaaaPlayerNWidgetY);
 
@@ -566,6 +570,8 @@ namespace KMCCT {
     }
 
     void KMCEventThread::TryShowProfile() {
+        //KMCPrismaUIBridge::GetSingleton()->Focus();
+        KMCPrismaUIBridge::GetSingleton()->KMCPlayPlayerCutin(1);
         executor.submit(InterruptProfileEventManager).wait_for(std::chrono::seconds(0));
     }
 

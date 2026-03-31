@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Cutin Display System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div id="player_pos" class="display-position player">
+        <div id="player_unit" class="display-unit">
+            <canvas id="player_bg" class="layer-bg"></canvas>
+            <canvas id="player_cutin" class="layer-cutin"></canvas>
+            <canvas id="player_name" class="layer-name"></canvas>
+        </div>
+    </div>
+
+<div id="follower_pos" class="display-position follower">
+    <div id="follower_unit" class="display-unit">
+        <canvas id="follower_bg" class="layer-bg"></canvas>
+        <canvas id="follower_cutin" class="layer-cutin"></canvas>
+        <canvas id="follower_name" class="layer-name"></canvas>
+    </div>
+</div>
+
+    <script type="module">
+        import { DisplayManager } from "./DisplayManager.js";
+
+        //------------------実行テスト-----------
+        // C++からの想定
+
+
+        const playerJson = {
+            base_path: "../../textures/player/cutin/",
+            display_type: 0,
+            entries: {
+                "1": {
+                    texture_range: { start: 1, end: 9 },
+                    "display_time": 30.0
+                }
+            }
+        };
+
+        const followerJson = {
+            base_path: "../../textures/follower/cutin/",
+            display_type: 1,
+            entries: {
+                "1": {
+                    texture_range: { start: 1, end: 1 },
+                    "display_time": 5.0
+                }
+            }
+        };
+
+        KMCAddCutinPaths(playerJson);
+        KMCAddCutinPaths(followerJson);
+
+        setTimeout(() => {
+            KMCPlayPlayerCutin(1);
+        }, 500);
+
+        setTimeout(() => {
+            KMCPlayFollowerCutin({
+                follower_id: 1,
+                group: 1
+            });
+        }, 1500);
+
+    </script>
+
+</body>
+
+</html>

@@ -568,9 +568,9 @@ namespace KMCCT {
         try {
             std::ifstream stream(COMMON_PATH + CUT_IN_CONDITION_FILE_NAME);
 
-            if (!stream.is_open()) throw new std::exception("Failed open file.");
+            if (!stream.is_open()) throw std::runtime_error("Failed open file.");
 
-            if (!json::accept(stream)) throw new std::exception("Incorrect json format.");
+            if (!json::accept(stream)) throw std::runtime_error("Incorrect json format.");
 
             stream.seekg(0, std::ios::beg);
 

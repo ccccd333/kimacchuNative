@@ -79,6 +79,7 @@ namespace KMCCT {
         void MCMSettingChange(std::vector<float> *floatArray);
 
         bool ExistCategory(std::string t) { return aaaakmcCategoryRandMap.contains(t); }
+        void CategoryRandomizer();
 
         void Reset() {
             ResetLoadedWedget();
@@ -146,7 +147,7 @@ namespace KMCCT {
                            std::unordered_map<int, KMCDispConfigs> *LWConfig,
                            std::unordered_map<int, KMCDispConfigs> *LTConfig);
         int GetCutInID(std::string aaaakmctype);
-        void CategoryRandomizer();
+        
         void DispPFWidget(KMCAnimST st);
         void DispPWidget(KMCAnimST st);
 
