@@ -370,7 +370,7 @@ namespace KMCCT {
         KMCRandomData(int of, int in, std::vector<int> r, int h, int l, size_t s) {
             offset = of;
             maxIndex = in;
-            randValues = r;
+            rand_values = r;
             high = h;
             low = l;
             size = s;
@@ -379,9 +379,11 @@ namespace KMCCT {
     public:
         int offset = 0;
         int maxIndex = 0;
-        std::vector<int> randValues;
+        std::vector<int> rand_values;
         int high = 0, low = 0;
         size_t size = 0;
+        std::string category;
+        std::vector<int> category_indices;
     };
 
     struct KMCNamePlate {

@@ -78,7 +78,8 @@ namespace KMCCT {
         void PlaySE(long long time, std::string trackid, int frand, std::string record, float volume);
         void MCMSettingChange(std::vector<float> *floatArray);
 
-        bool ExistCategory(std::string t) { return aaaakmcCategoryRandMap.contains(t); }
+        bool ExistCategory(std::string t) { return kmc_category_rand_map.contains(t); }
+
         void CategoryRandomizer();
 
         void Reset() {
@@ -157,7 +158,7 @@ namespace KMCCT {
         std::mutex output_mtx;
         time_point<Clock> event_start = Clock::now();
         float followerDetectRange = 1000.0;
-        std::unordered_map<std::string, KMCRandomData> aaaakmcCategoryRandMap;
+        std::unordered_map<std::string, KMCRandomData> kmc_category_rand_map;
 
         // player
         std::unordered_map<int, KMCLoadedWidgetData> LoadedWedget;

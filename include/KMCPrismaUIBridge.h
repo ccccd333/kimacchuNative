@@ -13,6 +13,8 @@ namespace KMCCT {
 
         void Focus();
 
+        void UnFocus();
+
         void AddPath(const json &j);
 
         void KMCPlayPlayerCutin(int group);

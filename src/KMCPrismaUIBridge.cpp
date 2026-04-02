@@ -3,7 +3,7 @@
 #include "KMCDisplayWordAndTexture.h"
 #include "KMCUtility.h"
 
-static void OnReceiveKMCAddCutinPaths(const char* data) { SKSE::log::info("KMCAddCutinPaths Result ==> {}", data); }
+static void OnReceiveKMCDefineCutin(const char* data) { SKSE::log::info("KMCDefineCutin Result ==> {}", data); }
 
 static void OnReceiveKMCPlayPlayerCutin(const char* data) { SKSE::log::info("KMCPlayPlayerCutin Result ==> {}", data); }
 
@@ -39,11 +39,17 @@ namespace KMCCT {
         SKSE::log::info("PrismaUI API initialized successfully");
     }
 
-    void KMCPrismaUIBridge::Focus() { prisma_ui->Focus(cutin_view); }
+    void KMCPrismaUIBridge::Focus() { 
+        prisma_ui->Focus(cutin_view); 
+    }
+
+    void KMCPrismaUIBridge::UnFocus() { 
+        prisma_ui->Unfocus(cutin_view);
+    }
 
     void KMCPrismaUIBridge::AddPath(const json& j) {
-        std::string script = "KMCAddCutinPaths(" + j.dump() + ")";
-        prisma_ui->Invoke(cutin_view, script.c_str(), OnReceiveKMCAddCutinPaths);
+        std::string script = "KMCDefineCutin(" + j.dump() + ")";
+        prisma_ui->Invoke(cutin_view, script.c_str(), OnReceiveKMCDefineCutin);
     }
 
     void KMCPrismaUIBridge::KMCPlayPlayerCutin(int group) {

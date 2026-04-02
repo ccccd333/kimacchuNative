@@ -572,14 +572,14 @@ namespace KMCCT {
         if (findit != aaaakmcCategoryRandMap.end()) {
             auto* randData = &(findit->second);
             int of = randData->offset;
-            auto r = randData->randValues;
+            auto r = randData->rand_values;
             rand = r[of];
             ++of;
             int mi = randData->maxIndex;
             if (of > mi) {
                 of = 0;
                 //auto randomValue = MakeRandArraySelect(randData->size, randData->low, randData->high);
-                //randData->randValues = std::move(randomValue);
+                //randData->rand_values = std::move(randomValue);
             }
 
             randData->offset = of;

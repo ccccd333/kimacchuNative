@@ -14,6 +14,14 @@ namespace KMCCT {
 
         bool IsLoaded() const { return loaded; }
 
+        const std::unordered_map<std::string, int>& GetCategoryRangeMap(int type) const {
+            return category_range_map.at(type);
+        }
+
+        const std::unordered_map<std::string, std::vector<int>>& GetCategoryIndexMap(int type) const {
+            return category_index_map.at(type);
+        }
+
     private:
         bool Parse(std::string path, KMCDisplayType disp_type, int follower_index = -1);
 
