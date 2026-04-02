@@ -1,5 +1,8 @@
 import { DisplayDrawingTexture } from "./DisplayDrawingTexture.js";
-
+// カットイン関連の大本
+// ID = (0)=>プレイヤー (1以降)=>フォロワー
+// group = category_id なんでこんな名前にしたんだろ面倒なので今度直す
+// TODO:カットインドラッグできるけどドラッグ後に位置保存してないので意味ない。外だし。
 export class DisplayManager {
     constructor() {
         this.displayMap = new Map();
@@ -20,13 +23,19 @@ export class DisplayManager {
     get(id) {
         return this.displayMap.get(id);
     }
+
+    stopAllDisplays() {
+        for (const display of this.displayMap.values()) {
+            display.stopAll();
+        }
+    }
 }
 
 window.KMCDisplayManager = new DisplayManager();
 
 window.KMCCreateDisplay = (id) => {
     const prefix = (id === 0) ? "player" : "follower";
-    
+
     // 役割ごとの要素を取得
     const canvases = {
         bg: document.getElementById(`${prefix}_bg`),
@@ -37,7 +46,7 @@ window.KMCCreateDisplay = (id) => {
     window.KMCDisplayManager.create(id, canvases);
 };
 
-window.KMCAddCutinPaths = (json) => {
+window.KMCDefineCutin = async (json) => {
     const id = json.display_type;
 
     let display = window.KMCDisplayManager.get(id);
@@ -48,12 +57,12 @@ window.KMCAddCutinPaths = (json) => {
 
     const basePath = json.base_path || "";
     if (!json.entries) return "Error no entries";
-    
+
 
     for (const [key, entry] of Object.entries(json.entries)) {
 
         const range = entry.texture_range;
-        const dir = basePath + key + "/"
+        const dir = basePath + key + "/";
         if (!range) continue;
 
         const start = range.start ?? 0;
@@ -63,13 +72,40 @@ window.KMCAddCutinPaths = (json) => {
 
         for (let i = start; i <= end; i++) {
             paths.push(`${dir}${i}.png`);
-            console.log(`${dir}${i}.png`);
         }
 
         const group = Number(key.trim());
         const display_time = entry.display_time ?? 5.0;
 
         display.defineCutin(paths, id, group, "CUTIN", display_time);
+    }
+
+    const cache_mode = json.cache_mode ?? 1;
+    display.setCacheType(cache_mode);
+
+    if (cache_mode === 0) {
+        // 全画像を事前にプリロード(32GB/64GB向け)
+        console.log(`[CacheMode 0] Full Preload for ID: ${id}`);
+        const all_groups = Object.keys(json.entries).map(key => Number(key.trim()));
+
+        for (const group_id of all_groups) {
+            try {
+                await display.preloadGroup(group_id);
+            } catch (e) {
+                console.error(`Failed to preload: ${group_id}`, e);
+            }
+        }
+    } else if (cache_mode === 1 && json.first_values && Array.isArray(json.first_values)) {
+        // 最初のカットイン候補だけプリロード(RAM16GB向け)
+        console.log(`[CacheMode 1] Partial Preload for ID: ${id}`, json.first_values);
+
+        for (const group_id of json.first_values) {
+            try {
+                await display.preloadGroup(group_id);
+            } catch (e) {
+                console.error(`Failed to preload: ${group_id}`, e);
+            }
+        }
     }
 
     return "KMCAddCutinPaths json. loaded id " + id;
@@ -98,6 +134,11 @@ window.KMCPlayFollowerCutin = (json) => {
     if (id == null || group == null) return;
 
     window.KMCDisplayManager.play(id, group);
+};
+
+window.KMCStopAllAnimations = () => {
+    // インスタンスのメソッドを呼び出すことで、thisの混乱を防ぐ
+    window.KMCDisplayManager.stopAllDisplays();
 };
 
 function makeDraggable(target, handle = target) {

@@ -382,8 +382,6 @@ namespace KMCCT {
         std::vector<int> rand_values;
         int high = 0, low = 0;
         size_t size = 0;
-        std::string category;
-        std::vector<int> category_indices;
     };
 
     struct KMCNamePlate {

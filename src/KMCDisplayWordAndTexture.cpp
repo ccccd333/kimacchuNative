@@ -1,6 +1,7 @@
 #include "KMCDisplayWordAndTexture.h"
 #include "KMCConfig.h"
 #include "KMCPrismaUIBridge.h"
+#include "KMCCutin.h"
 #include <nlohmann/json.hpp>
 #include <filesystem>
 
@@ -50,7 +51,7 @@ namespace KMCCT {
             ERROR("DisplayWordAndTexture.json, define base_path and entries in the root field.");
             return false;
         }
-
+        bool is_missing_file = false;
         int type = static_cast<int>(disp_type);
 
         for (auto& [key, entry] : j["entries"].items()) {
@@ -76,12 +77,29 @@ namespace KMCCT {
 
                 if (!fs::exists(file_path)) {
                     ERROR("Missing file: {}", file_path);
-                    return false;  // 1つでも無ければNG、JS側でエラーになる
+                    is_missing_file = true;
+                    //return false;  
                 }
             }
         }
 
-        j["display_type"] = static_cast<int>(disp_type);
+        if (is_missing_file) {
+            // 1つでもpngが無ければNG、JS側でエラーになる
+            ERROR("[Error]Some image files could not be loaded. Therefore, the cut-in function will be disabled.");
+            return false;
+        }
+
+        if (type == (int)KMCDisplayType::PLAYER) {
+            KMCCutin::GetSingleton()->CategoryRandomizer();
+            auto &first_values = KMCCutin::GetSingleton()->GetCategoryFirstValues();
+            if (first_values.empty()) {
+                ERROR("[Error]In DisplayWordAndTexture.json, there are no category definitions on the player side. Therefore, the cut-in function will be disabled.");
+                return false;
+            }
+            j["first_values"] = first_values;
+        }
+
+        j["display_type"] = type;
         j["follower_index"] = follower_index;
         SKSE::log::info("DisplayWordAndTexture.json Loaded ==> {}", path);
         KMCPrismaUIBridge::GetSingleton()->AddPath(j);

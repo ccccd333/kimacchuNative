@@ -79,6 +79,7 @@ namespace KMCCT {
         void MCMSettingChange(std::vector<float> *floatArray);
 
         bool ExistCategory(std::string t) { return kmc_category_rand_map.contains(t); }
+        const std::vector<int> &GetCategoryFirstValues() const { return kmc_category_first_values; }
 
         void CategoryRandomizer();
 
@@ -159,7 +160,7 @@ namespace KMCCT {
         time_point<Clock> event_start = Clock::now();
         float followerDetectRange = 1000.0;
         std::unordered_map<std::string, KMCRandomData> kmc_category_rand_map;
-
+        std::vector<int> kmc_category_first_values;
         // player
         std::unordered_map<int, KMCLoadedWidgetData> LoadedWedget;
         std::unordered_map<int, KMCLoadedWidgetData> LoadedText;

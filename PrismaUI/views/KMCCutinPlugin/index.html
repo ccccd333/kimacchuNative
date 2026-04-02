@@ -31,41 +31,41 @@
         // C++からの想定
 
 
-        const playerJson = {
-            base_path: "../../textures/player/cutin/",
-            display_type: 0,
-            entries: {
-                "1": {
-                    texture_range: { start: 1, end: 9 },
-                    "display_time": 30.0
-                }
-            }
-        };
+        // const playerJson = {
+        //     base_path: "../../textures/player/cutin/",
+        //     display_type: 0,
+        //     entries: {
+        //         "1": {
+        //             texture_range: { start: 1, end: 9 },
+        //             "display_time": 30.0
+        //         }
+        //     }
+        // };
 
-        const followerJson = {
-            base_path: "../../textures/follower/cutin/",
-            display_type: 1,
-            entries: {
-                "1": {
-                    texture_range: { start: 1, end: 1 },
-                    "display_time": 5.0
-                }
-            }
-        };
+        // const followerJson = {
+        //     base_path: "../../textures/follower/cutin/",
+        //     display_type: 1,
+        //     entries: {
+        //         "1": {
+        //             texture_range: { start: 1, end: 1 },
+        //             "display_time": 5.0
+        //         }
+        //     }
+        // };
 
-        KMCAddCutinPaths(playerJson);
-        KMCAddCutinPaths(followerJson);
+        // KMCDefineCutin(playerJson);
+        // KMCDefineCutin(followerJson);
 
-        setTimeout(() => {
-            KMCPlayPlayerCutin(1);
-        }, 500);
+        // setTimeout(() => {
+        //     KMCPlayPlayerCutin(1);
+        // }, 500);
 
-        setTimeout(() => {
-            KMCPlayFollowerCutin({
-                follower_id: 1,
-                group: 1
-            });
-        }, 1500);
+        // setTimeout(() => {
+        //     KMCPlayFollowerCutin({
+        //         follower_id: 1,
+        //         group: 1
+        //     });
+        // }, 1500);
 
     </script>
 

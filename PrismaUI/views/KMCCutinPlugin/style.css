@@ -53,3 +53,15 @@
     height: 50px;
     z-index: 30;
 }
+
+/* 右外(100%)から元の位置(0)へ移動 */
+@keyframes slideInFromRight {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(0); }
+}
+
+.slide-in {
+    /* SkyrimってGPUのほうがまずい(CPU使用率30%なのに対して、GPU使用率70%) */
+    animation: slideInFromRight 0.5s ease-out forwards;
+    will-change: transform;
+}
