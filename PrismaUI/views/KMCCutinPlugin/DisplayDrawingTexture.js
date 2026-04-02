@@ -48,6 +48,7 @@ export class DisplayDrawingTexture {
         // カットインの背景
         this.bg_path = "";
         this.bg_bitmap = null;
+        this.bg_loading = false;
     }
 
     setCacheType(chache_type) {
@@ -91,18 +92,18 @@ export class DisplayDrawingTexture {
         }
         cutin.single = total === 1;
 
-
-        this.actor_name = actor_name;
-        if (bg_path && !this.bg_bitmap) {
-            // 二重読み込み防止のため、即座にパスを保持
+        if (bg_path && !this.bg_bitmap && !this.bg_loading) {
+            this.bg_loading = true;
             this.bg_path = bg_path;
             try {
                 const res = await fetch(this.bg_path);
                 const blob = await res.blob();
                 this.bg_bitmap = await createImageBitmap(blob);
-                console.log(`Background loaded and fixed: ${this.bg_path}`);
+                console.log(`Background loaded: ${this.bg_path}`);
             } catch (e) {
                 console.error("Failed to load background:", e);
+            } finally {
+                this.bg_loading = false;
             }
         }
     }

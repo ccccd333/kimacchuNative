@@ -62,37 +62,34 @@ window.KMCDefineCutin = async (json) => {
 
     if (!json.entries) return "Error no entries";
 
-
-    for (const [key, entry] of Object.entries(json.entries)) {
-
+    const entryPromises = Object.entries(json.entries).map(async ([key, entry]) => {
         const range = entry.texture_range;
         const dir = basePath + key + "/";
-        if (!range) continue;
+        if (!range) return;
 
         const start = range.start ?? 0;
         const end = range.end ?? 0;
-
         const paths = [];
-
         for (let i = start; i <= end; i++) {
             paths.push(`${dir}${i}.png`);
         }
 
         const group_id = Number(key.trim());
-        
 
-        await display.defineCutin({
+        return display.defineCutin({
             id: id,
             group: group_id,
             paths: paths,
             layer_name: "CUTIN",
             duration: entry.display_time || 5.0,
-            bg_path: background_path || null, // JSONにbg_pathがあれば反映
+            bg_path: background_path || null,
             actor_name: entry.actor_name || "",
             word: entry.word || ""
         });
+    });
 
-    }
+    // 全てのデータ登録（と背景1回のみの読み込み）が完了するのを待つ
+    await Promise.all(entryPromises);
 
     const cache_mode = json.cache_mode ?? 1;
     display.setCacheType(cache_mode);
@@ -101,28 +98,15 @@ window.KMCDefineCutin = async (json) => {
         // 全画像を事前にプリロード(32GB/64GB向け)
         console.log(`[CacheMode 0] Full Preload for ID: ${id}`);
         const all_groups = Object.keys(json.entries).map(key => Number(key.trim()));
-
-        for (const group_id of all_groups) {
-            try {
-                await display.preloadGroup(group_id);
-            } catch (e) {
-                console.error(`Failed to preload: ${group_id}`, e);
-            }
-        }
-    } else if (cache_mode === 1 && json.first_values && Array.isArray(json.first_values)) {
+        // ここも Promise.all で並列実行
+        await Promise.all(all_groups.map(group_id => display.preloadGroup(group_id)));
+    } else if (cache_mode === 1 && json.first_values) {
         // 最初のカットイン候補だけプリロード(RAM16GB向け)
-        console.log(`[CacheMode 1] Partial Preload for ID: ${id}`, json.first_values);
-
-        for (const group_id of json.first_values) {
-            try {
-                await display.preloadGroup(group_id);
-            } catch (e) {
-                console.error(`Failed to preload: ${group_id}`, e);
-            }
-        }
+        console.log(`[CacheMode 1] Partial Preload`, json.first_values);
+        await Promise.all(json.first_values.map(group_id => display.preloadGroup(group_id)));
     }
 
-    return "KMCAddCutinPaths json. loaded id " + id;
+    return "KMCAddCutinPaths loaded id " + id;
 };
 
 window.KMCPreloadGroups = async (json) => {
