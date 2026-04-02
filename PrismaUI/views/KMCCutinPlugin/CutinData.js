@@ -9,6 +9,6 @@ export class CutinData {
         this.layers = new Map();
         this.single = false;
         this.display_time = 5.0;
-        this.display_type = 0;
+        this.word = "";
     }
 }

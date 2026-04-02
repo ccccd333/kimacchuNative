@@ -11,7 +11,8 @@ export class DisplayDrawingTexture {
         this.ctxs = {
             bg: canvases.bg.getContext("2d"),
             cutin: canvases.cutin.getContext("2d"),
-            name: canvases.name.getContext("2d")
+            name: canvases.name.getContext("2d"),
+            word: canvases.word.getContext("2d")
         };
 
         Object.values(this.canvases).forEach(canvas => {
@@ -37,34 +38,73 @@ export class DisplayDrawingTexture {
         this.duration_sec = 5.0;
         this.display_type = 0;
         this.start_time = null;
+        this.cutin_word = "";
+
         // (1)=>部分読み込みモード、(0)=>全画像読み込みモード
         this.cache_type = 1;
+
+        // プレイヤー名とか
+        this.actor_name = "";
+        // カットインの背景
+        this.bg_path = "";
+        this.bg_bitmap = null;
     }
 
     setCacheType(chache_type) {
         this.cache_type = chache_type;
     }
 
-    defineCutin(paths, id, group, layerName, duration = 5.0) {
+    async defineCutin(config) {
+        const {
+            id,
+            group,
+            paths,
+            layer_name = "CUTIN",
+            duration = 5.0,
+            bg_path = null,
+            actor_name = "",
+            word = ""
+        } = config;
+
+        this.display_type = id;
         if (!this.cutin_map.has(group)) {
             this.cutin_map.set(group, new CutinData());
         }
 
         const cutin = this.cutin_map.get(group);
 
-        if (!cutin.layers.has(layerName)) {
-            cutin.layers.set(layerName, []);
+        if (!cutin.layers.has(layer_name)) {
+            cutin.layers.set(layer_name, []);
         }
 
-        cutin.layers.get(layerName).push(...paths);
-        cutin.duration = duration;
-        cutin.display_type = id;
+        cutin.layers.get(layer_name).push(...paths);
+
+        cutin.actor_name = actor_name;
+        cutin.word = word;
+
+        cutin.display_time = duration;
+
 
         let total = 0;
         for (const arr of cutin.layers.values()) {
             total += arr.length;
         }
         cutin.single = total === 1;
+
+
+        this.actor_name = actor_name;
+        if (bg_path && !this.bg_bitmap) {
+            // 二重読み込み防止のため、即座にパスを保持
+            this.bg_path = bg_path;
+            try {
+                const res = await fetch(this.bg_path);
+                const blob = await res.blob();
+                this.bg_bitmap = await createImageBitmap(blob);
+                console.log(`Background loaded and fixed: ${this.bg_path}`);
+            } catch (e) {
+                console.error("Failed to load background:", e);
+            }
+        }
     }
 
     async preloadGroup(group) {
@@ -127,6 +167,10 @@ export class DisplayDrawingTexture {
         this.last_time = 0;
         this.start_time = null;
         this.animating = true;
+        this.current_group = group;
+        this.duration_sec = cutin?.display_time ?? 5.0;
+        this.cutin_word = cutin?.word ?? "";
+
 
         // CPUレンダリングなのでフェードとかスンナとのことなのでスライドアニメーション
         const unit_container = this.canvases.cutin.parentElement;
@@ -135,10 +179,6 @@ export class DisplayDrawingTexture {
             void unit_container.offsetWidth;
             unit_container.classList.add("slide-in");
         }
-
-        this.current_group = group;
-        this.duration_sec = cutin?.duration ?? 5.0;
-        this.display_type = cutin.display_type;
 
         // 全レイヤーを表示状態にする
         Object.values(this.canvases).forEach(canvas => {
@@ -160,6 +200,11 @@ export class DisplayDrawingTexture {
         if (time - this.last_time < this.interval) return;
         this.last_time = time;
 
+        if (this.bg_bitmap && this.ctxs.bg) {
+            this.ctxs.bg.clearRect(0, 0, this.canvases.bg.width, this.canvases.bg.height);
+            DrawUtility.drawImageFit(this.ctxs.bg, this.bg_bitmap, this.canvases.bg, "");
+        }
+
         // カットイン層のみをクリアして描画
         const ctx_cutin = this.ctxs.cutin;
         const canvas_cutin = this.canvases.cutin;
@@ -172,6 +217,29 @@ export class DisplayDrawingTexture {
                 DrawUtility.drawImageFit(ctx_cutin, bmp, canvas_cutin, "");
             }
         }
+
+        if (this.ctxs.name) {
+            const ctx = this.ctxs.name;
+            ctx.clearRect(0, 0, this.canvases.name.width, this.canvases.name.height);
+            ctx.fillStyle = "white";
+            ctx.font = "bold 22px sans-serif";
+            ctx.shadowColor = "black";
+            ctx.shadowBlur = 4;
+            ctx.fillText(this.actor_name, 10, 30);
+        }
+
+        // 4. セリフを描画 (wordキャンバス)
+        if (this.ctxs.word) {
+            const ctx = this.ctxs.word;
+            ctx.clearRect(0, 0, this.canvases.word.width, this.canvases.word.height);
+            ctx.fillStyle = "white";
+            ctx.font = "18px sans-serif";
+            ctx.shadowColor = "black";
+            ctx.shadowBlur = 4;
+            // セリフが長い場合の折り返し処理が必要ならここで行う
+            ctx.fillText(this.cutin_word, 10, 30);
+        }
+
 
         this.frame = (this.frame + 1) % this.bitmaps.length;
 

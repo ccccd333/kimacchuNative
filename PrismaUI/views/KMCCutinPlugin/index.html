@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <title>Cutin Display System</title>
@@ -13,16 +14,18 @@
             <canvas id="player_bg" class="layer-bg"></canvas>
             <canvas id="player_cutin" class="layer-cutin"></canvas>
             <canvas id="player_name" class="layer-name"></canvas>
+            <canvas id="player_word" class="layer-word"></canvas>
         </div>
     </div>
 
-<div id="follower_pos" class="display-position follower">
-    <div id="follower_unit" class="display-unit">
-        <canvas id="follower_bg" class="layer-bg"></canvas>
-        <canvas id="follower_cutin" class="layer-cutin"></canvas>
-        <canvas id="follower_name" class="layer-name"></canvas>
+    <div id="follower_pos" class="display-position follower">
+        <div id="follower_unit" class="display-unit">
+            <canvas id="follower_bg" class="layer-bg"></canvas>
+            <canvas id="follower_cutin" class="layer-cutin"></canvas>
+            <canvas id="follower_name" class="layer-name"></canvas>
+            <canvas id="follower_word" class="layer-word"></canvas>
+        </div>
     </div>
-</div>
 
     <script type="module">
         import { DisplayManager } from "./DisplayManager.js";
@@ -33,22 +36,25 @@
 
         // const playerJson = {
         //     base_path: "../../textures/player/cutin/",
+        //     bg_path: "../../textures/bg.png",
         //     display_type: 0,
         //     entries: {
         //         "1": {
         //             texture_range: { start: 1, end: 9 },
-        //             "display_time": 30.0
+        //             display_time: 30.0,
+        //             word:"aaaa"
         //         }
         //     }
         // };
 
         // const followerJson = {
         //     base_path: "../../textures/follower/cutin/",
+        //     bg_path: "../../textures/bg.png",
         //     display_type: 1,
         //     entries: {
         //         "1": {
         //             texture_range: { start: 1, end: 1 },
-        //             "display_time": 5.0
+        //             display_time: 5.0
         //         }
         //     }
         // };

@@ -54,6 +54,15 @@
     z-index: 30;
 }
 
+.layer-word {
+    bottom: 20px;
+    left: 10%;
+    width: 80%;
+    height: 60px;
+    z-index: 40;
+    /* 背景を少し暗くするなど、文字を読みやすくする調整もCSSで可能 */
+}
+
 /* 右外(100%)から元の位置(0)へ移動 */
 @keyframes slideInFromRight {
     0% { transform: translateX(100%); }

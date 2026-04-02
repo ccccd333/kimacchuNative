@@ -40,7 +40,8 @@ window.KMCCreateDisplay = (id) => {
     const canvases = {
         bg: document.getElementById(`${prefix}_bg`),
         cutin: document.getElementById(`${prefix}_cutin`),
-        name: document.getElementById(`${prefix}_name`)
+        name: document.getElementById(`${prefix}_name`),
+        word: document.getElementById(`${prefix}_word`)
     };
 
     window.KMCDisplayManager.create(id, canvases);
@@ -56,6 +57,9 @@ window.KMCDefineCutin = async (json) => {
     }
 
     const basePath = json.base_path || "";
+    const background_path = json.bg_path || null;
+
+
     if (!json.entries) return "Error no entries";
 
 
@@ -74,10 +78,20 @@ window.KMCDefineCutin = async (json) => {
             paths.push(`${dir}${i}.png`);
         }
 
-        const group = Number(key.trim());
-        const display_time = entry.display_time ?? 5.0;
+        const group_id = Number(key.trim());
+        
 
-        display.defineCutin(paths, id, group, "CUTIN", display_time);
+        await display.defineCutin({
+            id: id,
+            group: group_id,
+            paths: paths,
+            layer_name: "CUTIN",
+            duration: entry.display_time || 5.0,
+            bg_path: background_path || null, // JSONにbg_pathがあれば反映
+            actor_name: entry.actor_name || "",
+            word: entry.word || ""
+        });
+
     }
 
     const cache_mode = json.cache_mode ?? 1;
