@@ -47,13 +47,15 @@ namespace KMCCT {
         prisma_ui->Unfocus(cutin_view);
     }
 
-    void KMCPrismaUIBridge::AddPath(const json& j) {
+    void KMCPrismaUIBridge::KMCDefineCutin(const json& j) {
         std::string script = "KMCDefineCutin(" + j.dump() + ")";
         prisma_ui->Invoke(cutin_view, script.c_str(), OnReceiveKMCDefineCutin);
     }
 
-    void KMCPrismaUIBridge::KMCPlayPlayerCutin(int group) {
-        std::string script = "KMCPlayPlayerCutin(" + std::to_string(group) + ")";
+    void KMCPrismaUIBridge::KMCPlayPlayerCutin(int group, int next_group) {
+        json group_data_map = {{"group", group}, {"next_group", next_group}};
+
+        std::string script = "KMCPlayPlayerCutin(" + group_data_map.dump() + ")";
         prisma_ui->Invoke(cutin_view, script.c_str(), OnReceiveKMCPlayPlayerCutin);
     }
 }

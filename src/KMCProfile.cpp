@@ -5,6 +5,7 @@
 #include "KMCSound.h"
 #include "KMCStateManager.h"
 #include "KMCWaitTask.h"
+#include "KMCPrismaUIBridge.h"
 
 SINGLETONBODY(KMCCT::KMCProfile)
 
@@ -338,7 +339,7 @@ namespace KMCCT {
         }
         // player only
         if (PlayerProfil.tids.size() == 0) return;
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player == nullptr) return;
 
         static float text_fade_in_out_time = KMCFindVector(KMCCT::KMCConfig::GetSingleton()->getIProfileAnimTextFade(),
@@ -472,6 +473,14 @@ namespace KMCCT {
     }
 
     int KMCProfile::GetStateProfileEvent() {
+        static int aaa = 1;
+        if (aaa == 1) {
+            aaa++;
+            KMCPrismaUIBridge::GetSingleton()->KMCPlayPlayerCutin(1, 2);
+        } else {
+            KMCPrismaUIBridge::GetSingleton()->KMCPlayPlayerCutin(2, 1);
+        }
+
         bool sh_p = false;
         bool up = false;
         bool fpu = false;

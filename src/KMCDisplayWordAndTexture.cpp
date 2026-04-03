@@ -14,8 +14,22 @@ namespace KMCCT {
 	void KMCDisplayWordAndTexture::Init() {
  
         try {
-            if (!Parse(COMMON_PATH + PLAYER_WORD_PATH + "/" + DISPLAY_WORD_AND_TEXTURE_PATH, KMCDisplayType::PLAYER)) {
+            if (!Parse(COMMON_PATH + PLAYER_WORD_PATH + "/" + DISPLAY_WORD_AND_TEXTURE_PATH, 
+                (int)KMCDisplayType::PLAYER,
+                KMCConfig::GetSingleton()->GetPlayer()->GetName())) {
                 loaded = false;
+            }
+
+            std::vector<KMCFollower> *followers = KMCConfig::GetSingleton()->GetFollowers();
+            if (followers && !followers->empty()) {
+                for (const auto &follower : *followers) {
+                    if (!follower.follower) continue;
+                    int follower_index = follower.index + 1;
+                    if (!Parse(COMMON_PATH + FOLLOWER_WORD_PATH + std::to_string(follower_index) + "/" + DISPLAY_WORD_AND_TEXTURE_PATH,
+                               follower_index, follower.follower->GetName())) {
+                        loaded = false;
+                    }
+                }
             }
         } catch (std::runtime_error ex) {
             loaded = false;
@@ -23,16 +37,16 @@ namespace KMCCT {
         }
 	}
 
-    bool KMCDisplayWordAndTexture::Parse(std::string path, KMCDisplayType disp_type, int follower_index) {
+    bool KMCDisplayWordAndTexture::Parse(std::string path, int disp_type, std::string actor_name) {
 
         std::ifstream stream(path);
 
         if (!stream.is_open()) {
-            throw std::runtime_error("Failed open file.");
+            throw std::runtime_error("Failed open file. Path ==> " + path);
         }
 
         if (!json::accept(stream)) {
-            throw std::runtime_error("Incorrect json format.");
+            throw std::runtime_error("Incorrect json format. Path ==> " + path);
         }
 
         stream.seekg(0, std::ios::beg);
@@ -47,12 +61,19 @@ namespace KMCCT {
             return false;
         }
 
+        std::string bg_path = j.value("bg_path", "");
+        std::string full_bg_path = PRISMA_UI_HTML_PATH + base_path;
+        if (!fs::exists(full_bg_path)) {
+            ERROR("DisplayWordAndTexture.json, Background path not found: {}", full_bg_path);
+            return false;
+        }
+
         if (!j.contains("entries") || !j["entries"].is_object()) {
             ERROR("DisplayWordAndTexture.json, define base_path and entries in the root field.");
             return false;
         }
         bool is_missing_file = false;
-        int type = static_cast<int>(disp_type);
+        int type = disp_type;
 
         for (auto& [key, entry] : j["entries"].items()) {
             int id = std::stoi(key);
@@ -89,6 +110,12 @@ namespace KMCCT {
             return false;
         }
 
+
+
+
+
+
+
         if (type == (int)KMCDisplayType::PLAYER) {
             KMCCutin::GetSingleton()->CategoryRandomizer();
             auto &first_values = KMCCutin::GetSingleton()->GetCategoryFirstValues();
@@ -96,13 +123,33 @@ namespace KMCCT {
                 ERROR("[Error]In DisplayWordAndTexture.json, there are no category definitions on the player side. Therefore, the cut-in function will be disabled.");
                 return false;
             }
-            j["first_values"] = first_values;
+            j["first_values"] = {1};
+        } else {
+            // player 基準のためフォロワー側はカテゴリにあるものでフィルタ
+            const auto &first_values = KMCCutin::GetSingleton()->GetCategoryFirstValues();
+            const auto &category_temp_map = category_map[type];
+            std::vector<int> filtered;
+            if (!category_temp_map.empty()) {
+                for (auto first_input : first_values) {
+                    if (category_temp_map.contains(first_input)) {
+                        filtered.push_back(first_input);
+                    }
+                }
+                j["first_values"] = filtered;
+            } else {
+                // カテゴリが空、設定できないようにする
+                ERROR(
+                    "[Error]Follower DisplayWordAndTexture.json, there are no category definitions on the player side. "
+                    "Therefore, the cut-in function will be disabled.");
+                return false;
+            }
+
         }
 
         j["display_type"] = type;
-        j["follower_index"] = follower_index;
+        j["actor_name"] = actor_name;
         SKSE::log::info("DisplayWordAndTexture.json Loaded ==> {}", path);
-        KMCPrismaUIBridge::GetSingleton()->AddPath(j);
+        KMCPrismaUIBridge::GetSingleton()->KMCDefineCutin(j);
 
         return true;
     }

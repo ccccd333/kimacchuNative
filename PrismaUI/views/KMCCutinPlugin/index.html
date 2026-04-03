@@ -32,44 +32,45 @@
 
         //------------------実行テスト-----------
         // C++からの想定
-        // const playerJson = {
-        //     base_path: "../../textures/player/cutin/",
-        //     bg_path: "../../textures/bg.png",
-        //     display_type: 0,
-        //     entries: {
-        //         "1": {
-        //             texture_range: { start: 1, end: 9 },
-        //             display_time: 30.0,
-        //             word:"aaaa"
-        //         }
-        //     }
-        // };
+        const playerJson = {
+            base_path: "../../textures/player/cutin/",
+            bg_path: "../../textures/bg.png",
+            display_type: 0,
+            actor_name:"Hina",
+            entries: {
+                "1": {
+                    texture_range: { start: 1, end: 9 },
+                    display_time: 30.0,
+                    word:"aaaaaaaaaaaaaaaaa\naaaaaaaaaaaaaaa\naaaaaaaaaaaaaaaaa"
+                }
+            }
+        };
 
-        // const followerJson = {
-        //     base_path: "../../textures/follower/cutin/",
-        //     bg_path: "../../textures/bg.png",
-        //     display_type: 1,
-        //     entries: {
-        //         "1": {
-        //             texture_range: { start: 1, end: 1 },
-        //             display_time: 5.0
-        //         }
-        //     }
-        // };
+        const followerJson = {
+            base_path: "../../textures/follower/cutin/",
+            bg_path: "../../textures/bg.png",
+            display_type: 1,
+            entries: {
+                "1": {
+                    texture_range: { start: 1, end: 1 },
+                    display_time: 5.0
+                }
+            }
+        };
 
-        // KMCDefineCutin(playerJson);
-        // KMCDefineCutin(followerJson);
+        KMCDefineCutin(playerJson);
+        KMCDefineCutin(followerJson);
 
-        // setTimeout(() => {
-        //     KMCPlayPlayerCutin(1);
-        // }, 500);
+        setTimeout(() => {
+            KMCPlayPlayerCutin({group:1,next_group:1});
+        }, 500);
 
-        // setTimeout(() => {
-        //     KMCPlayFollowerCutin({
-        //         follower_id: 1,
-        //         group: 1
-        //     });
-        // }, 1500);
+        setTimeout(() => {
+            KMCPlayFollowerCutin({
+                follower_id: 1,
+                group: 1,next_group:1
+            });
+        }, 1500);
 
     </script>
 

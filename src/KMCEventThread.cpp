@@ -348,7 +348,7 @@ void KMCCT::PapyrusPeriodicCall() {
             milliseconds diff = duration_cast<milliseconds>(end - start);
             dur = diff.count();
             if (dur >= aaaakmcUpdatePapyrusCycle * KMCCT::PAPYRUS_UPDATE_WHILE_WAIT_TIME) {
-                auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+                auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
 
                 if (player) {
                     RE::Actor *ac = player;
@@ -571,7 +571,7 @@ namespace KMCCT {
 
     void KMCEventThread::TryShowProfile() {
         //KMCPrismaUIBridge::GetSingleton()->Focus();
-        KMCPrismaUIBridge::GetSingleton()->KMCPlayPlayerCutin(1);
+
         executor.submit(InterruptProfileEventManager).wait_for(std::chrono::seconds(0));
     }
 

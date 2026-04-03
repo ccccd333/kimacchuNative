@@ -19,7 +19,7 @@
 
 .display-unit {
     position: relative;
-    width: 400px;
+    width: 300px;
     height: 300px;
     overflow: hidden;
     margin-bottom: 20px;
@@ -36,14 +36,18 @@
     width: 100%;
     height: 100%;
     z-index: 10;
+    
+    transform-origin: top;
+    transform: scaleY(0.8);
 }
 
 .layer-cutin {
     top: 0;
     right: 0;
-    width: 50%;
-    height: 50%;
+    width: 40%;
+    height: 40%;
     z-index: 20;
+    transform: translate(-10px,10px);
 }
 
 .layer-name {
@@ -58,19 +62,15 @@
     bottom: 20px;
     left: 10%;
     width: 80%;
-    height: 60px;
     z-index: 40;
-    /* 背景を少し暗くするなど、文字を読みやすくする調整もCSSで可能 */
 }
 
-/* 右外(100%)から元の位置(0)へ移動 */
 @keyframes slideInFromRight {
     0% { transform: translateX(100%); }
     100% { transform: translateX(0); }
 }
 
 .slide-in {
-    /* SkyrimってGPUのほうがまずい(CPU使用率30%なのに対して、GPU使用率70%) */
     animation: slideInFromRight 0.5s ease-out forwards;
     will-change: transform;
 }

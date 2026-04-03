@@ -38,7 +38,7 @@ namespace KMCCT {
     bool KMCCCTNothing::Check(KMCCCheckSource source) { return true; }
 
     bool KMCCCTPlayerMove::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             if (player->IsMoving()) {
                 return true;
@@ -49,7 +49,7 @@ namespace KMCCT {
     }
 
     bool KMCCCTPlayerCombat::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             if (player->IsInCombat()) {
                 return true;
@@ -60,7 +60,7 @@ namespace KMCCT {
     }
 
     bool KMCCCTPlayerRunning::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             if (player->IsRunning()) {
                 return true;
@@ -71,7 +71,7 @@ namespace KMCCT {
     }
 
     bool KMCCCTPlayerSneaking::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             if (player->IsSneaking()) {
                 return true;
@@ -82,7 +82,7 @@ namespace KMCCT {
     }
 
     bool KMCCCTPlayerIdle::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             if (!player->IsMoving()) {
                 return true;
@@ -93,7 +93,7 @@ namespace KMCCT {
     }
 
     bool KMCCCTPlayerKeyword::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             if (source.hsnhs == HasNHan::both) {
                 if (player->HasKeywordInArray(source.has, true) && !player->HasKeywordInArray(source.nhas, true)) {
@@ -114,7 +114,7 @@ namespace KMCCT {
     }
 
     bool KMCCCTLocationKeyword::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             auto cell = player->GetParentCell();
             if (cell != nullptr) {
@@ -419,7 +419,7 @@ namespace KMCCT {
     }
 
     bool KMCCCTBodySlot::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             std::vector<bool> res;
             KMCIsWorn(player, source.body_slot.slots, res);
@@ -468,7 +468,7 @@ namespace KMCCT {
     }
 
     bool KMCCCTMagicEffectKeyword::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             const auto activeEffects = player->GetMagicTarget()->GetActiveEffectList();
             if (activeEffects) {

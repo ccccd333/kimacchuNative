@@ -35,6 +35,7 @@ export class DisplayDrawingTexture {
         // iwant widget時代はC++で制御してたけど
         // prismaからはJS側で画像再生→終了通知が自然だ
         this.current_group = null;
+        this.current_next_group = null;
         this.duration_sec = 5.0;
         this.display_type = 0;
         this.start_time = null;
@@ -43,7 +44,7 @@ export class DisplayDrawingTexture {
         // (1)=>部分読み込みモード、(0)=>全画像読み込みモード
         this.cache_type = 1;
 
-        // プレイヤー名とか
+        // プレイヤー名はshow racemenuとかで変更できるからと思ったけどどうしよ
         this.actor_name = "";
         // カットインの背景
         this.bg_path = "";
@@ -68,6 +69,7 @@ export class DisplayDrawingTexture {
         } = config;
 
         this.display_type = id;
+        this.actor_name = actor_name;
         if (!this.cutin_map.has(group)) {
             this.cutin_map.set(group, new CutinData());
         }
@@ -80,7 +82,7 @@ export class DisplayDrawingTexture {
 
         cutin.layers.get(layer_name).push(...paths);
 
-        cutin.actor_name = actor_name;
+        //cutin.actor_name = actor_name;
         cutin.word = word;
 
         cutin.display_time = duration;
@@ -105,6 +107,49 @@ export class DisplayDrawingTexture {
             } finally {
                 this.bg_loading = false;
             }
+
+            // 初回表示時カクつくので仮描画
+            Object.values(this.canvases).forEach(canvas => {
+                if (canvas) canvas.style.display = "block";
+            });
+
+            const res = await fetch("test.png");
+            const blob = await res.blob();
+            const dummy_bmp = await createImageBitmap(blob);
+
+            DrawUtility.drawImageFit(this.ctxs.bg, dummy_bmp, this.canvases.bg, "");
+
+            const ctx_cutin = this.ctxs.cutin;
+            const canvas_cutin = this.canvases.cutin;
+            DrawUtility.drawImageFit(ctx_cutin, dummy_bmp, canvas_cutin, "");
+
+
+            const ctx = this.ctxs.name;
+            ctx.fillStyle = "white";
+            ctx.font = "bold 22px sans-serif";
+            ctx.shadowColor = "black";
+            ctx.shadowBlur = 4;
+            ctx.fillText(this.actor_name, 10, 30);
+
+
+            const ctx2 = this.ctxs.word;
+            ctx2.fillStyle = "white";
+            ctx2.font = "18px sans-serif";
+            ctx2.shadowColor = "black";
+            ctx2.shadowBlur = 4;
+            ctx2.fillText("", 10, 30);
+
+            Object.keys(this.ctxs).forEach(key => {
+                const ctx = this.ctxs[key];
+                const canvas = this.canvases[key];
+                if (ctx && canvas) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    canvas.style.display = "none";
+                }
+            });
+
+            dummy_bmp.close();
+
         }
     }
 
@@ -152,7 +197,7 @@ export class DisplayDrawingTexture {
         return promise;
     }
 
-    async playCutin(group) {
+    async playCutin(group, next_group) {
         if (this.animating) {
             console.warn(`Already animating. Ignore play request for group: ${group}`);
             return;
@@ -169,6 +214,7 @@ export class DisplayDrawingTexture {
         this.start_time = null;
         this.animating = true;
         this.current_group = group;
+        this.current_next_group = next_group;
         this.duration_sec = cutin?.display_time ?? 5.0;
         this.cutin_word = cutin?.word ?? "";
 
@@ -186,6 +232,10 @@ export class DisplayDrawingTexture {
             if (canvas) canvas.style.display = "block";
         });
 
+        //if (this.cache_type == 1 && next_group) {
+        //    this.preloadGroup(next_group);
+        //}
+
         requestAnimationFrame(this.animate);
     }
 
@@ -202,16 +252,15 @@ export class DisplayDrawingTexture {
         this.last_time = time;
 
         if (this.bg_bitmap && this.ctxs.bg) {
-            this.ctxs.bg.clearRect(0, 0, this.canvases.bg.width, this.canvases.bg.height);
+            //this.ctxs.bg.clearRect(0, 0, this.canvases.bg.width, this.canvases.bg.height);
             DrawUtility.drawImageFit(this.ctxs.bg, this.bg_bitmap, this.canvases.bg, "");
         }
 
-        // カットイン層のみをクリアして描画
         const ctx_cutin = this.ctxs.cutin;
         const canvas_cutin = this.canvases.cutin;
 
         if (ctx_cutin && canvas_cutin) {
-            ctx_cutin.clearRect(0, 0, canvas_cutin.width, canvas_cutin.height);
+            //ctx_cutin.clearRect(0, 0, canvas_cutin.width, canvas_cutin.height);
 
             const bmp = this.bitmaps[this.frame];
             if (bmp) {
@@ -229,16 +278,25 @@ export class DisplayDrawingTexture {
             ctx.fillText(this.actor_name, 10, 30);
         }
 
-        // 4. セリフを描画 (wordキャンバス)
         if (this.ctxs.word) {
             const ctx = this.ctxs.word;
-            ctx.clearRect(0, 0, this.canvases.word.width, this.canvases.word.height);
+            const canvas = this.canvases.word;
+
             ctx.fillStyle = "white";
             ctx.font = "18px sans-serif";
             ctx.shadowColor = "black";
             ctx.shadowBlur = 4;
-            // セリフが長い場合の折り返し処理が必要ならここで行う
-            ctx.fillText(this.cutin_word, 10, 30);
+
+            const x = 10;
+            let y = 30;
+            const lineHeight = 24;
+
+            const lines = this.cutin_word.split('\n');
+
+            for (const line of lines) {
+                ctx.fillText(line, x, y);
+                y += lineHeight;
+            }
         }
 
 
@@ -252,7 +310,7 @@ export class DisplayDrawingTexture {
                 const group_promise = this.cache.get(this.current_group);
                 if (group_promise) {
                     group_promise.then(frames => {
-                        frames.forEach(bmp => bmp?.close?.());
+                        frames.forEach(bmp => bmp.close());
                     });
                     this.cache.delete(this.current_group);
                     console.log(`Released group: ${this.current_group}`);
@@ -269,15 +327,34 @@ export class DisplayDrawingTexture {
                 }
             });
 
-            if (window.KMCOnCutinFinished) {
-                window.KMCOnCutinFinished(this.display_type);
+            if (this.cache_type == 1 && this.current_next_group) {
+                this.preloadGroup(this.current_next_group);
             }
+
+            // C++側に通知
+            CutinFinished(this.display_type);
             return;
         }
     }
 
     stopAll() {
+        // ゲームロード時
         this.animating = false;
+
+        if (this.cache_type === 1) {
+            const group_promise = this.cache.get(this.current_group);
+            if (group_promise) {
+                group_promise.then(frames => {
+                    frames.forEach(bmp => bmp.close());
+                });
+                this.cache.delete(this.current_group);
+                console.log(`Released group: ${this.current_group}`);
+            }
+
+            if(this.current_next_group){
+                this.preloadGroup(this.current_next_group);
+            }
+        }
 
         // ビットマップの配列を空にするだけで、各bmpのcloseは呼ばない
         // キャッシュ側にあるデータは生存し続ける
@@ -295,10 +372,11 @@ export class DisplayDrawingTexture {
                 canvas.style.display = "none";
             }
         });
-        console.log(`Animation stopped. Bitmaps retained in cache for ID: ${this.display_type}`);
+        
     }
 }
 
-window.KMCOnCutinFinished = (display_type) => {
-    console.log("Cutin finished for display:", display_type);
-};
+function CutinFinished(display_type) {
+    window.KMCOnCutinFinished(display_type);
+    addResponse(display_type);
+}

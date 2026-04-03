@@ -411,7 +411,7 @@ namespace KMCCT {
             (RE::BGSKeyword*)RE::TESDataHandler::GetSingleton()->LookupForm(0x0001E714, "Skyrim.esm")
         };
 
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         
         states = {
             //{cutin_priority_fhu, StateControll(STFhu, KMCCT::State(player, "FHU", cutin_chance_fhu))},
@@ -522,7 +522,7 @@ namespace KMCCT {
     
     int KMCStateManager::IsInScene() { 
         if (actorNPC == nullptr) return -1;
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player == nullptr) return -2;
 
         if (keywordsExcludeDuringScene.size() != 0) {
@@ -573,7 +573,7 @@ namespace KMCCT {
     }
 
     bool KMCStateManager::GetProfileInvisibleState(bool suspend) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
 
         if (player == nullptr) return false;
 
@@ -658,7 +658,7 @@ namespace KMCCT {
     }
 
     std::string KMCStateManager::GetHighestPriorityPlayer() {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
 
         if (isStoppingState) {
             return "";

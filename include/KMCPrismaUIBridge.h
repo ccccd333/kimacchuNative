@@ -15,9 +15,9 @@ namespace KMCCT {
 
         void UnFocus();
 
-        void AddPath(const json &j);
+        void KMCDefineCutin(const json &j);
 
-        void KMCPlayPlayerCutin(int group);
+        void KMCPlayPlayerCutin(int group, int next_group);
 
 
     private:

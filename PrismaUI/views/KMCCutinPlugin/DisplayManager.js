@@ -13,11 +13,11 @@ export class DisplayManager {
         this.displayMap.set(id, display);
     }
 
-    async play(id, group) {
+    async play(id, group, next_group) {
         const display = this.displayMap.get(id);
         if (!display) return;
 
-        await display.playCutin(group);
+        await display.playCutin(group, next_group);
     }
 
     get(id) {
@@ -83,7 +83,7 @@ window.KMCDefineCutin = async (json) => {
             layer_name: "CUTIN",
             duration: entry.display_time || 5.0,
             bg_path: background_path || null,
-            actor_name: entry.actor_name || "",
+            actor_name: json.actor_name || "",
             word: entry.word || ""
         });
     });
@@ -121,17 +121,20 @@ window.KMCPreloadGroups = async (json) => {
     }
 };
 
-window.KMCPlayPlayerCutin = (group) => {
-    window.KMCDisplayManager.play(0, group);
+window.KMCPlayPlayerCutin = (json) => {
+    const group = json.group;
+    const next_group = json.next_group;
+    window.KMCDisplayManager.play(0, group, next_group);
 };
 
 window.KMCPlayFollowerCutin = (json) => {
     const id = json.follower_id;
     const group = json.group;
+    const next_group = json.next_group;
 
     if (id == null || group == null) return;
 
-    window.KMCDisplayManager.play(id, group);
+    window.KMCDisplayManager.play(id, group, next_group);
 };
 
 window.KMCStopAllAnimations = () => {

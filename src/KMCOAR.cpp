@@ -29,7 +29,7 @@ namespace KMCCT {
             }
         }
 
-        auto foar = KMCConfig::GetSingleton()->getFollowers();
+        auto foar = KMCConfig::GetSingleton()->GetFollowers();
         for (auto fins : *foar) {
             try {
                 std::vector<std::pair<uint64_t, OARCompDetail>> oarc;

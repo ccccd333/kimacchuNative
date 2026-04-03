@@ -123,14 +123,14 @@ namespace KMCCT {
         std::vector<std::pair<std::string, KMCCompsFlag>>* getIHideComponents() { return &IHideComponents; }
         std::vector<std::pair<std::string, std::string>>* getIConnectOAR() { return &IConnectOAR; }
         
-        RE::PlayerCharacter* getPlayer() { return player; }
+        RE::PlayerCharacter* GetPlayer() { return player; }
         // Player Profile
         std::vector<std::pair<std::string, std::string>>* getIWidgetSetting() { return &IWidgetSetting; }
         std::vector<std::pair<std::string, std::string>>* getITextSetting() { return &ITextSetting; }
         std::vector<std::string>* getIProfileText() { return &IProfileText; }
 
         // Follower         
-        std::vector<KMCFollower>* getFollowers() { return &IFollower; }
+        std::vector<KMCFollower>* GetFollowers() { return &IFollower; }
     private:
         bool SetupJsonSimpleNodes(std::vector<std::pair<std::string, std::string>> *configs, std::string jsonFileName,
                                   std::string rootKeyName);

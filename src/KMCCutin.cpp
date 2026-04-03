@@ -310,7 +310,7 @@ namespace KMCCT {
             return;
         }
 
-        auto *followers = KMCCT::KMCConfig::GetSingleton()->getFollowers();
+        auto *followers = KMCCT::KMCConfig::GetSingleton()->GetFollowers();
         for (int i = 0; i < followers->size(); i++) {
             KMCFollower f = (*followers)[i];
             auto *fanimationRange = &(f.IAnimationRange);
@@ -666,8 +666,8 @@ namespace KMCCT {
         // follower
         KMCLoadedWidgetData ftarget;
         int frand = -1;
-        auto f = FollowerEffectiveDistance(KMCCT::KMCConfig::GetSingleton()->getPlayer(),
-                                           KMCCT::KMCConfig::GetSingleton()->getFollowers(), followerDetectRange, rand);
+        auto f = FollowerEffectiveDistance(KMCCT::KMCConfig::GetSingleton()->GetPlayer(),
+                                           KMCCT::KMCConfig::GetSingleton()->GetFollowers(), followerDetectRange, rand);
         if (f.size() != 0) {
             frand = f.begin()->index;
             int target_index = 0;
@@ -762,7 +762,7 @@ namespace KMCCT {
             st.frand = frand;
             st.volum = c_volum;
             st.ISpeechTiming = speakTiming;
-            st.speakerp = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+            st.speakerp = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
             st.speakerf = follower;
             st.pcf = pcf;
             st.fcf = fcf;
@@ -791,7 +791,7 @@ namespace KMCCT {
             st.rand = rand;
             st.frand = frand;
             st.volum = c_volum;
-            st.speakerp = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+            st.speakerp = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
             st.pcf = pcf;
             st.precord = precord;
             st.nppw = PlayerNamePlate;
@@ -848,7 +848,7 @@ namespace KMCCT {
             return;
         }
 
-        std::string pn = KMCCT::KMCConfig::GetSingleton()->getPlayer()->GetName();
+        std::string pn = KMCCT::KMCConfig::GetSingleton()->GetPlayer()->GetName();
         // LOG("NamePlate name = {}", pn);
         //  player name plate widget
         int tid = IWW::MainFunctions::GetSingleton()->LoadText(ct_aaaakmcroot, pn, pnpsetting.font, pnpsetting.fontsize,
@@ -902,7 +902,7 @@ namespace KMCCT {
         std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
 
         // follower
-        auto followers = KMCCT::KMCConfig::GetSingleton()->getFollowers();
+        auto followers = KMCCT::KMCConfig::GetSingleton()->GetFollowers();
         KMCNamePlate fnpsetting = (*namep)[1].second;
         std::string key;
         KMCFollower value;
@@ -1689,6 +1689,7 @@ namespace KMCCT {
             KMCDisplayWordAndTexture::GetSingleton()->GetCategoryIndexMap((int)KMCDisplayType::PLAYER); 
 
         for (auto [key, value] : target_map) {
+
             int l = 0;
             int h = value - 1;
             size_t size = (h - l) + 1;
@@ -1706,11 +1707,11 @@ namespace KMCCT {
             final_values.reserve(random_value.size());
 
             for (int idx : random_value) {
-                final_values.push_back(category_indices[idx]);
+                final_values.push_back(category_indices.at(idx));
             }
-
+            int fv = final_values.at(0);
             kmc_category_rand_map.emplace(key, KMCRandomData(0, h - l, std::move(final_values), h, l, size));
-            kmc_category_first_values.push_back(final_values.at(0));
+            kmc_category_first_values.push_back(fv);
         }
     }
 #pragma endregion

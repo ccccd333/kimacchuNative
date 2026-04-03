@@ -154,11 +154,11 @@ namespace KMCCT {
         auto soundDescriptorFormId = KMCCT::KMCConfig::GetSingleton()->getISoundDescriptorFormIdConfigs();
         auto soundDescriptorSEFormId = KMCCT::KMCConfig::GetSingleton()->getISoundDescriptorSEFormIdConfigs();
         InitLoop(&SoundDescriptorMap, soundDescriptorFormId, &SoundDescriptorSEMap, soundDescriptorSEFormId,
-                 KMCCT::KMCConfig::GetSingleton()->getPlayer(), nullptr);
+                 KMCCT::KMCConfig::GetSingleton()->GetPlayer(), nullptr);
         //std::sort(SoundDescriptorSEMap.begin(), SoundDescriptorSEMap.end(), compare);
         //BuildIndex(&SoundDescriptorSEMap, &SEIndex);
 
-        auto* followers = KMCCT::KMCConfig::GetSingleton()->getFollowers();
+        auto* followers = KMCCT::KMCConfig::GetSingleton()->GetFollowers();
         for (int i = 0; i < followers->size(); i++) {
             KMCFollower f = (*followers)[i];
 
@@ -166,7 +166,7 @@ namespace KMCCT {
             std::map<std::string, std::map<std::string, KMCSECond>> SDSEMap;
             std::vector<std::pair<std::string, size_t>> si;
             InitLoop(&sd, &(f.ISoundDescriptorFormIdConfigs), &SDSEMap, &(f.ISoundDescriptorSEFormIdConfigs),
-                     KMCCT::KMCConfig::GetSingleton()->getPlayer(), f.follower);
+                     KMCCT::KMCConfig::GetSingleton()->GetPlayer(), f.follower);
             //std::sort(SDSEMap.begin(), SDSEMap.end(), compare);
             //BuildIndex(&SDSEMap, &si);
 

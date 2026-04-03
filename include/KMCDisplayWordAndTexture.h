@@ -23,7 +23,7 @@ namespace KMCCT {
         }
 
     private:
-        bool Parse(std::string path, KMCDisplayType disp_type, int follower_index = -1);
+        bool Parse(std::string path, int disp_type, std::string actor_name);
 
 
         //{

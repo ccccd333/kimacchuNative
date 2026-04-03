@@ -124,7 +124,7 @@ namespace KMCCT {
 
         // follower
         int i = 0;
-        auto followers = KMCCT::KMCConfig::GetSingleton()->getFollowers();
+        auto followers = KMCCT::KMCConfig::GetSingleton()->GetFollowers();
         for (auto fs : *followers) {
             STMFG st_mfg;
             std::string fkey = std::to_string(i + 1);
@@ -491,7 +491,7 @@ namespace KMCCT {
                 papyrus_end_exp = false;
                 exp_loop_now = true;
 
-                p_now.ac = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+                p_now.ac = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
                 if (ex_exp_time != 0.0f) {
                     p_now.time = ex_exp_time;
                 }
@@ -513,7 +513,7 @@ namespace KMCCT {
         if (follower_mfg.contains(frand)) {
             auto fmfg = follower_mfg.at(frand);
 
-            auto followers = KMCCT::KMCConfig::GetSingleton()->getFollowers();
+            auto followers = KMCCT::KMCConfig::GetSingleton()->GetFollowers();
             auto actor = followers->at(frand).follower;
             if (actor) {
                 if (fmfg.mfg.contains(rand)) {
