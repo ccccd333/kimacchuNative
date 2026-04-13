@@ -342,6 +342,12 @@ void KMCCT::PapyrusPeriodicCall() {
         }
 
         if (isProfileInitEnd || isInitEnd) {
+            //int result = 0;
+            //auto vmhandler = StorageUtilTracker::BuildHandleFromStackPointer(KMCConfig::GetSingleton()->GetPlayer());
+            //if (StorageUtilTracker::GetIntValue("testKeyInt", vmhandler, result)) {
+            //    int mutimuti = 0;
+            //}
+
             time_point<Clock> end;
             long long dur = 0;
             end = Clock::now();

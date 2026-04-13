@@ -237,6 +237,10 @@ export class DisplayDrawingTexture {
         //}
 
         requestAnimationFrame(this.animate);
+
+        // カットインできたよ通知
+        // c++側と音声タイミングがずれるようだったら位置変える
+        OnCutinStartReady(this.display_type);
     }
 
     animate(time) {
@@ -304,18 +308,6 @@ export class DisplayDrawingTexture {
 
         // アニメーション秒数を超えた場合C++に通知とキャッシュモード(1)の場合は再生済みは消す
         if ((time - this.start_time) >= this.duration_sec * 1000) {
-            this.animating = false;
-
-            if (this.cache_type === 1) {
-                const group_promise = this.cache.get(this.current_group);
-                if (group_promise) {
-                    group_promise.then(frames => {
-                        frames.forEach(bmp => bmp.close());
-                    });
-                    this.cache.delete(this.current_group);
-                    console.log(`Released group: ${this.current_group}`);
-                }
-            }
 
             // 全てのレイヤー非表示
             Object.keys(this.ctxs).forEach(key => {
@@ -327,9 +319,21 @@ export class DisplayDrawingTexture {
                 }
             });
 
-            if (this.cache_type == 1 && this.current_next_group) {
+            if (this.cache_type === 1 && this.current_next_group != this.current_group) {
+                const group_promise = this.cache.get(this.current_group);
+                if (group_promise) {
+                    group_promise.then(frames => {
+                        frames.forEach(bmp => bmp.close());
+                    });
+                    this.cache.delete(this.current_group);
+                    console.log(`Released group: ${this.current_group}`);
+                }
+
+
                 this.preloadGroup(this.current_next_group);
             }
+
+            this.animating = false;
 
             // C++側に通知
             CutinFinished(this.display_type);
@@ -341,7 +345,9 @@ export class DisplayDrawingTexture {
         // ゲームロード時
         this.animating = false;
 
-        if (this.cache_type === 1) {
+        if (this.cache_type === 1 && this.current_next_group && 
+            this.current_next_group != this.current_group
+        ) {
             const group_promise = this.cache.get(this.current_group);
             if (group_promise) {
                 group_promise.then(frames => {
@@ -351,9 +357,7 @@ export class DisplayDrawingTexture {
                 console.log(`Released group: ${this.current_group}`);
             }
 
-            if(this.current_next_group){
-                this.preloadGroup(this.current_next_group);
-            }
+            this.preloadGroup(this.current_next_group);
         }
 
         // ビットマップの配列を空にするだけで、各bmpのcloseは呼ばない
@@ -378,5 +382,10 @@ export class DisplayDrawingTexture {
 
 function CutinFinished(display_type) {
     window.KMCOnCutinFinished(display_type);
+    addResponse(display_type);
+}
+
+function OnCutinStartReady(display_type) {
+    window.KMCOnCutinStartReady(display_type);
     addResponse(display_type);
 }

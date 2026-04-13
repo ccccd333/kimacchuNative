@@ -146,6 +146,14 @@ namespace KMCCT {
         _get_float = (get_float_t)(addr_get_float);
         _get_string = (get_string_t)(addr_get_string);
 
+        uintptr_t addr_has_int = base + 0x9D2F0;
+        uintptr_t addr_has_float = base + 0x9D3C0;
+        uintptr_t addr_has_string = base + 0x9D490;
+
+        _has_int = (has_value_t)addr_has_int;
+        _has_float = (has_value_t)addr_has_float;
+        _has_string = (has_value_t)addr_has_string;
+
         //// GET(Int, Float, String ... )
         //// JMP r/m64
         //// SKSEŠÔ‚Ìâ‘ÎƒWƒƒƒ“ƒv
@@ -169,17 +177,20 @@ namespace KMCCT {
 
     bool StorageUtilTracker::GetIntValue(std::string key, VMObjectHandleInfo vm_handle_info,
                                         int& result) {
-        if (!_get_int) return false;
+        if (!_get_int || !_has_int) return false;
 
         bool is_available = true;
         void* form = ResolveForm(vm_handle_info, is_available);
         if (!is_available) {
             return false;
         }
+        auto key_cstr = key.c_str();
 
-        result = _get_int(nullptr, form, key.c_str(), 0);
-
-        return true;
+        if (_has_int(nullptr, form, key_cstr)) {
+            result = _get_int(nullptr, form, key.c_str(), 0);
+            return true;
+        }
+        return false;
     }
 
     bool StorageUtilTracker::GetFloatValue(std::string key, VMObjectHandleInfo vm_handle_info,
@@ -191,10 +202,13 @@ namespace KMCCT {
         if (!is_available) {
             return false;
         }
+        auto key_cstr = key.c_str();
+        if (_has_float(nullptr, form, key_cstr)) {
+            result = _get_float(nullptr, form, key_cstr, 0.0);
 
-        result = _get_float(nullptr, form, key.c_str(), 0.0);
-
-        return true;
+            return true;
+        }
+        return false;
     }
 
     bool StorageUtilTracker::GetStringValue(std::string key, VMObjectHandleInfo vm_handle_info, std::string& result) {
@@ -207,10 +221,13 @@ namespace KMCCT {
         if (!is_available) {
             return false;
         }
+        auto key_cstr = key.c_str();
+        if (_has_string(nullptr, form, key_cstr)) {
+            result = _get_string(ret, nullptr, form, key_cstr, default_val.c_str());
 
-        result = _get_string(ret, nullptr, form, key.c_str(), default_val.c_str());
-
-        return true;
+            return true;
+        }
+        return false;
     }
 
     //int StorageUtilTracker::HookGetInt(void* StaticFunctionTag, void* stack_id, const char* key, int default_value) {

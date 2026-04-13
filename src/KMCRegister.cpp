@@ -12,6 +12,7 @@
 #include "KMCStorageUtilTracker.h"
 #include "KMCPrismaUIBridge.h"
 #include "KMCDisplayWordAndTexture.h"
+#include "KMCDisplayAddon.h"
 
 #include <IWWPapyrus.h>
 
@@ -25,7 +26,10 @@ namespace KMCCT {
 
                 IWW::Config::GetSingleton()->Setup();
                 KMCCT::KMCConfig::GetSingleton()->Setup();
+                KMCCT::KMCDisplayAddon::GetSingleton()->Setup();
+
                 KMCCT::KMCCutinCondition::GetSingleton()->Setup();
+                
                 KMCCT::KMCExpression::GetSingleton()->Setup();
                 
                 break;

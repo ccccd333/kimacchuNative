@@ -45,6 +45,7 @@ add_commonlibsse_plugin(${PROJECT_NAME} SOURCES
     src/KMCStorageUtilTracker.cpp
     src/KMCPrismaUIBridge.cpp
     src/KMCDisplayWordAndTexture.cpp
+    src/KMCDisplayAddon.cpp
     plugin.cpp
 )
 

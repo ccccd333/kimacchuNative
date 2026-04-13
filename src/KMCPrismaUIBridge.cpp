@@ -36,6 +36,10 @@ namespace KMCCT {
             SKSE::log::info("Cutin finished for display : {}", data);
         });
 
+        prisma_ui->RegisterJSListener(cutin_view, "KMCOnCutinStartReady", [](const char* data) -> void {
+            SKSE::log::info("Cutin start for display : {}", data);
+        });
+
         SKSE::log::info("PrismaUI API initialized successfully");
     }
 

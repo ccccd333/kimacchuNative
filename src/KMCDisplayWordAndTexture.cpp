@@ -110,12 +110,6 @@ namespace KMCCT {
             return false;
         }
 
-
-
-
-
-
-
         if (type == (int)KMCDisplayType::PLAYER) {
             KMCCutin::GetSingleton()->CategoryRandomizer();
             auto &first_values = KMCCutin::GetSingleton()->GetCategoryFirstValues();
@@ -123,7 +117,7 @@ namespace KMCCT {
                 ERROR("[Error]In DisplayWordAndTexture.json, there are no category definitions on the player side. Therefore, the cut-in function will be disabled.");
                 return false;
             }
-            j["first_values"] = {1};
+            j["first_values"] = first_values;
         } else {
             // player 基準のためフォロワー側はカテゴリにあるものでフィルタ
             const auto &first_values = KMCCutin::GetSingleton()->GetCategoryFirstValues();
