@@ -115,13 +115,9 @@ namespace KMCCT {
         // Player only(It's too much trouble to modify the program...)        
         std::vector<std::pair<std::string, std::string>>* getIAutoWordWFConfigs() { return &IAutoWordWFConfigs; }
         std::vector<std::pair<std::string, std::string>>* getIAutoWordConfigs() { return &IAutoWordConfigs; }
-        std::vector<std::pair<std::string, std::string>>* getISoundDescriptorFormIdConfigs() { return &ISoundDescriptorFormIdConfigs; }
         std::vector<std::pair<std::string, std::string>>* getIAnimationRange() { return &IAnimationRange; }
-        std::vector<std::pair<std::string, std::map<std::string, std::string>>>*
-        getISoundDescriptorSEFormIdConfigs() { return &ISoundDescriptorSEFormIdConfigs; }
 
         std::vector<std::pair<std::string, KMCCompsFlag>>* getIHideComponents() { return &IHideComponents; }
-        std::vector<std::pair<std::string, std::string>>* getIConnectOAR() { return &IConnectOAR; }
         
         RE::PlayerCharacter* GetPlayer() { return player; }
         // Player Profile
@@ -141,12 +137,9 @@ namespace KMCCT {
                                   std::string rootKeyName);
         std::string ISetup(std::string target, std::vector<std::pair<std::string, std::string>>* awc,
                            std::vector<std::pair<std::string, std::string>>* awwfc,
-                           std::vector<std::pair<std::string, std::string>>* sdfi,
                            std::vector<std::pair<std::string, std::string>>* ar,
                            std::vector<std::pair<std::string, std::string>>* cond,
-                           std::vector<std::pair<std::string, std::map<std::string, std::string>>>* sdse,
-                           std::vector<std::pair<std::string, KMCCompsFlag>>* hc,
-                           std::vector<std::pair<std::string, std::string>>* coar);
+                           std::vector<std::pair<std::string, KMCCompsFlag>>* hc);
 
         void ProfilSetup(std::string target, std::vector<std::pair<std::string, std::string>> *pws,
                          std::vector<std::pair<std::string, std::string>>* ts, std::vector<std::string>* pt);
@@ -176,18 +169,15 @@ namespace KMCCT {
         // Player
         std::vector<std::pair<std::string, std::string>> IAutoWordConfigs;
         std::vector<std::pair<std::string, std::string>> IAutoWordWFConfigs;
-        std::vector<std::pair<std::string, std::string>> ISoundDescriptorFormIdConfigs;
         std::vector<std::pair<std::string, std::string>> IAnimationRange;
         std::vector<std::pair<std::string, std::string>> IConditions;
         std::vector<std::pair<std::string, KMCCompsFlag>> IHideComponents;
-        std::vector<std::pair<std::string, std::string>> IConnectOAR;
 
         // Player profil
         std::vector<std::pair<std::string, std::string>> IWidgetSetting;
         std::vector<std::pair<std::string, std::string>> ITextSetting;
         std::vector<std::string> IProfileText;
 
-        std::vector<std::pair<std::string, std::map<std::string, std::string>>> ISoundDescriptorSEFormIdConfigs;
         RE::PlayerCharacter* player;
         
         // follower

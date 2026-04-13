@@ -265,14 +265,11 @@ namespace KMCCT {
     public:
         std::vector<std::pair<std::string, std::string>> IAutoWordConfigs;
         std::vector<std::pair<std::string, std::string>> IAutoWordWFConfigs;
-        std::vector<std::pair<std::string, std::string>> ISoundDescriptorFormIdConfigs;
         std::vector<std::pair<std::string, std::string>> IAnimationRange;
         std::vector<std::pair<std::string, std::string>> ISpeachTiming;
         std::vector<std::pair<std::string, std::string>> IConditions;
         std::vector<std::pair<std::string, RE::BGSKeyword *>> IKeywords;
-        std::vector<std::pair<std::string, std::map<std::string, std::string>>> ISoundDescriptorSEFormIdConfigs;
         std::vector<std::pair<std::string, KMCCompsFlag>> IHideComponents;
-        std::vector<std::pair<std::string, std::string>> IConnectOAR;
         RE::Actor *follower = nullptr;
         std::string formId = "";
         std::string pluginName = "";

@@ -1,10 +1,11 @@
 #include "KMCDisplayAddon.h"
-#include "KMCUtility.h"
-#include "KMCConfig.h"
-#include "KMCDisplayWordAndTexture.h"
 
 #include <fstream>
 #include <nlohmann/json.hpp>
+
+#include "KMCConfig.h"
+#include "KMCDisplayWordAndTexture.h"
+#include "KMCUtility.h"
 
 SINGLETONBODY(KMCCT::KMCDisplayAddon)
 
@@ -12,10 +13,9 @@ namespace KMCCT {
 
     using json = nlohmann::json;
 
-	void KMCDisplayAddon::Setup() {
+    void KMCDisplayAddon::Setup() {
         try {
-            if (!Parse(COMMON_PATH + PLAYER_WORD_PATH + "/" + DISPLAY_ADD_ON_PATH,
-                       (int)KMCDisplayType::PLAYER)) {
+            if (!Parse(COMMON_PATH + PLAYER_WORD_PATH + "/" + DISPLAY_ADD_ON_PATH, (int)KMCDisplayType::PLAYER)) {
                 loaded = false;
             }
 
@@ -25,7 +25,8 @@ namespace KMCCT {
                     if (!follower.follower) continue;
                     int follower_index = follower.index + 1;
                     if (!Parse(COMMON_PATH + FOLLOWER_WORD_PATH + std::to_string(follower_index) + "/" +
-                                   DISPLAY_ADD_ON_PATH, follower_index)) {
+                                   DISPLAY_ADD_ON_PATH,
+                               follower_index)) {
                         loaded = false;
                     }
                 }
@@ -53,10 +54,8 @@ namespace KMCCT {
 
         actor_addons.clear();
 
-        // 指定アクターの既存データをクリアして新規作成
         ActorAddonSet new_set;
 
-        // JSONのトップレベルにある "1", "2"... などのカットイン番号をループ（記述順）
         for (auto& [cutin_no_str, value] : j.items()) {
             try {
                 int cutin_no = std::stoi(cutin_no_str);
@@ -74,19 +73,28 @@ namespace KMCCT {
                     data.voice_ref = value["voice_sound"].value("ref", "");
                 }
 
-                if (value.contains("sound_effect")) {
-                    for (auto& [se_name, se_val] : value["sound_effect"].items()) {
-                        data.sound_effects[se_name] = se_val.get<std::string>();
+                if (value.contains("sound_effect") && value["sound_effect"].is_array()) {
+                    for (auto& se_item : value["sound_effect"]) {
+                        SoundEffectData se_data;
+                        se_data.name = se_item.value("name", "");
+                        se_data.ref = se_item.value("ref", "");
+                        se_data.timing = se_item.value("timing", 0.0f);
+                        se_data.emit_from = se_item.value("emit_from", 0);
+
+                        data.sound_effects.push_back(se_data);
                     }
                 }
 
                 if (value.contains("oar")) {
-                    data.oar_ref = value["oar"].value("ref", "");
+                    auto& oar = value["oar"];
+                    data.oar_ref = oar.value("ref", "");
+                    data.anim_duration = oar.value("anim_duration", 0.0f);
                 }
 
                 new_set.cutin_entries.push_back({cutin_no, data});
 
             } catch (...) {
+                ERROR("ERROR [KMCDisplayAddon::Parse] Entry no {}", cutin_no_str);
                 continue;
             }
         }

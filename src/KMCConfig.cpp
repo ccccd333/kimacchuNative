@@ -89,8 +89,8 @@ namespace KMCCT {
             }
         }
 
-        ISetup(PLAYER_WORD_PATH, &IAutoWordConfigs, &IAutoWordWFConfigs, &ISoundDescriptorFormIdConfigs,
-               &IAnimationRange, &IConditions, &ISoundDescriptorSEFormIdConfigs, &IHideComponents, &IConnectOAR);
+        ISetup(PLAYER_WORD_PATH, &IAutoWordConfigs, &IAutoWordWFConfigs,
+               &IAnimationRange, &IConditions, &IHideComponents);
 
         ProfilSetup(PLAYER_WORD_PATH, &IWidgetSetting, &ITextSetting, &IProfileText);
 
@@ -106,9 +106,7 @@ namespace KMCCT {
 
                     KMCFollower *target = &(IFollower[i]);
                     ISetup(FOLLOWER_WORD_PATH + fkey, &(target->IAutoWordConfigs),
-                            &(target->IAutoWordWFConfigs), &(target->ISoundDescriptorFormIdConfigs), &(target->IAnimationRange), &(target->IConditions),
-                           &(target->ISoundDescriptorSEFormIdConfigs), &(target->IHideComponents),
-                           &(target->IConnectOAR));
+                            &(target->IAutoWordWFConfigs), &(target->IAnimationRange), &(target->IConditions), &(target->IHideComponents));
 
                     if (!SetupJsonSimpleNodes(&(target->ISpeachTiming),
                                                 FOLLOWER_WORD_PATH + fkey + "/" + SPEACH_TIMING_FILE_NAME,
@@ -126,12 +124,9 @@ namespace KMCCT {
 
     std::string KMCConfig::ISetup(std::string target, std::vector<std::pair<std::string, std::string>> *awc,
                                   std::vector<std::pair<std::string, std::string>> *awwfc,
-                                  std::vector<std::pair<std::string, std::string>> *sdfi,
                                   std::vector<std::pair<std::string, std::string>> *ar,
                                   std::vector<std::pair<std::string, std::string>> *cond,
-                                  std::vector<std::pair<std::string, std::map<std::string, std::string>>> *sdse,
-                                  std::vector<std::pair<std::string, KMCCompsFlag>> *hc,
-                                  std::vector<std::pair<std::string, std::string>> *coar) {
+                                  std::vector<std::pair<std::string, KMCCompsFlag>> *hc) {
         // AutoWord.json
         if (!SetupJsonSimpleNodes(awc, target + "/" + AUTO_WORD_FILE_NAME, JSON_ROOT_KEY_STRING)) {
             ERROR("{} AutoWord.json ERROR.", target);
@@ -143,10 +138,10 @@ namespace KMCCT {
         }
 
         // SoundDescriptorFormId.json
-        if (!SetupJsonSimpleNodes(sdfi, target + "/" + SOUND_DESC_FORMID_FILE_NAME,
-                                  JSON_ROOT_KEY_STRING)) {
-            ERROR("{} SoundDescriptorFormId.json ERROR.", target);
-        }
+        //if (!SetupJsonSimpleNodes(sdfi, target + "/" + SOUND_DESC_FORMID_FILE_NAME,
+        //                          JSON_ROOT_KEY_STRING)) {
+        //    ERROR("{} SoundDescriptorFormId.json ERROR.", target);
+        //}
 
         if (!SetupJsonSimpleNodes(ar, target + "/" + ANIM_RANGE_FILE_NAME, JSON_ROOT_KEY_STRING)) {
             ERROR("{} AutoWordRange.json ERROR.", target);
@@ -156,9 +151,9 @@ namespace KMCCT {
             ERROR("{} ConditionsAndKeywords.json ERROR.", target);
         }
 
-        if (!SetupJsonNestedNodes(sdse, target + "/" + SOUND_DESC_SE_FORMID_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            ERROR("{} SoundDescriptorSEFormId.json ERROR.", target);
-        }
+        //if (!SetupJsonNestedNodes(sdse, target + "/" + SOUND_DESC_SE_FORMID_FILE_NAME, JSON_ROOT_KEY_STRING)) {
+        //    ERROR("{} SoundDescriptorSEFormId.json ERROR.", target);
+        //}
 
         // Hide
         std::vector<std::pair<std::string, std::string>> hideCompv;
@@ -186,9 +181,9 @@ namespace KMCCT {
             }
         }
 
-        if (!SetupJsonSimpleNodes(coar, target + "/" + CONNECT_OAR_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            ERROR("{} ConnectOAR.json ERROR.", target);
-        }
+        //if (!SetupJsonSimpleNodes(coar, target + "/" + CONNECT_OAR_FILE_NAME, JSON_ROOT_KEY_STRING)) {
+        //    ERROR("{} ConnectOAR.json ERROR.", target);
+        //}
 
         return target;
     }

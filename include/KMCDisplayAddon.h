@@ -1,7 +1,6 @@
 #pragma once
 namespace KMCCT {
 
-    // 表情データ
     struct ExpressionData {
         std::vector<std::string> modifier;
         std::vector<std::string> phoneme;
@@ -9,12 +8,19 @@ namespace KMCCT {
         int time = 0;
     };
 
-    // 音声・SE・OAR等のアドオン情報
+    struct SoundEffectData {
+        std::string name;
+        std::string ref;
+        float timing = 0.0f;
+        int emit_from = 0;
+    };
+
     struct AddonData {
         ExpressionData expression;
         std::string voice_ref;
-        std::map<std::string, std::string> sound_effects;
+        std::vector<SoundEffectData> sound_effects;
         std::string oar_ref;
+        float anim_duration = 0.0f;
     };
 
     struct ActorAddonSet {

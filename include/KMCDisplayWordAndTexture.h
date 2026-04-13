@@ -14,6 +14,10 @@ namespace KMCCT {
 
         bool IsLoaded() const { return loaded; }
 
+        const std::unordered_map<int, std::string>& GetCategoryMap(int type) const {
+            return category_map.at(type);
+        }
+
         const std::unordered_map<std::string, int>& GetCategoryRangeMap(int type) const {
             return category_range_map.at(type);
         }

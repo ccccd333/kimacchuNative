@@ -651,10 +651,10 @@ namespace KMCCT {
             }
         }
         if (pcf.Sound) {
-            pcf.Sound = KMCCT::KMCSound::GetSingleton()->IsPlayableSoundEx(srand, -1);
+            pcf.Sound = KMCCT::KMCSound::GetSingleton()->IsPlayableSoundEx(rand, -1);
         }
         if (pcf.SE) {
-            pcf.SE = KMCCT::KMCSound::GetSingleton()->GetFirstSEIndexEx(srand, -1, &precord);
+            pcf.SE = KMCCT::KMCSound::GetSingleton()->GetFirstSEIndexEx(rand, -1, &precord);
         }
         if (pcf.NamePlate || pcf.NamePlateName) {
             if (pcf.Widget == false && pcf.Word == false/* && pcf.Sound == false && pcf.SE == false*/) {
@@ -730,10 +730,10 @@ namespace KMCCT {
                 }
             }
             if (fcf.Sound) {
-                fcf.Sound = KMCCT::KMCSound::GetSingleton()->IsPlayableSoundEx(srand, frand);
+                fcf.Sound = KMCCT::KMCSound::GetSingleton()->IsPlayableSoundEx(rand, frand);
             }
             if (fcf.SE) {
-                fcf.SE = KMCCT::KMCSound::GetSingleton()->GetFirstSEIndexEx(srand, frand, &frecord);
+                fcf.SE = KMCCT::KMCSound::GetSingleton()->GetFirstSEIndexEx(rand, frand, &frecord);
             }
             if (fcf.NamePlate || fcf.NamePlateName) {
                 if (fcf.Widget == false && fcf.Word == false /*&& fcf.Sound == false && fcf.SE == false*/) {
@@ -1501,7 +1501,7 @@ namespace KMCCT {
     }
 
     void KMCCutin::AnimationLoop(long long time, KMCLoadedWidgetData it,
-                       std::string trackid, int frand, std::string record, float volume) {
+                       int trackid, int frand, std::string record, float volume) {
         time_point<Clock> start = Clock::now();
         long long now = 0;
 
@@ -1561,7 +1561,7 @@ namespace KMCCT {
         std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::ANIMATION_FRAME_MS));
     }
 
-    void KMCCutin::PlaySE(long long time, std::string trackid, int frand, std::string record, float volume) {
+    void KMCCutin::PlaySE(long long time, int trackid, int frand, std::string record, float volume) {
         time_point<Clock> start = Clock::now();
         long long now = 0;
 
@@ -1849,10 +1849,10 @@ namespace KMCCT {
         }
     }
 
-    void KMCPlayAnim(KMCAnimST *st, int &playerorfollower) {
+    void KMCPlayAnim(KMCAnimST *st, int &is_player) {
         bool isanim = false;
 
-        if (playerorfollower == 0) {
+        if (is_player == 0) {
             if (st->pcf.Widget) {
                 isanim = true;
             }
@@ -1862,7 +1862,7 @@ namespace KMCCT {
             }
         }
         if (isanim) {
-            std::string r;
+            int r;
             float volum;
             RE::TESObjectREFR *target;
             KMCCompsFlag cf;
@@ -1870,9 +1870,9 @@ namespace KMCCT {
             long long time;
             KMCLoadedWidgetData t;
             std::string record = "0.0";
-            if (playerorfollower == 0) {
+            if (is_player == 0) {
                 // player
-                r = std::to_string(st->rand);
+                r = st->rand;
                 volum = st->volum;
                 target = st->speakerp;
                 frand = -1;
@@ -1881,7 +1881,7 @@ namespace KMCCT {
                 cf = st->pcf;
                 record = st->precord;
             } else {
-                r = std::to_string(st->rand);
+                r = st->rand;
                 volum = st->volum;
                 target = st->speakerf;
                 frand = st->frand;
@@ -1902,21 +1902,21 @@ namespace KMCCT {
                 KMCCT::KMCCutin::GetSingleton()->AnimationLoop(time, t);
             }
         } else {
-            KMCPlay(st, playerorfollower);
+            KMCPlay(st, is_player);
         }
     }
 
-    void KMCPlay(KMCAnimST *st, int &playerorfollower) {
-        std::string r;
+    void KMCPlay(KMCAnimST *st, int &is_player) {
+        int r;
         float volum;
         RE::TESObjectREFR *target;
         int frand;
         long long time;
         KMCCompsFlag cf;
         std::string record = "";
-        if (playerorfollower == 0) {
+        if (is_player == 0) {
             // player
-            r = std::to_string(st->rand);
+            r = st->rand;
             volum = st->volum;
             target = st->speakerp;
             frand = -1;
@@ -1924,7 +1924,7 @@ namespace KMCCT {
             cf = st->pcf;
             record = st->precord;
         } else {
-            r = std::to_string(st->rand);
+            r = st->rand;
             volum = st->volum;
             target = st->speakerf;
             frand = st->frand;

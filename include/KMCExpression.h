@@ -82,5 +82,8 @@ namespace KMCCT {
 
         bool is_wait = false;
         bool is_cutin = false;
+
+        std::unordered_map<std::string, KMCRandomData> kmc_category_rand_map;
+        std::vector<int> kmc_category_first_values;
     };
 }

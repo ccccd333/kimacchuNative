@@ -73,9 +73,9 @@ namespace KMCCT {
         bool GetAnimNow();
         void SetAnimNow(bool set);
         void AnimationLoop(long long time, KMCLoadedWidgetData it);
-        void AnimationLoop(long long time, KMCLoadedWidgetData it, std::string trackid, int frand, std::string record,
+        void AnimationLoop(long long time, KMCLoadedWidgetData it, int trackid, int frand, std::string record,
                            float volume);
-        void PlaySE(long long time, std::string trackid, int frand, std::string record, float volume);
+        void PlaySE(long long time, int trackid, int frand, std::string record, float volume);
         void MCMSettingChange(std::vector<float> *floatArray);
 
         bool ExistCategory(std::string t) { return kmc_category_rand_map.contains(t); }

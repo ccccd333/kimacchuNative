@@ -1,5 +1,7 @@
 #include "KMCSound.h"
 #include "KMCConfig.h"
+#include "KMCDisplayAddon.h"
+#include "KMCDisplayWordAndTexture.h"
 #include <IWWConfig.h>
 
 SINGLETONBODY(KMCCT::KMCSound)
@@ -7,171 +9,104 @@ SINGLETONBODY(KMCCT::KMCSound)
 namespace KMCCT {
     using namespace boost::property_tree;
 
-    void InitLoop(std::vector<std::pair<std::string, RE::BGSSoundDescriptorForm*>> *target,
-                  std::vector<std::pair<std::string, std::string>>* sdfc,
-                  std::map<std::string, std::map<std::string, KMCSECond>>* targetSE,
-                  std::vector<std::pair<std::string, std::map<std::string, std::string>>>* sdse, RE::Actor* player,
+    void InitLoop(std::vector<std::pair<int, RE::BGSSoundDescriptorForm*>>* target,
+                  std::map<int, std::map<std::string, KMCSECond>>* target_sound_effect,
+                  const ActorAddonSet* addon_set, RE::Actor* player,
                   RE::Actor* follower) {
-        {
-            for (auto [key, value] : *sdfc) {
-                try {
-                    std::string trackid = key;
-                    auto spvalue = KMCSplit(value, ',');
-                    std::string pluginn = SD_PLUGIN_NAME;
+        for (const auto& [key, value] : addon_set->cutin_entries) {
+            std::string track_id = std::to_string(key);
 
-                    try {
-                        pluginn = spvalue.at(1);
-                    } catch (...) {
-                        pluginn = SD_PLUGIN_NAME;
-                    }
-
+            if (!value.voice_ref.empty()) {
+                auto spvalue = KMCSplit(value.voice_ref, ',');
+                if (spvalue.size() == 2) {
                     auto* sd = (RE::BGSSoundDescriptorForm*)RE::TESDataHandler::GetSingleton()->LookupForm(
-                        std::stoll(spvalue.at(0), NULL, 16), pluginn);
-                    if (sd == nullptr) {
-                        ERROR("ERROR Possibly wrong definition of SoundDescriptorForm. key: {} FORM ID: {} {}", key,
-                              value, pluginn);
+                        std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
+                    if (!sd) {
+                        ERROR("ERROR Possibly wrong definition of SoundDescriptorForm. key: {} FORM ID: {} {}",
+                              track_id, spvalue.at(0), spvalue.at(1));
                         continue;
                     }
-
-                    target->push_back(std::make_pair(trackid, sd));
-                    LOG("SoundDiscription Loaded = key:{} FORM ID:{}", trackid, value);
-                } catch (...) {
-                    ERROR("ERROR LOADING SoundDiscription.json. The number of elements in the value is wrong.");
-                    // return;
                 }
             }
-        }
 
-        {
-            for (auto [key2, value2] : *sdse) {
-                try {
-                    std::string trackid = key2;
-
-                    for (auto [key3, value3] : value2) {
-                        try {
-                            auto spvalue = KMCSplit(value3, ',');
-                            std::string pluginn = SD_PLUGIN_NAME;
+            if (!value.sound_effects.empty()) {
+                for (const auto &values : value.sound_effects) {
+                    try {
+                        auto spvalue = KMCSplit(values.ref, ',');
+                        
+                        if (spvalue.size() == 2) {
                             try {
-                                pluginn = spvalue.at(1);
-                            } catch (...) {
-                            }
 
-                            auto* sd = (RE::BGSSoundDescriptorForm*)RE::TESDataHandler::GetSingleton()->LookupForm(
-                                std::stoll(spvalue.at(0), NULL, 16), pluginn);
-                            if (sd == nullptr) {
-                                ERROR("ERROR Possibly wrong definition of SoundDescriptorFormSE. key: {} FORM ID: {}",
-                                      key2, value3);
-                                continue;
-                            }
-                            RE::Actor* SEPoint = player;
-                            try {
-                                if (std::stoi(spvalue.at(3)) != PLAY_SE_PLAYER_POS) {
+                                auto* sd = (RE::BGSSoundDescriptorForm*)RE::TESDataHandler::GetSingleton()->LookupForm(
+                                    std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
+                                if (sd == nullptr) {
+                                    ERROR(
+                                        "ERROR Possibly wrong definition of SoundDescriptorFormSE. key: {} FORM ID: {} {}",
+                                        track_id, spvalue.at(0), spvalue.at(1));
+                                    continue;
+                                }
+                                RE::Actor* SEPoint = player;
+                                if (values.emit_from != PLAY_SE_PLAYER_POS) {
                                     if (follower == nullptr) {
                                         ERROR(
-                                            "ERROR LOADING SoundEffect.json. Error at nested node. not found follower {}",
-                                            key3);
+                                            "ERROR LOADING SoundEffect.json. Error at nested node. not found "
+                                            "follower {}",
+                                            track_id);
                                         continue;
                                     } else {
                                         SEPoint = follower;
                                     }
                                 }
-                            } catch (...) {
-                            }
-                            std::string record = spvalue.at(2);
-                            if (targetSE->contains(trackid)) {
-                                auto recordmap = (*targetSE)[trackid];
-                                if (recordmap.contains(record)) {
-                                    LOG("SoundDiscription SE Sound effects cannot be played at the same time.Please use different values. = key:{} FORM ID:{} record:{}",
-                                        trackid, value3,
-                                        record);
-                                    continue;
-                                }
-                            }
-                            (*targetSE)[trackid][record] = KMCSECond(sd, SEPoint);
 
-                            LOG("SoundDiscription SE Loaded = key:{} FORM ID:{} record:{}", trackid, value3, record);
-                        } catch (...) {
-                            ERROR("ERROR LOADING SoundDescriptorSEFormId.json. Error at nested node. {}", key3);
+                                std::string record = std::to_string(values.timing);
+                                if (target_sound_effect->contains(key)) {
+                                    const auto& recordmap = (*target_sound_effect).at(key);
+                                    if (recordmap.contains(record)) {
+                                        LOG("SoundDiscription SE Sound effects cannot be played at the same "
+                                            "time.Please use different values. = key:{} FORM ID:{} {} record:{}",
+                                            track_id, spvalue.at(0), spvalue.at(1), record);
+                                        continue;
+                                    }
+                                }
+                                (*target_sound_effect)[key][record] = KMCSECond(sd, SEPoint);
+
+                                LOG("SoundDiscription SE Loaded = key:{} FORM ID:{} {} record:{}", track_id,
+                                    spvalue.at(0), spvalue.at(1),
+                                    record);
+                            } catch (...) {
+                                ERROR("ERROR LOADING SoundDescriptorSEFormId.json. Error at nested node. {}", track_id);
+                            }
                         }
+                    } catch (...) {
+                        ERROR("ERROR LOADING SoundDiscription.json. The number of elements in the value is wrong.");
+                        // return;
                     }
-                } catch (...) {
-                    ERROR("ERROR LOADING SoundDescriptorSEFormId.json. The number of elements in the value is wrong.");
-                    // return;
                 }
             }
         }
     }
-    
-    //void BuildIndex(std::vector<std::pair<std::string, KMCSECond>>* SE,
-    //                std::vector<std::pair<std::string, size_t>>* target) {
-    //    std::vector<std::pair<std::string, KMCSECond>> copy(SE->size()); 
-    //    std::copy(SE->begin(), SE->end(), copy.begin());
 
-    //    size_t offset = 0;
-    //    size_t origin = 0;
-    //    
-    //    auto i = SE->begin();
-    //    for (; i != SE->end();) {
-    //        std::vector<std::pair<std::string, size_t>> vec;
-    //        auto sp = KMCSplit(i->first, ',');
-    //        std::string tid = sp[0];
-    //        std::string rid = sp[1];
-    //        std::string irid = "";
-
-    //        auto it = copy.begin() + offset;
-    //        for (; it != copy.end(); ++it) {
-    //            auto isp = KMCSplit(it->first, ',');
-    //            std::string iitid = isp[0];
-    //            std::string iirid = isp[1];
-    //            if (tid == iitid && rid == iirid) {
-    //                irid = iirid;
-    //                ++offset;
-    //            } else {
-    //                vec.push_back(std::make_pair(rid, origin));
-    //                LOG("BuildIndex k1 {} v1 {} k2 {} v2 {} of {} or {}", tid, rid, iitid, iirid, offset, origin);
-    //                break;
-    //            }
-    //        }
-
-    //        if (it == copy.end()) {
-    //            LOG("BuildIndex k1 {} v1 {} of {} or {}", tid, rid, offset, origin);
-    //            target->push_back(std::make_pair(tid + "," + irid, origin));
-    //            break;
-    //        } else {
-    //            target->push_back(std::make_pair(tid + "," + irid, origin));
-    //            i = i + offset - origin;
-    //            origin = offset;
-    //        }
-    //    }
-    //}
-    
-    //bool compare(std::pair<std::string, KMCSECond>& p1, std::pair<std::string, KMCSECond>& p2) {
-    //    return p1.first < p2.first;
-    //}
     void KMCSound::Init() {
         // sound desc mapping
-        
-        auto soundDescriptorFormId = KMCCT::KMCConfig::GetSingleton()->getISoundDescriptorFormIdConfigs();
-        auto soundDescriptorSEFormId = KMCCT::KMCConfig::GetSingleton()->getISoundDescriptorSEFormIdConfigs();
-        InitLoop(&SoundDescriptorMap, soundDescriptorFormId, &SoundDescriptorSEMap, soundDescriptorSEFormId,
-                 KMCCT::KMCConfig::GetSingleton()->GetPlayer(), nullptr);
-        //std::sort(SoundDescriptorSEMap.begin(), SoundDescriptorSEMap.end(), compare);
-        //BuildIndex(&SoundDescriptorSEMap, &SEIndex);
+
+        const auto player_addon_set = KMCDisplayAddon::GetSingleton()->GetActorAddons((int)KMCDisplayType::PLAYER);
+        const auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
+        InitLoop(&sound_descriptor_map, &sound_descriptor_se_map, player_addon_set, player, nullptr);
 
         auto* followers = KMCCT::KMCConfig::GetSingleton()->GetFollowers();
-        for (int i = 0; i < followers->size(); i++) {
-            KMCFollower f = (*followers)[i];
+        for (const auto& f : *followers) {
 
-            std::vector<std::pair<std::string, RE::BGSSoundDescriptorForm*>> sd;
-            std::map<std::string, std::map<std::string, KMCSECond>> SDSEMap;
+            std::vector<std::pair<int, RE::BGSSoundDescriptorForm*>> sd;
+            std::map<int, std::map<std::string, KMCSECond>> sd_se_map;
             std::vector<std::pair<std::string, size_t>> si;
-            InitLoop(&sd, &(f.ISoundDescriptorFormIdConfigs), &SDSEMap, &(f.ISoundDescriptorSEFormIdConfigs),
-                     KMCCT::KMCConfig::GetSingleton()->GetPlayer(), f.follower);
-            //std::sort(SDSEMap.begin(), SDSEMap.end(), compare);
-            //BuildIndex(&SDSEMap, &si);
 
-            FSoundDescriptiorMap.push_back(std::make_pair(i, KMCFSoundDescription(sd, SDSEMap, si)));
+            const auto follower_addon_set = KMCDisplayAddon::GetSingleton()->GetActorAddons(f.index + 1);
+
+            InitLoop(&sd, &sd_se_map, follower_addon_set, player, f.follower);
+
+            FSoundDescriptiorMap.push_back(std::make_pair(f.index, KMCFSoundDescription(sd, sd_se_map)));        
         }
+
 
         // Profile SE
         {
@@ -202,7 +137,7 @@ namespace KMCCT {
         AudioManager = RE::BSAudioManager::GetSingleton();
     }
 
-    void KMCSound::PlayEx(std::string trackid, float volume, RE::TESObjectREFR* target, int frand) {
+    void KMCSound::PlayEx(int trackid, float volume, RE::TESObjectREFR* target, int frand) {
         if (frand == -1) {
             Play(trackid, volume, target);
         } else {
@@ -210,7 +145,7 @@ namespace KMCCT {
         }
     }
 
-    bool KMCSound::GetFirstSEIndexEx(std::string trackid, int frand, std::string* fstrecord) {
+    bool KMCSound::GetFirstSEIndexEx(int trackid, int frand, std::string* fstrecord) {
         if (frand == -1) {
             *fstrecord = GetFirstSEIndex(trackid);
         } else {
@@ -224,7 +159,7 @@ namespace KMCCT {
         }
     }
 
-    bool KMCSound::PlaySEEx(std::string trackid, int frand, std::string* record, float volume) {
+    bool KMCSound::PlaySEEx(int trackid, int frand, std::string* record, float volume) {
         LOG("KMCSound::PlaySEEx");
 
         std::string findid = trackid + "," + *record;
@@ -241,7 +176,7 @@ namespace KMCCT {
         }
     }
 
-    bool KMCSound::IsPlayableSoundEx(std::string trackid, int frand) {
+    bool KMCSound::IsPlayableSoundEx(int trackid, int frand) {
         if (frand == -1) {
             return IsPlayableSound(trackid);
         } else {
@@ -261,10 +196,10 @@ namespace KMCCT {
         }
     }
 
-    void KMCSound::Play(std::string trackid, float volume, RE::TESObjectREFR* target) {
-        auto it = std::find_if(SoundDescriptorMap.begin(), SoundDescriptorMap.end(),
+    void KMCSound::Play(int trackid, float volume, RE::TESObjectREFR* target) {
+        auto it = std::find_if(sound_descriptor_map.begin(), sound_descriptor_map.end(),
                                 [trackid](const auto& p) { return p.first == trackid; });
-        if (it != SoundDescriptorMap.end()) {
+        if (it != sound_descriptor_map.end()) {
             RE::BSSoundHandle handle;
             AudioManager->BuildSoundDataFromDescriptor(handle, (it->second)->soundDescriptor);
             handle.SetVolume(volume);
@@ -275,12 +210,12 @@ namespace KMCCT {
         }
     }
 
-    void KMCSound::Play(std::string trackid, float volume, RE::TESObjectREFR* target, int frand) {
+    void KMCSound::Play(int trackid, float volume, RE::TESObjectREFR* target, int frand) {
 
         auto it = std::find_if(FSoundDescriptiorMap.begin(), FSoundDescriptiorMap.end(),
                                 [frand](const auto& p) { return p.first == frand; }); 
         if (it != FSoundDescriptiorMap.end()) {
-            auto fsd = it->second.SoundDescriptorMap;
+            auto fsd = it->second.sd_map;
             auto it2 =
                 std::find_if(fsd.begin(), fsd.end(), [trackid](const auto& p) { return p.first == trackid; });
             if (it2 != fsd.end()) {
@@ -298,11 +233,11 @@ namespace KMCCT {
         }
     }
 
-    std::string KMCSound::GetFirstSEIndex(std::string trackid, int frand) {
+    std::string KMCSound::GetFirstSEIndex(int trackid, int frand) {
         auto itf = std::find_if(FSoundDescriptiorMap.begin(), FSoundDescriptiorMap.end(),
                                 [frand](const auto& p) { return p.first == frand; });
         if (itf != FSoundDescriptiorMap.end()) {
-            auto semap = itf->second.SDSEMap;
+            auto semap = itf->second.sd_se_map;
 
             if (semap.contains(trackid)) {
                 auto recordmap = semap[trackid];
@@ -319,10 +254,10 @@ namespace KMCCT {
         return "";
     }
 
-    std::string KMCSound::GetFirstSEIndex(std::string trackid) {
+    std::string KMCSound::GetFirstSEIndex(int trackid) {
 
-        if (SoundDescriptorSEMap.contains(trackid)) {
-            auto recordmap = SoundDescriptorSEMap[trackid];
+        if (sound_descriptor_se_map.contains(trackid)) {
+            auto recordmap = sound_descriptor_se_map[trackid];
             return recordmap.begin()->first;
         }
         //auto it = std::find_if(SEIndex.begin(), SEIndex.end(), [trackid](const auto& p) { 
@@ -335,13 +270,13 @@ namespace KMCCT {
         return "";
     }
 
-    std::string KMCSound::PlaySE(std::string trackid, int frand, std::string record, std::string findid,
+    std::string KMCSound::PlaySE(int trackid, int frand, std::string record, std::string findid,
                                    float volume) {
 
         auto itf = std::find_if(FSoundDescriptiorMap.begin(), FSoundDescriptiorMap.end(),
                         [frand](const auto& p) { return p.first == frand; });
         if (itf != FSoundDescriptiorMap.end()) {
-            auto semap = itf->second.SDSEMap;
+            auto semap = itf->second.sd_se_map;
             if (semap.contains(trackid)) {
                 auto recordmap = semap[trackid];
 
@@ -406,10 +341,10 @@ namespace KMCCT {
         return "";
     }
 
-    std::string KMCSound::PlaySE(std::string trackid, std::string record, std::string findid, float volume) {    
+    std::string KMCSound::PlaySE(int trackid, std::string record, std::string findid, float volume) {    
 
-        if (SoundDescriptorSEMap.contains(trackid)) {
-            auto recordmap = SoundDescriptorSEMap[trackid];
+        if (sound_descriptor_se_map.contains(trackid)) {
+            auto recordmap = sound_descriptor_se_map[trackid];
 
             if (recordmap.contains(record)) {
                 auto v = recordmap[record];
@@ -467,11 +402,11 @@ namespace KMCCT {
         return "";
     }
 
-    bool KMCSound::IsPlayableSound(std::string trackid, int frand) {
+    bool KMCSound::IsPlayableSound(int trackid, int frand) {
         auto it = std::find_if(FSoundDescriptiorMap.begin(), FSoundDescriptiorMap.end(),
                                [frand](const auto& p) { return p.first == frand; });
         if (it != FSoundDescriptiorMap.end()) {
-            auto fsd = it->second.SoundDescriptorMap;
+            auto fsd = it->second.sd_map;
             auto it2 = std::find_if(fsd.begin(), fsd.end(), [trackid](const auto& p) { return p.first == trackid; });
             if (it2 != fsd.end()) {
                 return true;
@@ -480,10 +415,10 @@ namespace KMCCT {
 
         return false;
     }
-    bool KMCSound::IsPlayableSound(std::string trackid) {
-        auto it = std::find_if(SoundDescriptorMap.begin(), SoundDescriptorMap.end(),
+    bool KMCSound::IsPlayableSound(int trackid) {
+        auto it = std::find_if(sound_descriptor_map.begin(), sound_descriptor_map.end(),
                                [trackid](const auto& p) { return p.first == trackid; });
-        if (it != SoundDescriptorMap.end()) {
+        if (it != sound_descriptor_map.end()) {
             return true;
         }
 

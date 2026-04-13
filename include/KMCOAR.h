@@ -7,22 +7,22 @@ namespace KMCCT {
     public:
         FOARCompDetail() {}
         FOARCompDetail(std::vector<std::pair<uint64_t, OARCompDetail>> oar) { 
-            OARComponents = oar;
+            oar_components = oar;
         }
     public:
-        std::vector<std::pair<uint64_t, OARCompDetail>> OARComponents;
+        std::vector<std::pair<uint64_t, OARCompDetail>> oar_components;
     };
 
     struct FPlayNowOARCompDetail {
     public:
         FPlayNowOARCompDetail() { index = -1; }
         FPlayNowOARCompDetail(OARCompDetail oar, int ind) { 
-            OARComponents = oar; 
+            oar_components = oar; 
             index = ind;
         }
 
     public:
-        OARCompDetail OARComponents;
+        OARCompDetail oar_components;
         int index;
     };
 
@@ -34,7 +34,7 @@ namespace KMCCT {
         void Reset();
         void PushOARFunc(uint64_t rand, uint64_t frand, bool force, float ex_oar_time);
         void TryKMCOAR(OARCompDetail *ocd);
-        std::vector<std::pair<uint64_t, OARCompDetail>> GetOARComponents() { return OARComponents; }
+        std::vector<std::pair<uint64_t, OARCompDetail>> GetOARComponents() { return oar_components; }
 
     private:
         void PPushOARFunc(uint64_t rand, bool force, float ex_oar_time);
@@ -44,7 +44,7 @@ namespace KMCCT {
         OARCompDetail now;
         std::vector<FPlayNowOARCompDetail> fplays;
 
-        std::vector<std::pair<uint64_t, OARCompDetail>> OARComponents;
-        std::vector<std::pair<uint64_t, FOARCompDetail>> FOARComponents;
+        std::vector<std::pair<uint64_t, OARCompDetail>> oar_components;
+        std::vector<std::pair<uint64_t, FOARCompDetail>> f_oar_components;
     };
 }
