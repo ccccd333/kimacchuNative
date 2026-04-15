@@ -65,8 +65,6 @@ namespace KMCCT {
                 "Failed to get RE::ConsoleLog::GetSingleton(). Did you call ConsoleLog() before OnDataLoaded?");
     }
 
-    enum KMCWipeType { simply, end_fadeout };
-
     enum class KMCValueType { KM_INT, KM_FLOAT, KM_STRING, KM_LONG, UNK };
 
     enum class KMCWaitType { in_scene, move_widget, max };
@@ -263,13 +261,9 @@ namespace KMCCT {
         }
 
     public:
-        std::vector<std::pair<std::string, std::string>> IAutoWordConfigs;
-        std::vector<std::pair<std::string, std::string>> IAutoWordWFConfigs;
-        std::vector<std::pair<std::string, std::string>> IAnimationRange;
         std::vector<std::pair<std::string, std::string>> ISpeachTiming;
         std::vector<std::pair<std::string, std::string>> IConditions;
         std::vector<std::pair<std::string, RE::BGSKeyword *>> IKeywords;
-        std::vector<std::pair<std::string, KMCCompsFlag>> IHideComponents;
         RE::Actor *follower = nullptr;
         std::string formId = "";
         std::string pluginName = "";
@@ -364,13 +358,14 @@ namespace KMCCT {
 
     struct KMCRandomData {
     public:
-        KMCRandomData(int of, int in, std::vector<int> r, int h, int l, size_t s) {
+        KMCRandomData(int of, int in, std::vector<int> r, int h, int l, size_t s, const std::vector<int> *ci) {
             offset = of;
             maxIndex = in;
             rand_values = r;
             high = h;
             low = l;
             size = s;
+            category_indices = ci;
         }
 
     public:
@@ -379,6 +374,7 @@ namespace KMCCT {
         std::vector<int> rand_values;
         int high = 0, low = 0;
         size_t size = 0;
+        const std::vector<int> *category_indices;
     };
 
     struct KMCNamePlate {
@@ -419,33 +415,6 @@ namespace KMCCT {
         WidgetType wt = WidgetType::none;
     };
     // animation setting
-
-    class KMCLoadedWidgetData {
-    public:
-        KMCLoadedWidgetData(){};
-
-        KMCLoadedWidgetData(bool isanim, int wid, int size, std::string loop) {
-            isAnim = isanim;
-            if (isAnim) {
-                animWedget.resize(size);
-                wedget = -1;
-                loop == IS_LOOP ? isLoop = true : isLoop = false;
-            } else {
-                wedget = wid;
-            }
-        }
-
-        ~KMCLoadedWidgetData() { animWedget.clear(); }
-
-    public:
-        bool isAnim = false;
-        bool isLoop = false;
-        int wedget = -1;
-        int bef_widget_id = -1;
-        std::vector<int> animWedget;
-        std::vector<int> bef_animWedget;
-        bool init = false;
-    };
 
     struct KMCDispConfigs {
     public:
@@ -601,17 +570,27 @@ namespace KMCCT {
         float exp_time = 4.0f;
     };
 
+    enum class KMCDisplayType { PLAYER, FOLLOWER, UNK };
+
+    struct CutinEntry {
+        std::string category;
+        bool is_full_screen;
+        float display_time;
+        std::string word;
+        int range_start;
+        int range_end;
+    };
+
     struct KMCAnimST {
     public:
-        KMCLoadedWidgetData t;
-        KMCLoadedWidgetData ft;
-        int tid = -1;
-        int ftid = -1;
+        CutinEntry t;
+        CutinEntry ft;
         long long time = 0;
-        bool isAnim = false;
-        bool isfAnim = false;
+        long long ftime = 0;
         int rand = -1;
         int frand = -1;
+        int p_next_rand = -1;
+        int f_netx_rand = -1;
         float volum = 0;
         float oar_time = 0.0f;
         bool overri_oar_time = false;
@@ -621,47 +600,36 @@ namespace KMCCT {
         std::vector<std::pair<std::string, std::string>> *ISpeechTiming;
         RE::TESObjectREFR *speakerp;
         RE::TESObjectREFR *speakerf;
-        KMCNPLoadedWidget nppw;
-        KMCNPLoadedWidget npfw;
-        KMCWipeType wt;
-        KMCWipeType wet;
         KMCCompsFlag pcf;
         KMCCompsFlag fcf;
         std::string precord = "";
         std::string frecord = "";
     };
 
-    class KMCFLoadedWidget {
-    public:
-        KMCFLoadedWidget() {}
-
-        KMCFLoadedWidget(std::unordered_map<int, KMCLoadedWidgetData> lw,
-                         std::unordered_map<int, KMCLoadedWidgetData> lt) {
-            LoadedWedget = std::move(lw);
-            LoadedText = std::move(lt);
-        }
-
-        void ResetLW() {
-            LoadedWedget.clear();
-            LoadedText.clear();
-        }
-
-    public:
-        std::unordered_map<int, KMCLoadedWidgetData> LoadedWedget;
-        std::unordered_map<int, KMCLoadedWidgetData> LoadedText;
+    struct KMCAnimData {
+        RE::TESObjectREFR *speaker;
+        KMCCompsFlag cf;
+        int rand = -1;
+        int next_rand = -1;
+        int frand = -1;
+        float volum = 0;
+        long long time = 0;
+        CutinEntry entry;
+        std::string record = "";
     };
+
     typedef void (*CutInFunction)(KMCAnimST *st, int &playerorfollower);
     struct KMCCutinOrder {
     public:
         KMCCutinOrder() {}
         KMCCutinOrder(CutInFunction f, int fop) {
             func = f;
-            playerorfollower = fop;
+            is_player = fop;
         }
 
     public:
         CutInFunction func;
-        int playerorfollower;
+        int is_player;
     };
 
     std::vector<std::string> KMCSplit(std::string str, char del);
@@ -746,10 +714,4 @@ namespace KMCCT {
 
     std::string EscapeStringForJavaScript(const std::string &input);
 
-    void NamePlateSimplyWipe(KMCNPLoadedWidget id, std::string aaaakmcroot);
-    void NamePlateFadeOut(KMCNPLoadedWidget id, std::string aaaakmcroot);
-
-    // std::vector<RE::TESObjectREFR *> FindAllReferencesWithKeyword(RE::TESObjectREFR *a_ref, RE::TESForm
-    // *a_formOrList,
-    //                                                              float a_radius, bool a_matchAll);
 }

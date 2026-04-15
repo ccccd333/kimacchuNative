@@ -89,17 +89,27 @@ namespace KMCCT {
             // player(0) -> {"Idle":[1,2,21]}
             category_index_map[type][category].push_back(id);
 
-            auto range = entry["texture_range"];
-            auto start = range.value("start", 1);
-            auto end = range.value("end", 1);
+            CutinEntry data;
+            data.category = category;
+            data.word = entry.value("word", "");
+            data.is_full_screen = entry.value("is_full_screen", false);
+            data.display_time = entry.value("display_time", 5.0f);
+            
+            if (entry.contains("texture_range") && entry["texture_range"].is_object()) {
+                data.range_start = entry["texture_range"].value("start", 1);
+                data.range_end = entry["texture_range"].value("end", 1);
+            } else {
+                data.range_start = 1;
+                data.range_end = 1;
+            }
 
-            for (int i = start; i <= end; i++) {
+            entries_data_map[type][id] = data;
+
+            for (int i = data.range_start; i <= data.range_end; i++) {
                 std::string file_path = full_base_path + key + "/" + std::to_string(i) + ".png";
-
                 if (!fs::exists(file_path)) {
                     ERROR("Missing file: {}", file_path);
                     is_missing_file = true;
-                    //return false;  
                 }
             }
         }

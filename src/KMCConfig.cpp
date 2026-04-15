@@ -1,29 +1,17 @@
 #include "KMCConfig.h"
-#include "KMCEventThread.h"
+
 #include <IWWConfig.h>
 
+#include "KMCEventThread.h"
 
 SINGLETONBODY(KMCCT::KMCConfig)
 
 namespace KMCCT {
     using namespace boost::property_tree;
 
-    void KMCConfig::Setup() { 
+    void KMCConfig::Setup() {
         player = RE::PlayerCharacter::GetSingleton();
 
-        //player->As<RE::BGSKeywordForm>()->
-        //player->As<RE::BGSKeywordForm>()->
-        // AutoWordRange.json
-        if (!SetupJsonSimpleNodes(&IAutoWordRangeConfigs, AUTO_WORD_RANGE_FILE_NAME,
-                                  JSON_ROOT_KEY_INT)) {
-            ERROR("AutoWordRange.json json description error.");
-        }
-
-        // AutoWordCategories.json
-        if (!SetupJsonSimpleNodes(&IAutoWordCategoriesConfigs, AUTO_WORD_CATEG_FILE_NAME,
-                                  JSON_ROOT_KEY_STRING)) {
-            ERROR("AutoWordCategories.json json description error.");
-        }
 
         if (!SetupJsonSimpleNodes(&ISetting, SETTING_FILE_NAME, JSON_ROOT_KEY_STRING)) {
             ERROR("setting.json json description error.");
@@ -42,8 +30,7 @@ namespace KMCCT {
             ERROR("DetectionMagicEffectKeyword.json json description error.");
         }
 
-        if (!SetupJsonSimpleNodes(&IDetectionGlobal, DETECTION_GLOBAL_FILE_NAME,
-                                  JSON_ROOT_KEY_STRING)) {
+        if (!SetupJsonSimpleNodes(&IDetectionGlobal, DETECTION_GLOBAL_FILE_NAME, JSON_ROOT_KEY_STRING)) {
             ERROR("DetectionGlobal.json json description error.");
         }
 
@@ -81,16 +68,7 @@ namespace KMCCT {
             }
         }
 
-        INamePlateAnimation.resize(NAMEPLATE_SETTINGS_PATH.size() + 1);
-        for (const auto & [k, v]: NAMEPLATE_SETTINGS_PATH) {
-            if (!SetupJsonSimpleNodes(&(INamePlateAnimation[k].settings), NAMEPLATE_ANIM_PATH + "/" + v,
-                                        JSON_ROOT_KEY_STRING)) {
-                ERROR("SimpleWipe.json or NamePlateFadeOut.json json description error.");
-            }
-        }
-
-        ISetup(PLAYER_WORD_PATH, &IAutoWordConfigs, &IAutoWordWFConfigs,
-               &IAnimationRange, &IConditions, &IHideComponents);
+        ISetup(PLAYER_WORD_PATH, &IConditions);
 
         ProfilSetup(PLAYER_WORD_PATH, &IWidgetSetting, &ITextSetting, &IProfileText);
 
@@ -101,18 +79,17 @@ namespace KMCCT {
             for (auto [key, value] : IManagedFollower) {
                 try {
                     std::vector<std::string> fc = KMCSplit(value, ',');
-                    std::string fkey = std::to_string(i+1);
+                    std::string fkey = std::to_string(i + 1);
                     IFollower.push_back(KMCFollower(fc.at(0), fc.at(1)));
 
                     KMCFollower *target = &(IFollower[i]);
-                    ISetup(FOLLOWER_WORD_PATH + fkey, &(target->IAutoWordConfigs),
-                            &(target->IAutoWordWFConfigs), &(target->IAnimationRange), &(target->IConditions), &(target->IHideComponents));
+                    ISetup(FOLLOWER_WORD_PATH + fkey, &(target->IConditions));
 
                     if (!SetupJsonSimpleNodes(&(target->ISpeachTiming),
-                                                FOLLOWER_WORD_PATH + fkey + "/" + SPEACH_TIMING_FILE_NAME,
-                                                JSON_ROOT_KEY_STRING)) {
+                                              FOLLOWER_WORD_PATH + fkey + "/" + SPEACH_TIMING_FILE_NAME,
+                                              JSON_ROOT_KEY_STRING)) {
                         ERROR("SpeachTiming.json json description error.");
-                    }                    
+                    }
 
                     ++i;
                 } catch (...) {
@@ -122,74 +99,17 @@ namespace KMCCT {
         }
     }
 
-    std::string KMCConfig::ISetup(std::string target, std::vector<std::pair<std::string, std::string>> *awc,
-                                  std::vector<std::pair<std::string, std::string>> *awwfc,
-                                  std::vector<std::pair<std::string, std::string>> *ar,
-                                  std::vector<std::pair<std::string, std::string>> *cond,
-                                  std::vector<std::pair<std::string, KMCCompsFlag>> *hc) {
-        // AutoWord.json
-        if (!SetupJsonSimpleNodes(awc, target + "/" + AUTO_WORD_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            ERROR("{} AutoWord.json ERROR.", target);
-        }
-
-        // AutoWordWFConfig.json
-        if (!SetupJsonSimpleNodes(awwfc, target + "/" + AUTO_WORD_WF_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            ERROR("{} AutoWordWFConfig.json ERROR.", target);
-        }
-
-        // SoundDescriptorFormId.json
-        //if (!SetupJsonSimpleNodes(sdfi, target + "/" + SOUND_DESC_FORMID_FILE_NAME,
-        //                          JSON_ROOT_KEY_STRING)) {
-        //    ERROR("{} SoundDescriptorFormId.json ERROR.", target);
-        //}
-
-        if (!SetupJsonSimpleNodes(ar, target + "/" + ANIM_RANGE_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            ERROR("{} AutoWordRange.json ERROR.", target);
-        }
+    std::string KMCConfig::ISetup(std::string target,std::vector<std::pair<std::string, std::string>> *cond) {
 
         if (!SetupJsonSimpleNodes(cond, target + "/" + CONDITIONS_FILE_NAME, JSON_ROOT_KEY_STRING)) {
             ERROR("{} ConditionsAndKeywords.json ERROR.", target);
         }
 
-        //if (!SetupJsonNestedNodes(sdse, target + "/" + SOUND_DESC_SE_FORMID_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-        //    ERROR("{} SoundDescriptorSEFormId.json ERROR.", target);
-        //}
-
-        // Hide
-        std::vector<std::pair<std::string, std::string>> hideCompv;
-        // HideComponents.json
-        if (!SetupJsonSimpleNodes(&hideCompv, target + "/" + HIDE_COMPONENTS_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            ERROR("HideComponents.json json description error.");
-        } else {
-            try {
-                for (auto [key, value] : hideCompv) {
-                    std::vector<std::string> conf = KMCSplit(value, ',');
-
-                    bool hideWidget = conf.at(0) == "0" ? false : true;
-                    bool hideWord = conf.at(1) == "0" ? false : true;
-                    bool hideNamePlate = conf.at(2) == "0" ? false : true;
-                    bool hideNamePlateName = conf.at(3) == "0" ? false : true;
-
-                    bool sound = conf.at(4) == "0" ? false : true;
-                    bool se = conf.at(5) == "0" ? false : true;
-
-                    hc->push_back(std::make_pair(
-                        key, KMCCompsFlag(hideWidget, hideWord, hideNamePlate, hideNamePlateName, sound, se)));
-                }
-            } catch (...) {
-                ERROR("ERROR Setup HideComponents.json. The number of elements in the value is wrong.");
-            }
-        }
-
-        //if (!SetupJsonSimpleNodes(coar, target + "/" + CONNECT_OAR_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-        //    ERROR("{} ConnectOAR.json ERROR.", target);
-        //}
-
         return target;
     }
 
     void KMCConfig::ProfilSetup(std::string target, std::vector<std::pair<std::string, std::string>> *pws,
-        std::vector<std::pair<std::string, std::string>>* ts, std::vector<std::string>* pt) {
+                                std::vector<std::pair<std::string, std::string>> *ts, std::vector<std::string> *pt) {
         // WidgetSetting.json
         if (!SetupJsonSimpleNodes(pws, PROFILE_PATH + "/" + target + "/" + WIDGET_SETTING_FILE_NAME,
                                   JSON_ROOT_KEY_STRING)) {
@@ -208,44 +128,42 @@ namespace KMCCT {
         }
     }
 
-    void KMCConfig::Init() { 
+    void KMCConfig::Init() {
         player = RE::PlayerCharacter::GetSingleton();
-        
+
         int i = 0;
-        //try {
-            for (; i < IFollower.size(); i++) {
-                KMCFollower *target = &(IFollower[i]);
-                std::string formid = target->formId;
-                std::string pluginname = target->pluginName;
-                IFollower[i].follower = (RE::Actor *)RE::TESDataHandler::GetSingleton()->LookupForm(
-                    std::stoll(formid, NULL, 16), pluginname);
-                IFollower[i].index = i;
-            }
+        // try {
+        for (; i < IFollower.size(); i++) {
+            KMCFollower *target = &(IFollower[i]);
+            std::string formid = target->formId;
+            std::string pluginname = target->pluginName;
+            IFollower[i].follower =
+                (RE::Actor *)RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll(formid, NULL, 16), pluginname);
+            IFollower[i].index = i;
+        }
 
-            for (i = 0; i < IFollower.size(); i++) {
-                for (auto [ckey, cvalue] : IFollower[i].IConditions) {
-                    try {
-                        std::vector<std::string> fcond = KMCSplit(cvalue, ',');
-                        long long formid = std::stoll(fcond.at(0), NULL, 16);
-                        std::string pluginname = fcond.at(1);
+        for (i = 0; i < IFollower.size(); i++) {
+            for (auto [ckey, cvalue] : IFollower[i].IConditions) {
+                try {
+                    std::vector<std::string> fcond = KMCSplit(cvalue, ',');
+                    long long formid = std::stoll(fcond.at(0), NULL, 16);
+                    std::string pluginname = fcond.at(1);
 
-                        LOG("formid {} pluginname {}", formid, pluginname);
+                    LOG("formid {} pluginname {}", formid, pluginname);
 
-                        IFollower[i].IKeywords.push_back(std::make_pair(
-                            ckey,
-                            (RE::BGSKeyword *)RE::TESDataHandler::GetSingleton()->LookupForm(formid, pluginname)));
-                    } catch (...) {
-                        ERROR("ERROR Setup ConditionsAndKeywords.json. The number of elements in the value is wrong.");
-                    }
-
+                    IFollower[i].IKeywords.push_back(std::make_pair(
+                        ckey, (RE::BGSKeyword *)RE::TESDataHandler::GetSingleton()->LookupForm(formid, pluginname)));
+                } catch (...) {
+                    ERROR("ERROR Setup ConditionsAndKeywords.json. The number of elements in the value is wrong.");
                 }
             }
+        }
         //} catch (...) {
-            //ERROR("ERROR Setup Follower not found. Specify the FormID of the NPC placed in the world space.");
+        // ERROR("ERROR Setup Follower not found. Specify the FormID of the NPC placed in the world space.");
         //}
     }
 
-    bool KMCConfig::SetupJsonSimpleNodes(std::vector<std::pair<std::string, std::string>>* configs,
+    bool KMCConfig::SetupJsonSimpleNodes(std::vector<std::pair<std::string, std::string>> *configs,
                                          std::string jsonFileName, std::string rootKeyName) {
         ptree pt;
         try {
@@ -256,12 +174,11 @@ namespace KMCCT {
                 std::string keylower = key;
                 std::transform(key.begin(), key.end(), keylower.begin(), [](char c) { return std::tolower(c); });
 
-                const ptree& info = child.second;
+                const ptree &info = child.second;
 
                 if (rootKeyName.compare(JSON_ROOT_KEY_STRING) == 0) {
                     if (boost::optional<std::string> name = info.get_value_optional<std::string>()) {
                         std::string value = name.get();
-
 
                         configs->push_back(std::make_pair(keylower, value));
                         LOG(" key = {} value = {}", keylower, value);
@@ -286,11 +203,11 @@ namespace KMCCT {
         } catch (...) {
             ERROR("ERROR LOADING");
             return false;
-        }        
+        }
 
         return true;
     }
-    
+
     bool KMCConfig::SetupJsonSimpleArray(std::vector<std::string> *configs, std::string jsonFileName,
                                          std::string rootKeyName) {
         ptree pt;
@@ -315,16 +232,16 @@ namespace KMCCT {
     }
 
     bool KMCConfig::SetupJsonNestedNodes(
-        std::vector<std::pair<std::string, std::map<std::string, std::string>>> *configs,
-        std::string jsonFileName, std::string rootKeyName) {
+        std::vector<std::pair<std::string, std::map<std::string, std::string>>> *configs, std::string jsonFileName,
+        std::string rootKeyName) {
         ptree pt;
-        //ptree npt;
+        // ptree npt;
         try {
             read_json(COMMON_PATH + jsonFileName, pt);
             LOG("JsonFileName = {}", jsonFileName);
             for (auto &&child : pt.get_child(rootKeyName)) {
                 const std::string key = child.first;
-                
+
                 if (child.second.empty()) {
                     ERROR("nested node empty.");
                     continue;

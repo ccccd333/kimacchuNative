@@ -11,7 +11,6 @@ namespace KMCCT {
         SINGLETONHEADER(KMCWaitTask)
     public:
         ~KMCWaitTask();
-        void InitWaitTask(std::string skyroot, std::vector<float> *floatArray);
         bool KMCCheckWait();
         void KMCPushWaitTask(KMCWaitType id, KMCWaitConfigs config);
         void KMCPushWaitTaskReset();

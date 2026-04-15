@@ -3,8 +3,6 @@
 
 namespace KMCCT {
 
-    enum class KMCDisplayType{ PLAYER, FOLLOWER, UNK };
-
     class KMCDisplayWordAndTexture {
         SINGLETONHEADER(KMCDisplayWordAndTexture)
     public:
@@ -24,6 +22,10 @@ namespace KMCCT {
 
         const std::unordered_map<std::string, std::vector<int>>& GetCategoryIndexMap(int type) const {
             return category_index_map.at(type);
+        }
+
+        const std::unordered_map<int, CutinEntry>& GetEntriesDataMap(int type) const {
+            return entries_data_map.at(type);
         }
 
     private:
@@ -62,6 +64,9 @@ namespace KMCCT {
         // そのためindexで最終的なカットインの番号を渡す
         // todo: CategoryRandomizer直すこと寝て忘れないこと
         std::map<int, std::unordered_map<std::string, std::vector<int>>> category_index_map;
+
+        // cutin用にentryの中身を取っておく
+        std::map<int, std::unordered_map<int, CutinEntry>> entries_data_map;
 
         bool loaded = false;
     };

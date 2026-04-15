@@ -7,183 +7,40 @@
 #include "KMCWaitTask.h"
 #include "KMCExpression.h"
 #include "KMCDisplayWordAndTexture.h"
+#include "KMCPrismaUIBridge.h"
 
 SINGLETONBODY(KMCCT::KMCCutin)
 
 namespace KMCCT {
     std::map<int, KMCCutinOrder> AnimFtoAnimP{
-                                                     {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)},
-                                                     {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
-                                                     {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
-                                                     {11, KMCCutinOrder(KMCCT::AnimWidgetVisible, 1)},
-                                                     {12, KMCCutinOrder(KMCCT::TextVisible, 1)},
+                                                     {0, KMCCutinOrder(KMCCT::KMCOnCutinStartReady, 1)},
+                                                     {1, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)},
+                                                     {2, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
                                                      {13, KMCCutinOrder(KMCCT::KMCPlayAnim, 1)},
-                                                     {14, KMCCutinOrder(KMCCT::TextInVisible, 1)},
-                                                     {15, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 1)},
-                                                     {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)},   
+                                                     {16, KMCCutinOrder(KMCCT::KMCOnCutinEnd, 1)},   
+
+                                                     {17, KMCCutinOrder(KMCCT::KMCOnCutinStartReady, 0)},
                                                      {18, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},
                                                      {19, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
-                                                     {20, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
-                                                     {21, KMCCutinOrder(KMCCT::AnimWidgetVisible, 0)},
-                                                     {22, KMCCutinOrder(KMCCT::TextVisible, 0)},
                                                      {23, KMCCutinOrder(KMCCT::KMCPlayAnim, 0)},
-                                                     {24, KMCCutinOrder(KMCCT::TextInVisible, 0)},
-                                                     {25, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 0)},
-                                                     {26, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)}};
+                                                     {26, KMCCutinOrder(KMCCT::KMCOnCutinEnd, 0)}};
     std::map<int, KMCCutinOrder> AnimPtoAnimF{
-                                                     {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},
-                                                     {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
-                                                     {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
-                                                     {11, KMCCutinOrder(KMCCT::AnimWidgetVisible, 0)},
-                                                     {12, KMCCutinOrder(KMCCT::TextVisible, 0)},
+                                                     {0, KMCCutinOrder(KMCCT::KMCOnCutinStartReady, 0)},
+                                                     {1, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},
+                                                     {2, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
                                                      {13, KMCCutinOrder(KMCCT::KMCPlayAnim, 0)},
-                                                     {14, KMCCutinOrder(KMCCT::TextInVisible, 0)},
-                                                     {15, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 0)},
-                                                     {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)},   
+                                                     {16, KMCCutinOrder(KMCCT::KMCOnCutinEnd, 0)},   
+
+                                                     {17, KMCCutinOrder(KMCCT::KMCOnCutinStartReady, 1)},
                                                      {18, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)},
                                                      {19, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
-                                                     {20, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
-                                                     {21, KMCCutinOrder(KMCCT::AnimWidgetVisible, 1)},
-                                                     {22, KMCCutinOrder(KMCCT::TextVisible, 1)},
                                                      {23, KMCCutinOrder(KMCCT::KMCPlayAnim, 1)},
-                                                     {24, KMCCutinOrder(KMCCT::TextInVisible, 1)},
-                                                     {25, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 1)},
-                                                     {26, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)}};
-    std::map<int, KMCCutinOrder> FtoAnimP{
-                                                 {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)}, 
-                                                 {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
-                                                 {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
-                                                 {11, KMCCutinOrder(KMCCT::TextVisible, 1)},
-                                                 {12, KMCCutinOrder(KMCCT::WidgetVisible, 1)},
-                                                 {13, KMCCutinOrder(KMCCT::KMCPlay, 1)},
-                                                 {14, KMCCutinOrder(KMCCT::TextInVisible, 1)},
-                                                 {15, KMCCutinOrder(KMCCT::WidgetInVisible, 1)},
-                                                 {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)},
-                                                 {18, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},
-                                                 {19, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
-                                                 {20, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
-                                                 {21, KMCCutinOrder(KMCCT::TextVisible, 0)},
-                                                 {22, KMCCutinOrder(KMCCT::AnimWidgetVisible, 0)},
-                                                 {23, KMCCutinOrder(KMCCT::KMCPlayAnim, 0)},
-                                                 {24, KMCCutinOrder(KMCCT::TextInVisible, 0)},
-                                                 {25, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 0)},
-                                                 {26, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)}};
-
-    std::map<int, KMCCutinOrder> AnimPtoF{
-                                                 {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},       
-                                                 {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
-                                                 {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
-                                                 {11, KMCCutinOrder(KMCCT::AnimWidgetVisible, 0)},
-                                                 {12, KMCCutinOrder(KMCCT::TextVisible, 0)},
-                                                 {13, KMCCutinOrder(KMCCT::KMCPlayAnim, 0)},
-                                                 {14, KMCCutinOrder(KMCCT::TextInVisible, 0)},
-                                                 {15, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 0)},
-                                                 {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)},
-                                                 {18, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)},
-                                                 {19, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
-                                                 {20, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
-                                                 {21, KMCCutinOrder(KMCCT::TextVisible, 1)},
-                                                 {22, KMCCutinOrder(KMCCT::WidgetVisible, 1)},
-                                                 {23, KMCCutinOrder(KMCCT::KMCPlay, 1)},
-                                                 {24, KMCCutinOrder(KMCCT::TextInVisible, 1)},
-                                                 {25, KMCCutinOrder(KMCCT::WidgetInVisible, 1)},
-                                                 {26, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)}};
-    std::map<int, KMCCutinOrder> AnimFtoP{
-                                                 {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)},        
-                                                 {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
-                                                 {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
-                                                 {11, KMCCutinOrder(KMCCT::AnimWidgetVisible, 1)},
-                                                 {12, KMCCutinOrder(KMCCT::TextVisible, 1)},
-                                                 {13, KMCCutinOrder(KMCCT::KMCPlayAnim, 1)},
-                                                 {14, KMCCutinOrder(KMCCT::TextInVisible, 1)},
-                                                 {15, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 1)},
-                                                 {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)},
-                                                 {18, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},
-                                                 {19, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
-                                                 {20, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
-                                                 {21, KMCCutinOrder(KMCCT::TextVisible, 0)},
-                                                 {22, KMCCutinOrder(KMCCT::WidgetVisible, 0)},
-                                                 {23, KMCCutinOrder(KMCCT::KMCPlay, 0)},
-                                                 {24, KMCCutinOrder(KMCCT::TextInVisible, 0)},
-                                                 {25, KMCCutinOrder(KMCCT::WidgetInVisible, 0)},
-                                                 {26, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)}};
-    std::map<int, KMCCutinOrder> PtoAnimF{
-                                                 {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},
-                                                 {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
-                                                 {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
-                                                 {11, KMCCutinOrder(KMCCT::TextVisible, 0)},
-                                                 {12, KMCCutinOrder(KMCCT::WidgetVisible, 0)},
-                                                 {13, KMCCutinOrder(KMCCT::KMCPlay, 0)},
-                                                 {14, KMCCutinOrder(KMCCT::TextInVisible, 0)},
-                                                 {15, KMCCutinOrder(KMCCT::WidgetInVisible, 0)},
-                                                 {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)},   
-                                                 {18, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)},
-                                                 {19, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
-                                                 {20, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
-                                                 {21, KMCCutinOrder(KMCCT::AnimWidgetVisible, 1)},
-                                                 {22, KMCCutinOrder(KMCCT::TextVisible, 1)},
-                                                 {23, KMCCutinOrder(KMCCT::KMCPlayAnim, 1)},
-                                                 {24, KMCCutinOrder(KMCCT::TextInVisible, 1)},
-                                                 {25, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 1)},
-                                                 {26, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)}};
-    std::map<int, KMCCutinOrder> FtoP{
-                                             {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)},        
-                                             {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
-                                             {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
-                                             {11, KMCCutinOrder(KMCCT::TextVisible, 1)},
-                                             {12, KMCCutinOrder(KMCCT::WidgetVisible, 1)},
-                                             {13, KMCCutinOrder(KMCCT::KMCPlay, 1)},
-                                             {14, KMCCutinOrder(KMCCT::TextInVisible, 1)},
-                                             {15, KMCCutinOrder(KMCCT::WidgetInVisible, 1)},
-                                             {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)},
-                                             {18, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},  
-                                             {19, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
-                                             {20, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
-                                             {21, KMCCutinOrder(KMCCT::TextVisible, 0)},
-                                             {22, KMCCutinOrder(KMCCT::WidgetVisible, 0)},
-                                             {23, KMCCutinOrder(KMCCT::KMCPlay, 0)},
-                                             {24, KMCCutinOrder(KMCCT::TextInVisible, 0)},
-                                             {25, KMCCutinOrder(KMCCT::WidgetInVisible, 0)},
-                                             {26, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)}};
-    std::map<int, KMCCutinOrder> PtoF{
-                                             {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},        
-                                             {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
-                                             {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
-                                             {11, KMCCutinOrder(KMCCT::TextVisible, 0)},
-                                             {12, KMCCutinOrder(KMCCT::WidgetVisible, 0)},
-                                             {13, KMCCutinOrder(KMCCT::KMCPlay, 0)},
-                                             {14, KMCCutinOrder(KMCCT::TextInVisible, 0)},
-                                             {15, KMCCutinOrder(KMCCT::WidgetInVisible, 0)},
-                                             {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)},
-                                             {18, KMCCutinOrder(KMCCT::KMCExpFuncStart, 1)}, 
-                                             {19, KMCCutinOrder(KMCCT::KMCOARFuncStart, 1)},
-                                             {20, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 1)},
-                                             {21, KMCCutinOrder(KMCCT::TextVisible, 1)},
-                                             {22, KMCCutinOrder(KMCCT::WidgetVisible, 1)},
-                                             {23, KMCCutinOrder(KMCCT::KMCPlay, 1)},
-                                             {24, KMCCutinOrder(KMCCT::TextInVisible, 1)},
-                                             {25, KMCCutinOrder(KMCCT::WidgetInVisible, 1)},
-                                             {26, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 1)}};
-    std::map<int, KMCCutinOrder> AnimPlayerOnly{
-                                                       {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},        
-                                                       {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
-                                                       {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
-                                                       {11, KMCCutinOrder(KMCCT::AnimWidgetVisible, 0)},
-                                                       {12, KMCCutinOrder(KMCCT::TextVisible, 0)},
-                                                       {13, KMCCutinOrder(KMCCT::KMCPlayAnim, 0)},
-                                                       {14, KMCCutinOrder(KMCCT::AnimWidgetInVisible, 0)},
-                                                       {15, KMCCutinOrder(KMCCT::TextInVisible, 0)},
-                                                       {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)}};
-    std::map<int, KMCCutinOrder> WidgetPlayerOnly{
-                                                         {0, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},        
-                                                         {1, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
-                                                         {10, KMCCutinOrder(KMCCT::KMCNamePlateStartAnim, 0)},
-                                                         {11, KMCCutinOrder(KMCCT::TextVisible, 0)},
-                                                         {12, KMCCutinOrder(KMCCT::WidgetVisible, 0)},
-                                                         {13, KMCCutinOrder(KMCCT::KMCPlay, 0)},
-                                                         {14, KMCCutinOrder(KMCCT::TextInVisible, 0)},
-                                                         {15, KMCCutinOrder(KMCCT::WidgetInVisible, 0)},
-                                                         {16, KMCCutinOrder(KMCCT::KMCNamePlateEndAnim, 0)}};
+                                                     {26, KMCCutinOrder(KMCCT::KMCOnCutinEnd, 1)}};
+    std::map<int, KMCCutinOrder> AnimPlayerOnly{{0, KMCCutinOrder(KMCCT::KMCOnCutinStartReady, 0)},
+                                                {1, KMCCutinOrder(KMCCT::KMCExpFuncStart, 0)},
+                                                {2, KMCCutinOrder(KMCCT::KMCOARFuncStart, 0)},
+                                                {13, KMCCutinOrder(KMCCT::KMCPlayAnim, 0)},
+                                                {16, KMCCutinOrder(KMCCT::KMCOnCutinEnd, 0)}};
 
     std::string ct_aaaakmcroot = "";
     KMCInterruptPushCutInData aaaakmcInterruptData;
@@ -230,107 +87,8 @@ namespace KMCCT {
         aaaakmcAnimtime = (*floatArray)[1];
         aaaakmctime = (*floatArray)[2];
         aaaakmcCycle = (*floatArray)[3];
-        aaaaPlayerTextX = std::to_string((int)((*floatArray)[4]));
-        aaaaPlayerTextY = std::to_string((int)((*floatArray)[5]));
-        aaaaPlayerWidgetX = std::to_string((int)((*floatArray)[6]));
-        aaaaPlayerWidgetY = std::to_string((int)((*floatArray)[7]));
-
-        aaaaPlayerNTextX = std::to_string((int)((*floatArray)[8]));
-        aaaaPlayerNTextY = std::to_string((int)((*floatArray)[9]));
-        aaaaPlayerNWidgetX = std::to_string((int)((*floatArray)[10]));
-        aaaaPlayerNWidgetY = std::to_string((int)((*floatArray)[11]));
-
-        aaaaFollowerTextX = std::to_string((int)((*floatArray)[12]));
-        aaaaFollowerTextY = std::to_string((int)((*floatArray)[13]));
-        aaaaFollowerWidgetX = std::to_string((int)((*floatArray)[14]));
-        aaaaFollowerWidgetY = std::to_string((int)((*floatArray)[15]));
-
-        aaaaFollowerNTextX = std::to_string((int)((*floatArray)[16]));
-        aaaaFollowerNTextY = std::to_string((int)((*floatArray)[17]));
-        aaaaFollowerNWidgetX = std::to_string((int)((*floatArray)[18]));
-        aaaaFollowerNWidgetY = std::to_string((int)((*floatArray)[19]));
-
-        auto settings = KMCCT::KMCConfig::GetSingleton()->getISetting();
-        std::string FollowerDefaultRange = "";
-        // setting string
-        std::vector<std::pair<std::string, std::string>> ssetting{
-            std::make_pair("font", "ERROR SETTING setting.json font"),
-            std::make_pair("follower_detect_range", "ERROR SETTING setting.json default follower detect range")};
-
-        std::vector<std::string *> starget = {
-            &KMC_DEFAULT_FONT,
-            &FollowerDefaultRange,
-        };
-
-        for (int i = 0; i < ssetting.size(); i++) {
-            std::string k = ssetting[i].first;
-            std::string v = ssetting[i].second;
-            *(starget[i]) = LoadDefaultSetting(k, v, settings);
-        }
-        KMC_DEFAULT_FONT = *(starget[0]);
-        followerDetectRange = std::stof(*(starget[1]));
-
-        // setting int
-        std::vector<std::pair<std::string, std::string>> isetting{
-            std::make_pair("fontsize", "ERROR SETTING setting.json font size"),
-            std::make_pair("nameposx", "ERROR SETTING setting.json nameposx"),
-            std::make_pair("nameposy", "ERROR SETTING setting.json nameposy"),
-            std::make_pair("w_posx", "ERROR SETTING setting.json w_posx"),
-            std::make_pair("w_posy", "ERROR SETTING setting.json w_posy"),
-            std::make_pair("t_posx", "ERROR SETTING setting.json t_posx"),
-            std::make_pair("t_posy", "ERROR SETTING setting.json t_posy")};
-        std::vector<int *> target = {&KMC_DEFAULT_FONT_SIZE,    &KMC_DEFAULT_NAME_POSX,    &KMC_DEFAULT_NAME_POSY,
-                                     &KMC_DEFAULT_WIDGET_POS_X, &KMC_DEFAULT_WIDGET_POS_Y, &KMC_DEFAULT_TEXT_POS_X,
-                                     &KMC_DEFAULT_TEXT_POS_Y};
-
-        for (int i = 0; i < isetting.size(); i++) {
-            std::string k = isetting[i].first;
-            std::string v = isetting[i].second;
-            *(target[i]) = std::stoi(LoadDefaultSetting(k, v, settings));
-        }
-
-
 
         CategoryRandomizer();
-
-        InitNamePlate();
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-            return;
-        }
-
-        // player
-        auto *animationRange = KMCCT::KMCConfig::GetSingleton()->getIAnimationRange();
-        auto *autoWordWF = KMCCT::KMCConfig::GetSingleton()->getIAutoWordWFConfigs();
-        auto *playerAutoWord = KMCCT::KMCConfig::GetSingleton()->getIAutoWordConfigs();
-        InitLoop(animationRange, autoWordWF, playerAutoWord, &LoadedWedget,
-                 &LoadedText, &LoadedTIDsConfigs, &LoadedWIDsConfigs, std::stoi(aaaaPlayerTextX), std::stoi(aaaaPlayerTextY),
-                 std::stoi(aaaaPlayerWidgetX), std::stoi(aaaaPlayerWidgetY), WidgetType::player_widget, WidgetType::player_text_widget,
-                 &KMCCT::PLAYER_WORD_PATH);
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-            return;
-        }
-
-        auto *followers = KMCCT::KMCConfig::GetSingleton()->GetFollowers();
-        for (int i = 0; i < followers->size(); i++) {
-            KMCFollower f = (*followers)[i];
-            auto *fanimationRange = &(f.IAnimationRange);
-            auto *fautoWordWF = &(f.IAutoWordWFConfigs);
-            auto *fAutoWord = &(f.IAutoWordConfigs);
-            std::unordered_map<int, KMCLoadedWidgetData> lw;
-            std::unordered_map<int, KMCLoadedWidgetData> lt;
-
-            std::string fwp = KMCCT::FOLLOWER_WORD_PATH + std::to_string(i + 1);
-
-            InitLoop(fanimationRange, fautoWordWF, fAutoWord, &lw, &lt, &FLoadedTIDsConfigs, &FLoadedWIDsConfigs,
-                     std::stoi(aaaaFollowerTextX), std::stoi(aaaaFollowerTextY), std::stoi(aaaaFollowerWidgetX),
-                     std::stoi(aaaaFollowerWidgetY), WidgetType::follower_widget, WidgetType::follower_text_widget, &fwp);
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                return;
-            }
-            FLoadedWT.push_back(std::make_pair(std::to_string(i + 1), KMCFLoadedWidget(lw, lt)));
-        }
-
-        KMCCT::KMCEventThread::GetSingleton()->wrap_OutputLoop();
     }
 
     void KMCCutin::InterruptCutInEventManager(KMCInterruptPushCutInData data) {
@@ -365,122 +123,6 @@ namespace KMCCT {
             }
         }
     }
-
-    int KMCCutin::WaitLoad(int* wid, uint64_t* rand, std::string* root,
-        std::vector<std::pair<uint64_t, KMCLoadedWidgetData>>** loadedWedget) {
-        std::string result = IWW::MainFunctions::GetSingleton()->GetOutput(*wid, "-1");
-        while (result == "W8") {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                return -1;
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
-            result = IWW::MainFunctions::GetSingleton()->GetOutput(*wid, "-1");
-        }
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-            return -1;
-        }
-        int loadedwid = std::stoi(result);
-        //LoadedWidgetsFactory.push_back(loadedwid);
-        uint64_t r = *rand;
-        LOG("KMCEventThread::WaitLoad WID = {} TYPE ID = {}", result, r);
-        (*loadedWedget)->push_back(std::make_pair(r, KMCLoadedWidgetData(false, loadedwid, 0, "")));
-
-        return loadedwid;
-    }
-
-    int KMCCutin::WaitMultLoad(int* wid, uint64_t* rand, std::string* root, int* index,
-        std::vector<std::pair<uint64_t, KMCLoadedWidgetData>>** loadedWedget) {
-        std::string result = IWW::MainFunctions::GetSingleton()->GetOutput(*wid, "-1");
-        while (result == "W8") {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                return -1;
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
-            result = IWW::MainFunctions::GetSingleton()->GetOutput(*wid, "-1");
-        }
-
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-            return -1;
-        }
-
-        int r = std::stoi(result);
-        //LoadedWidgetsFactory.push_back(r);
-
-        LOG("KMCEventThread::WaitMultLoad WID = {} ", result);
-        uint64_t k = *rand;
-        auto it =
-            std::find_if((*loadedWedget)->begin(), (*loadedWedget)->end(), [k](const auto &p) { return p.first == k; });
-        it->second.animWedget[*index] = r;
-        //}
-        return r;
-    }
-
-    int KMCCutin::WaitLoadText(int* wid, uint64_t* rand, std::string* root,
-        std::vector<std::pair<uint64_t, int>>** loadedText) {
-        std::string result = IWW::MainFunctions::GetSingleton()->GetOutput(*wid, "-1");
-        while (result == "W8") {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                return -1;
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
-            result = IWW::MainFunctions::GetSingleton()->GetOutput(*wid, "-1");
-        }
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-            return -1;
-        }
-
-        int loadedwid = std::stoi(result);
-        //LoadedWidgetsFactory.push_back(loadedwid);
-
-        LOG("KMCEventThread::WaitLoadText TID = {} ", result);
-        uint64_t k = *rand;
-        (*loadedText)->push_back(std::make_pair(k, loadedwid));
-
-        return loadedwid;
-    }
-    
-    int KMCCutin::WaitLoadNamePlate(int* wid) {
-        std::string result = IWW::MainFunctions::GetSingleton()->GetOutput(*wid, "-1");
-        while (result == "W8") {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                return -1;
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
-            result = IWW::MainFunctions::GetSingleton()->GetOutput(*wid, "-1");
-        }
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-            return -1;
-        }
-        int loadedwid = std::stoi(result);
-        //LoadedWidgetsFactory.push_back(loadedwid);
-        LOG("KMCEventThread::WaitLoadNamePlate WID = {} ", result);
-
-        return loadedwid;
-    }
-
-    void KMCCutin::OutputLoop() {
-        for (auto &id : OutputContainer) {
-            std::string result = IWW::MainFunctions::GetSingleton()->GetOutput(id.first, "-1");
-            while (result == "W8") {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                    return;
-                }
-                std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
-                result = IWW::MainFunctions::GetSingleton()->GetOutput(id.first, "-1");
-            }
-
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                return;
-            }
-            { 
-                std::lock_guard<std::mutex> lock(output_mtx);
-                id.second.output = std::stoi(result);
-            }
-            LOG("KMCCutin::OutputLoop WID = {} BWID = {}", result, id.first);
-        }
-    }
-
 
     int KMCCutin::CondCutIn(KMCCutinValues val) {
         auto node = KMCCT::KMCCutinCondition::GetSingleton()->GetTaskResult();
@@ -537,22 +179,9 @@ namespace KMCCT {
         float c_volum = val.aaaakmcvolum;
         float c_oar_time = val.aaaakmcoar;
         float c_exp_time = val.aaaakmcexp;
-        // ct_aaaakmcroot = (*variableArray)[0].c_str();
-        // std::string aaaakmctype = (*variableArray)[1].c_str();
-        // std::string aaaakmctime = (*variableArray)[2].c_str();
-        // std::string aaaakmcposx = (*variableArray)[3].c_str();
-        // std::string aaaakmcposy = (*variableArray)[4].c_str();
-        // std::string aaaakmctposx = (*variableArray)[5].c_str();
-        // std::string aaaakmctposy = (*variableArray)[6].c_str();
-        // std::string aaaakmcvolum = (*variableArray)[7].c_str();
+
         long long t = c_time * KMCCT::TIME_SCALE_MS;
         bool isAnim = false;
-        std::unordered_map<int, KMCOutputContainer> oc;
-        {
-            std::lock_guard<std::mutex> lock(output_mtx);
-            oc = OutputContainer;
-        }
-
         if (aaaakmctype == "") {
             aaaakmctype = KMCCT::KMCStateManager::GetSingleton()->GetPlayerState();
 
@@ -578,13 +207,11 @@ namespace KMCCT {
             }
         }
 
-        std::string skyUiBase = ct_aaaakmcroot;
         int wid = -1;
         int tid = -1;
 
         int fwid = -1;
         int ftid = -1;
-        bool isfAnim = false;
         bool fSpeachFlag = true;
         RE::Actor *follower = nullptr;
         std::vector<std::pair<std::string, std::string>> *speakTiming = nullptr;
@@ -595,7 +222,8 @@ namespace KMCCT {
 
         // player
         int rand = GetCutInID(aaaakmctype);
-        if (rand < 0) {
+        int next_rand = PeekNextCutInID(aaaakmctype);
+        if (rand < 0 || next_rand < 0) {
             std::lock_guard<std::mutex> lock(animnow_mtx);
             animnow = false;
             return 2;
@@ -603,71 +231,24 @@ namespace KMCCT {
         std::string srand = std::to_string(rand);
 
 
+        const auto &player_cutin_entry =
+            KMCDisplayWordAndTexture::GetSingleton()->GetEntriesDataMap((int)KMCDisplayType::PLAYER).at(rand);
 
-        KMCLoadedWidgetData target;
+        pcf.Sound = KMCCT::KMCSound::GetSingleton()->IsPlayableSoundEx(rand, -1);
 
-        WidgetInitEnd(rand, &LoadedWedget, &LoadedText, &LoadedWIDsConfigs, &LoadedTIDsConfigs);
+        pcf.SE = KMCCT::KMCSound::GetSingleton()->GetFirstSEIndexEx(rand, -1, &precord);
+
         if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
             return -99;
         }
 
-        // LOG("KMCEventThread:CutIn PARAM root = {} type = {} aaaakmctime = {} aaaakmcposx = {} aaaakmcposy = {}",
-        // skyUiBase, aaaakmctype, aaaakmctime, aaaakmcposx, aaaakmcposy);
-
-        //auto *loadedWedget = KMCCT::KMCEventThread::GetSingleton()->getLoadedWedget();
-        auto *HideComponents = KMCCT ::KMCConfig::GetSingleton()->getIHideComponents();
-
-        auto itPlayerHideComponents = std::find_if(HideComponents->begin(), HideComponents->end(),
-                                                   [srand](const auto &p) { return p.first == srand; });
-        if (itPlayerHideComponents != HideComponents->end()) {
-            pcf = itPlayerHideComponents->second;
-        }
-
-        if (pcf.Widget) {
-            //auto itPlayerLoadedW = std::find_if(LoadedWedget.begin(), LoadedWedget.end(),
-            //                                    [rand](const auto &p) { return p.first == rand; });
-            if (LoadedWedget.contains(rand)) {
-                target = LoadedWedget.at(rand);
-                if (target.isAnim) {
-                    isAnim = true;
-                    t = c_animtime * KMCCT::TIME_SCALE_MS;
-                } else {
-                    if (target.wedget > 0) {
-                        wid = target.wedget;
-                    } else {
-                        pcf.Widget = false;
-                    }
-                }
-            } else {
-                pcf.Widget = false;
-            }
-        }
-        if (pcf.Word) {
-            // player text
-            if (LoadedText.contains(rand)) {
-                tid = LoadedText.at(rand).wedget;
-            } else {
-                pcf.Word = false;
-            }
-        }
-        if (pcf.Sound) {
-            pcf.Sound = KMCCT::KMCSound::GetSingleton()->IsPlayableSoundEx(rand, -1);
-        }
-        if (pcf.SE) {
-            pcf.SE = KMCCT::KMCSound::GetSingleton()->GetFirstSEIndexEx(rand, -1, &precord);
-        }
-        if (pcf.NamePlate || pcf.NamePlateName) {
-            if (pcf.Widget == false && pcf.Word == false/* && pcf.Sound == false && pcf.SE == false*/) {
-                pcf.NamePlate = false;
-                pcf.NamePlateName = false;
-            }
-        }
-
         // follower
-        KMCLoadedWidgetData ftarget;
         int frand = -1;
+        int f_next_rand_id = -1;
         auto f = FollowerEffectiveDistance(KMCCT::KMCConfig::GetSingleton()->GetPlayer(),
                                            KMCCT::KMCConfig::GetSingleton()->GetFollowers(), followerDetectRange, rand);
+        
+        CutinEntry follower_cutin_entry;
         if (f.size() != 0) {
             frand = f.begin()->index;
             int target_index = 0;
@@ -680,70 +261,25 @@ namespace KMCCT {
                 frand = f[target_index].index;
             }
 
-            auto fHideComponents = f[target_index].IHideComponents;
-
-            auto itfHideComponents = std::find_if(fHideComponents.begin(), fHideComponents.end(),
-                                                  [srand](const auto &p) { return p.first == srand; });
-            if (itfHideComponents != fHideComponents.end()) {
-                fcf = itfHideComponents->second;
-            }
-
-            WidgetInitEnd(rand, &(FLoadedWT)[frand].second.LoadedWedget, &(FLoadedWT)[frand].second.LoadedText,
-                          &FLoadedWIDsConfigs, &FLoadedTIDsConfigs);
-
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                return -99;
-            }
-
-            if (fcf.Widget) {
-                auto *floadedWedget = &((FLoadedWT)[frand].second.LoadedWedget);
-                //auto itFLoadedW = std::find_if(floadedWedget->begin(), floadedWedget->end(),
-                //                               [rand](const auto &p) { return p.first == rand; });
-                if (floadedWedget->contains(rand)) {
-                    ftarget = floadedWedget->at(rand);
-                    if (ftarget.isAnim) {
-                        isfAnim = true;
-                        t = c_animtime * KMCCT::TIME_SCALE_MS;
-                    } else {
-                        if (ftarget.wedget > 0) {
-                            fwid = ftarget.wedget;
-                        } else {
-                            fcf.Widget = false;
-                        }
-                    }
-
-                    follower = f[target_index].follower;
-                    speakTiming = &(f[target_index].ISpeachTiming);
-                } else {
-                    fcf.Widget = false;
-                }
-            }
-            if (fcf.Word) {
-                auto floadedText = (FLoadedWT)[frand].second.LoadedText;
-                //auto itFLoadedT = std::find_if(floadedText.begin(), floadedText.end(),
-                //                               [rand](const auto &p) { return p.first == rand; });
-                if (floadedText.contains(rand)) {
-                    //ftid = floadedText.at(rand);
-                    ftid = floadedText.at(rand).wedget;
-                } else {
-                    fcf.Word = false;
-                }
-            }
-            if (fcf.Sound) {
+            const auto &fentry = KMCDisplayWordAndTexture::GetSingleton()->GetEntriesDataMap(frand + 1);
+            if (fentry.contains(rand)) {
+                follower = f[target_index].follower;
+                speakTiming = &(f[target_index].ISpeachTiming);
                 fcf.Sound = KMCCT::KMCSound::GetSingleton()->IsPlayableSoundEx(rand, frand);
-            }
-            if (fcf.SE) {
+
                 fcf.SE = KMCCT::KMCSound::GetSingleton()->GetFirstSEIndexEx(rand, frand, &frecord);
-            }
-            if (fcf.NamePlate || fcf.NamePlateName) {
-                if (fcf.Widget == false && fcf.Word == false /*&& fcf.Sound == false && fcf.SE == false*/) {
-                    fcf.NamePlate = false;
-                    fcf.NamePlateName = false;
-                }
+
+                follower_cutin_entry = fentry.at(rand);
+            } else {
+                fSpeachFlag = false;
             }
 
             if (fcf.IsAllDisable()) {
                 fSpeachFlag = false;
+            }
+
+            if (fentry.contains(next_rand)) {
+                f_next_rand_id = next_rand;
             }
         } else {
             fSpeachFlag = false;
@@ -751,15 +287,14 @@ namespace KMCCT {
 
         if (fSpeachFlag) {
             KMCAnimST st = KMCAnimST();
-            st.t = target;
-            st.ft = ftarget;
-            st.tid = tid;
-            st.ftid = ftid;
-            st.time = t;
-            st.isAnim = isAnim;
-            st.isfAnim = isfAnim;
+            st.t = player_cutin_entry;
+            st.ft = follower_cutin_entry;
+            st.time = player_cutin_entry.display_time * KMCCT::TIME_SCALE_MS;
+            st.ftime = follower_cutin_entry.display_time * KMCCT::TIME_SCALE_MS;
             st.rand = rand;
             st.frand = frand;
+            st.p_next_rand = next_rand;
+            st.f_netx_rand = f_next_rand_id;
             st.volum = c_volum;
             st.ISpeechTiming = speakTiming;
             st.speakerp = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
@@ -768,39 +303,29 @@ namespace KMCCT {
             st.fcf = fcf;
             st.precord = precord;
             st.frecord = frecord;
-            st.nppw = PlayerNamePlate;
             st.oar_time = c_oar_time;
             st.exp_time = c_exp_time;
             st.overri_oar_time = val.overri_oar_time;
             st.overri_exp_time = val.overri_exp_time;
             st.exp_rand = exp_rand;
-            try {
-                auto fpl = (FNamePlate).at(st.frand);
-                st.npfw = fpl;
-            } catch (...) {
-                ERROR("There is no follower nameplate setting; please check NamePlate.json. Follower ID {}", st.frand);
-            }
 
-            DispPFWidget(st);
+            PlayDuoCutin(st);
         } else {
             KMCAnimST st = KMCAnimST();
-            st.t = target;
-            st.tid = tid;
-            st.time = t;
-            st.isAnim = isAnim;
+            st.time = player_cutin_entry.display_time * KMCCT::TIME_SCALE_MS;
             st.rand = rand;
             st.frand = frand;
+            st.p_next_rand = next_rand;
             st.volum = c_volum;
             st.speakerp = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
             st.pcf = pcf;
             st.precord = precord;
-            st.nppw = PlayerNamePlate;
             st.oar_time = c_oar_time;
             st.exp_time = c_exp_time;
             st.overri_oar_time = val.overri_oar_time;
             st.overri_exp_time = val.overri_exp_time;
             st.exp_rand = exp_rand;
-            DispPWidget(st);
+            PlaySoloCutin(st);
         }
 
         {
@@ -824,545 +349,66 @@ namespace KMCCT {
         }
     }
 
-    void KMCCutin::InitNamePlate() {
-        // NamePlate
-        
-        // player
-        auto namep = KMCCT::KMCConfig::GetSingleton()->getINamePlate();
-        if (namep->size() == 0) {
-            WARN("NamePlate.json undefine");
-            return;
-        }
+    bool KMCCutin::GetCutinStartReady() { return cutin_start_ready.load(); }
 
-        KMCNamePlate pnpsetting = (*namep)[0].second;
-        int rwid = -1;
-        std::string filename = KMCCT::PICT_PATH1 + "/" + KMCCT::NAME_PLATE_PICT_NAME + KMCCT::PICT_TYPE;
-        if (IsFileExist(KMCCT::PICT_ROOT + filename)) {
-            int wid = IWW::MainFunctions::GetSingleton()->LoadWidget(ct_aaaakmcroot, filename, 10000, 10000, false);
-            rwid = WaitLoadNamePlate(&wid);
-        } else {
-            WARN("File path not found. If not intended, no problem. {}", filename);
-        }
+    void KMCCutin::SetCutinStartReady(bool set) { cutin_start_ready.store(set); }
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-            return;
-        }
-
-        std::string pn = KMCCT::KMCConfig::GetSingleton()->GetPlayer()->GetName();
-        // LOG("NamePlate name = {}", pn);
-        //  player name plate widget
-        int tid = IWW::MainFunctions::GetSingleton()->LoadText(ct_aaaakmcroot, pn, pnpsetting.font, pnpsetting.fontsize,
-                                                               10000, 10000, false);
-        int rtid = WaitLoadNamePlate(&tid);
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-            return;
-        }
-
-        if (rwid > 0) {
-            IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, rwid, true);
-
-            IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, rtid, true);
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
-
-            IWW::MainFunctions::GetSingleton()->SendToFront(ct_aaaakmcroot, rtid);
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
-
-            IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, rwid, false);
-
-            IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, rtid, false);
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
-        }
-
-        // LOG("NamePlate player rtid = {}", rtid);
-        int pname_x = pnpsetting.name_x + std::stoi(aaaaPlayerNWidgetX);
-        int pname_y = pnpsetting.name_y + std::stoi(aaaaPlayerNWidgetY);
-        int pfont_x = pnpsetting.font_x + std::stoi(aaaaPlayerNTextX);
-        int pfont_y = pnpsetting.font_y + std::stoi(aaaaPlayerNTextY);
-
-        if (rwid > 0) {
-            IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, rwid, pname_x);
-            IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, rwid, pname_y);
-        }
-
-        IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, rtid, pfont_x);
-        IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, rtid, pfont_y);
-        IWW::MainFunctions::GetSingleton()->SetRGB(ct_aaaakmcroot, rtid, pnpsetting.r, pnpsetting.g, pnpsetting.b);
-
-        PlayerNamePlate.set(rtid, rwid, pfont_x, pfont_y, pname_x, pname_y);
-
-        LoadedNTIDsConfigs[rtid] = KMCDispConfigs(rtid, pfont_x, pfont_y, pnpsetting.r, pnpsetting.g, pnpsetting.b);
-
-        if (rwid > 0) {
-            LoadedNWIDsConfigs[rwid] = KMCDispConfigs(rwid, pname_x, pname_y);
-        }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
-
-        // follower
-        auto followers = KMCCT::KMCConfig::GetSingleton()->GetFollowers();
-        KMCNamePlate fnpsetting = (*namep)[1].second;
-        std::string key;
-        KMCFollower value;
-        for (int i = 0; i < (*followers).size(); i++) {
-            if ((*followers)[i].follower == nullptr) continue;
-
-            std::string fname = (*followers)[i].follower->GetName();
-
-            // LOG("Follower NamePlate name = {}", fname);
-
-            // LOG("NamePlate follower rtid = {}", rftid);
-            int rfwid = -1;
-            if (IsFileExist(KMCCT::PICT_ROOT + filename)) {
-                int fwid = IWW::MainFunctions::GetSingleton()->LoadWidget(ct_aaaakmcroot, filename, 10000, 10000, false);
-                rfwid = WaitLoadNamePlate(&fwid);
-            } else {
-                WARN("File path not found. If not intended, no problem. {}", filename);
-            }
-
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                return;
-            }
-
-            int ftid = IWW::MainFunctions::GetSingleton()->LoadText(ct_aaaakmcroot, fname, fnpsetting.font,
-                                                                    fnpsetting.fontsize, 10000, 10000, false);
-            int rftid = WaitLoadNamePlate(&ftid);
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                return;
-            }
-
-            if (rfwid > 0) {
-                IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, rfwid, true);
-                IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, rftid, true);
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
-
-                IWW::MainFunctions::GetSingleton()->SendToFront(ct_aaaakmcroot, rftid);
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
-
-                IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, rfwid, false);
-                IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, rftid, false);
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
-            }
-
-            int fname_x = fnpsetting.name_x + std::stoi(aaaaFollowerNWidgetX);
-            int fname_y = fnpsetting.name_y + std::stoi(aaaaFollowerNWidgetY);
-            int ffont_x = fnpsetting.font_x + std::stoi(aaaaFollowerNTextX);
-            int ffont_y = fnpsetting.font_y + std::stoi(aaaaFollowerNTextY);
-
-            IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, rftid, ffont_x);
-            IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, rftid, ffont_y);
-            IWW::MainFunctions::GetSingleton()->SetRGB(ct_aaaakmcroot, rftid, fnpsetting.r, fnpsetting.g, fnpsetting.b);
-
-            if (rfwid > 0) {
-                IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, rfwid, fname_x);
-                IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, rfwid, fname_y);
-                // IWW::MainFunctions::GetSingleton()->SendToBack(ct_aaaakmcroot, rfwid);
-            }
-
-            FNamePlate.push_back(KMCNPLoadedWidget(rftid, rfwid, ffont_x, ffont_y, fname_x, fname_y));
-
-            FLoadedNTIDsConfigs[rftid] = KMCDispConfigs(rftid, ffont_x, ffont_y, fnpsetting.r, fnpsetting.g, fnpsetting.b);
-            if (rfwid > 0) {
-                FLoadedNWIDsConfigs[rfwid] = KMCDispConfigs(rfwid, fname_x, fname_y);
-            }
-        }
+    bool KMCCutin::GetCutinFinished() { return cutin_finished.load(); 
+    }
+    void KMCCutin::SetCutinFinished(bool set) { cutin_finished.store(set);
     }
 
+    int KMCCutin::PeekNextCutInID(std::string aaaakmctype) {
+        auto findit = kmc_category_rand_map.find(aaaakmctype);
+        if (findit == kmc_category_rand_map.end()) return -1;
 
-    void KMCCutin::InitLoop(std::vector<std::pair<std::string, std::string>> *ar,
-                  std::vector<std::pair<std::string, std::string>> *awwf,
-                  std::vector<std::pair<std::string, std::string>> *aw,
-                  std::unordered_map<int, KMCLoadedWidgetData> *loadedWedget, 
-                  std::unordered_map<int, KMCLoadedWidgetData> *loadedText,
-                            std::unordered_map<int, KMCDispConfigs> *loadedTIDsConfigs,
-                            std::unordered_map<int, KMCDispConfigs> *loadedWIDsConfigs, int offset_tx,
-                            int offset_ty,
-                            int offset_wx, int offset_wy, WidgetType widget, WidgetType text_widget,
-                            const std::string *target) {
-        auto *autoWordCategories = KMCCT::KMCConfig::GetSingleton()->getIAutoWordCategoriesConfigs();
-        std::set<int> pushbackResult;
+        auto &rand_data = findit->second;
 
-        LOG("Load animation widget");
-        // animation widget
-        for (auto [key, value] : *ar) {
-            try {
-                auto be = KMCSplit(value, ',');
-                int awcKey = std::stoi(key);
-                int k = std::stoi(key);
-                (*loadedWedget)[k] = KMCLoadedWidgetData(true, 0, std::stoi(be.at(1)), be.at(2));
-                LOG("InitLW push_back key: {} size: {}", k, be.at(1));
-
-                auto itf = std::find_if(autoWordCategories->begin(), autoWordCategories->end(),
-                                        [key](const auto &p) { return p.first == key; });
-                if (itf != autoWordCategories->end()) {
-                    for (int i = 0; i < std::stoi(be.at(1)); i++) {
-                        std::string k1 = itf->second;
-                        std::string k2 = k1;
-                        std::transform(k1.begin(), k1.end(), k2.begin(), [](char c) { return std::tolower(c); });
-
-                        int wx = KMC_DEFAULT_WIDGET_POS_X;
-                        int wy = KMC_DEFAULT_WIDGET_POS_Y;
-
-                        auto fontmap =
-                            std::find_if(awwf->begin(), awwf->end(), [key](const auto &p) { return p.first == key; });
-
-                        if (fontmap != awwf->end()) {
-                            std::string fontSettings = fontmap->second;
-                            std::vector<std::string> fsettings = KMCSplit(fontSettings, ',');
-                            wx = std::stoi(fsettings.at(2));
-                            wy = std::stoi(fsettings.at(3));
-                        }
-
-                        std::string filename = KMCCT::PICT_PATH1 + "/" + *target + "/" + key + "/" + KMCCT::PICT_PATH2 +
-                                               k2 + std::to_string(i + 1) + KMCCT::PICT_TYPE;
-                        if (IsFileExist(KMCCT::PICT_ROOT + filename)) {
-                            int wid = IWW::MainFunctions::GetSingleton()->LoadWidget(ct_aaaakmcroot, filename, 10000,
-                                                                                     10000, false);
-
-                            LOG("filename: {} root: {} category: {} id : {}", filename, ct_aaaakmcroot, k1, wid);
-                            //wid;  //WaitMultLoad(&wid, &k, &ct_aaaakmcroot, &i, &loadedWedget);
-                            (*loadedWedget)[k].animWedget.at(i) = wid;
-                            OutputContainer[wid] = KMCOutputContainer(-1, widget);
-                            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                                return;
-                            }
-
-                            //IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, wid, wx + offset_wx);
-                            //IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, wid, wy + offset_wy);
-
-                            (*loadedWIDsConfigs)[wid] = KMCDispConfigs(wid, wx + offset_wx, wy + offset_wy);
-                        } else {
-                            WARN("File path not found. If not intended, no problem. {}", filename);
-                        }
-                    }
-                    pushbackResult.insert(awcKey);
-                } else {
-                    ERROR("ERROR LOADING AnimationRange.json. Not Found autoWordCategories key: {}", key);
-                }
-            } catch (...) {
-                ERROR(
-                    "ERROR AnimationRange.json or AutoWordWFConfig.json. The number of elements in the value is wrong. "
-                    ": {}",
-                    *target);
-                // return;
-            }
+        if ((size_t)rand_data.offset < rand_data.rand_values.size()) {
+            return rand_data.rand_values[rand_data.offset];
         }
 
-        LOG("Load widget");
-        // widget
-        for (auto [key, value] : *autoWordCategories) {
-            try {
-                int k = std::stoi(key);
+        if (rand_data.category_indices) {
+            std::vector<int> next_loop;
+            RefreshRandValues(rand_data.size, rand_data.low, rand_data.high, rand_data.category_indices, next_loop);
 
-                if ((pushbackResult.find(k) != pushbackResult.end()) == false) {
-                    std::string k1 = value;
-                    std::string k2 = k1;
-                    std::transform(k1.begin(), k1.end(), k2.begin(), [](char c) { return std::tolower(c); });
-
-                    int wx = KMC_DEFAULT_WIDGET_POS_X;
-                    int wy = KMC_DEFAULT_WIDGET_POS_Y;
-
-                    auto fontmap =
-                        std::find_if(awwf->begin(), awwf->end(), [key](const auto &p) { return p.first == key; });
-
-                    if (fontmap != awwf->end()) {
-                        std::string fontSettings = fontmap->second;
-                        std::vector<std::string> fsettings = KMCSplit(fontSettings, ',');
-                        wx = std::stoi(fsettings.at(2));
-                        wy = std::stoi(fsettings.at(3));
-                    }
-
-                    std::string filename =
-                        KMCCT::PICT_PATH1 + "/" + *target + "/" + key + "/" + KMCCT::PICT_PATH2 + k2 + KMCCT::PICT_TYPE;
-                    if (IsFileExist(KMCCT::PICT_ROOT + filename)) {
-                        int wid =
-                            IWW::MainFunctions::GetSingleton()->LoadWidget(ct_aaaakmcroot, filename, 10000, 10000, false);
-
-                        //wid = WaitLoad(&wid, &k, &ct_aaaakmcroot, &loadedWedget);
-
-                        (*loadedWedget)[k] = KMCLoadedWidgetData(false, wid, 0, "");
-                        OutputContainer[wid] = KMCOutputContainer(-1, widget);
-
-                        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                            return;
-                        }
-                        //IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, wid, wx + offset_wx);
-                        //IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, wid, wy + offset_wy);
-
-                        (*loadedWIDsConfigs)[wid] = KMCDispConfigs(wid, wx + offset_wx, wy + offset_wy);
-                        LOG("KMCEventThread::LOAD fileName = {} id = {}", filename, wid);
-                    } else {
-                        (*loadedWedget)[k] = KMCLoadedWidgetData(false, -1, 0, "");
-                        WARN("File path not found. If not intended, no problem. {}", filename);
-                    }
-                }
-            } catch (...) {
-                ERROR("ERROR AutoWordWFConfig.json. The number of elements in the value is wrong. : {}", *target);
-                // return;
-            }
+            rand_data.rand_values.insert(rand_data.rand_values.end(), next_loop.begin(), next_loop.end());
+            return rand_data.rand_values[rand_data.offset];
         }
-
-        LOG("Load text");
-        // Text
-        for (auto [key, value] : *aw) {
-            try {
-                int k = std::stoi(key);
-
-                std::string font = KMC_DEFAULT_FONT;
-                int fontsize = KMC_DEFAULT_FONT_SIZE;
-                int tx = KMC_DEFAULT_TEXT_POS_X;
-                int ty = KMC_DEFAULT_TEXT_POS_Y;
-                int r = 0, g = 0, b = 0;
-
-                auto fontmap =
-                    std::find_if(awwf->begin(), awwf->end(), [key](const auto &p) { return p.first == key; });
-
-                if (fontmap != awwf->end()) {
-                    std::string fontSettings = fontmap->second;
-                    std::vector<std::string> fsettings = KMCSplit(fontSettings, ',');
-                    font = fsettings.at(0);
-                    fontsize = std::stoi(fsettings.at(1));
-                    tx = std::stoi(fsettings.at(4));
-                    ty = std::stoi(fsettings.at(5));
-                    r = std::stoi(fsettings.at(6));
-                    g = std::stoi(fsettings.at(7));
-                    b = std::stoi(fsettings.at(8));
-                }
-                int wid = IWW::MainFunctions::GetSingleton()->LoadText(ct_aaaakmcroot, value, font, fontsize, 10000, 10000,
-                                                                       false);
-
-                (*loadedText)[k] = KMCLoadedWidgetData(false, wid, 0, "");
-                OutputContainer[wid] = KMCOutputContainer(-1, text_widget);
-
-                //wid = WaitLoadText(&wid, &k, &ct_aaaakmcroot, &loadedText);
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                    return;
-                }
-                //IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, wid, tx + offset_tx);
-                //IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, wid, ty + offset_ty);
-                //IWW::MainFunctions::GetSingleton()->SetRGB(ct_aaaakmcroot, wid, r, g, b);
-                
-                (*loadedTIDsConfigs)[wid] = KMCDispConfigs(wid, tx + offset_tx, ty + offset_ty, r, g, b);
-                LOG("KMCEventThread::LOAD TEXT = {} id = {} FONT = {} FONT SIZE = {}", value, wid, font, fontsize);
-            } catch (...) {
-                ERROR("ERROR AutoWordWFConfig.json. The number of elements in the value is wrong. : {}", *target);
-                // return;
-            }
-        }
-    }
-
-    void KMCCutin::WidgetInitEnd(int rand, std::unordered_map<int, KMCLoadedWidgetData> *LWidget,
-                                 std::unordered_map<int, KMCLoadedWidgetData> *LText,
-                                 std::unordered_map<int, KMCDispConfigs> *LWConfig,
-                                 std::unordered_map<int, KMCDispConfigs> *LTConfig) {
-        try {
-            if (LWidget->contains(rand)) {
-                auto *lw = &(LWidget->at(rand));
-                if (!lw->init) {
-                    if (lw->isAnim) {
-                        int index = 0;
-                        lw->bef_animWedget = lw->animWedget;
-
-                        for (auto bef_widget_id : lw->animWedget) {
-                            KMCOutputContainer oc;
-
-                            {
-                                std::lock_guard<std::mutex> lock(output_mtx);
-                                if (!OutputContainer.contains(bef_widget_id)) {
-                                    ERROR(
-                                        "[WIDGET ERROR] Widget ID not found. Please check if there is a warning "
-                                        "message saying that the file cannot be found. search ID ==> {}",
-                                        bef_widget_id);
-                                    return;
-                                }
-                                oc = OutputContainer.at(bef_widget_id);
-                            }
-
-                            if (oc.output == -99) {
-                                while (oc.output == -99) {
-                                    if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                                        return;
-                                    }
-                                    std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
-
-                                    {
-                                        std::lock_guard<std::mutex> lock(output_mtx);
-                                        oc = OutputContainer.at(bef_widget_id);
-                                    }
-                                    //LOG("[WIDGET][OUTPUTLOOP] STAY ==> in {} out {}", bef_widget_id, oc.output);
-                                }
-                            }
-                            int widget_id = oc.output;
-                            if (widget_id <= 0) {
-                                ERROR("[WIDGET ERROR] IWW returned less than 0 search id ==> {} new id ==> {}",
-                                      bef_widget_id, widget_id);
-                            } else {
-                                LOG("[WIDGET][OUTPUTLOOP] ==> in {} out {}", bef_widget_id, widget_id);
-
-                                lw->animWedget.at(index) = widget_id;
-
-                                if (LWConfig->contains(bef_widget_id)) {
-                                    auto *config = &(LWConfig->at(bef_widget_id));
-                                    config->id = widget_id;
-                                    IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, widget_id,
-                                                                                config->defx);
-                                    IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, widget_id,
-                                                                                config->defy);
-                                } else {
-                                    ERROR("[ERROR][WIDGET][OUTPUTLOOP] ==> in {} out {}", bef_widget_id, widget_id);
-                                }
-                            }
-
-                            ++index;
-                        }
-                        lw->init = true;
-
-                    } else {
-                        int bef_widget_id = lw->wedget;
-                        KMCOutputContainer oc;
-                        {
-                            std::lock_guard<std::mutex> lock(output_mtx);
-
-                            if (!OutputContainer.contains(bef_widget_id)) {
-                                ERROR(
-                                    "[WIDGET ERROR] Widget ID not found. Please check if there is a warning "
-                                    "message saying that the file cannot be found. search ID ==> {}",
-                                    bef_widget_id);
-                                return;
-                            }
-                            oc = OutputContainer.at(bef_widget_id);
-                        }
-
-                        if (oc.output == -99) {
-                            while (oc.output == -99) {
-                                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                                    return;
-                                }
-                                std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
-
-                                {
-                                    std::lock_guard<std::mutex> lock(output_mtx);
-                                    oc = OutputContainer.at(bef_widget_id);
-                                }
-
-                                //LOG("[WIDGET][OUTPUTLOOP] STAY ==> in {} out {}", bef_widget_id, oc.output);
-                            }
-                        }
-
-                        int widget_id = oc.output;
-
-                        if (widget_id <= 0) {
-                            ERROR("[WIDGET ERROR] IWW returned less than 0 search id ==> {} new id ==> {}",
-                                  bef_widget_id, widget_id);
-                        } else {
-                            LOG("[WIDGET][OUTPUTLOOP] ==> in {} out {}", bef_widget_id, widget_id);
-                            lw->wedget = widget_id;
-                            lw->bef_widget_id = bef_widget_id;
-                            lw->init = true;
-                            if (LWConfig->contains(bef_widget_id)) {
-                                auto *config = &(LWConfig->at(bef_widget_id));
-                                config->id = widget_id;
-                                IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, widget_id, config->defx);
-                                IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, widget_id, config->defy);
-                            } else {
-                                ERROR("[ERROR][WIDGET][OUTPUTLOOP] ==> in {} out {}", bef_widget_id, widget_id);
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (LText->contains(rand)) {
-                auto *lt = &(LText->at(rand));
-                if (!lt->init) {
-                    int bef_text_id = lt->wedget;
-                    KMCOutputContainer oc;
-                    {
-                        std::lock_guard<std::mutex> lock(output_mtx);
-                        if (!OutputContainer.contains(bef_text_id)) {
-                            ERROR(
-                                "[TEXT WIDGET ERROR] Widget ID not found. Please check if there is a warning "
-                                "message saying that the file cannot be found. search ID ==> {}",
-                                bef_text_id);
-                            return;
-                        }
-
-                        oc = OutputContainer.at(bef_text_id);
-                    }
-
-                    if (oc.output == -99) {
-                        while (oc.output == -99) {
-                            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                                return;
-                            }
-                            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_LOAD_FRAME_MS));
-
-                            {
-                                std::lock_guard<std::mutex> lock(output_mtx);
-                                oc = OutputContainer.at(bef_text_id);
-                            }
-
-                            //LOG("[TEXT WIDGET][OUTPUTLOOP] STAY ==> in {} out {}", bef_text_id, oc.output);
-                        }
-                    }
-
-                    int text_id = oc.output;
-                    if (text_id <= 0) {
-                        ERROR("[TEXT WIDGET ERROR] IWW returned less than 0 search id ==> {} new id ==> {}",
-                              bef_text_id, text_id);
-                    } else {
-                        LOG("[TEXT WIDGET][OUTPUTLOOP] ==> in {} out {}", bef_text_id, text_id);
-                        lt->wedget = text_id;
-                        lt->bef_widget_id = bef_text_id;
-                        lt->init = true;
-
-                        if (LTConfig->contains(bef_text_id)) {
-                            auto *config = &(LTConfig->at(bef_text_id));
-                            config->id = text_id;
-                            IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, text_id, config->defx);
-                            IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, text_id, config->defy);
-                            IWW::MainFunctions::GetSingleton()->SetRGB(ct_aaaakmcroot, text_id, config->r, config->g,
-                                                                       config->b);
-                        } else {
-                            ERROR("[ERROR][TEXT WIDGET][OUTPUTLOOP] ==> in {} out {}", bef_text_id, text_id);
-                        }
-                    }
-                }
-            }
-        } catch (std::exception ex) {
-            ERROR("[WIDGET][TEXT WIDGET][OUTPUT LOOP] ERROR wt ==> {}", ex.what());
-            //throw ex;
-        }
+        return -1;
     }
 
     int KMCCutin::GetCutInID(std::string aaaakmctype) {
-        int rand = -1;
-
         auto findit = kmc_category_rand_map.find(aaaakmctype);
-        if (findit != kmc_category_rand_map.end()) {
-            auto *randData = &(findit->second);
-            int of = randData->offset;
-            auto r = randData->rand_values;
-            rand = r[of];
-            ++of;
-            int mi = randData->maxIndex;
-            if (of > mi) {
-                of = 0;
-                auto randomValue = MakeRandArraySelect(randData->size, randData->low, randData->high);
-                randData->rand_values = std::move(randomValue);
-            }
+        if (findit == kmc_category_rand_map.end()) return -1;
 
-            randData->offset = of;
+        auto *rand_data = &(findit->second);
+
+        if (rand_data->offset > rand_data->maxIndex) {
+            rand_data->rand_values.erase(rand_data->rand_values.begin(),
+                                        rand_data->rand_values.begin() + rand_data->offset);
+            rand_data->offset = 0;
         }
-        return rand;
+
+        int result = rand_data->rand_values[rand_data->offset];
+        rand_data->offset++;
+
+        return result;
     }
 
-    void KMCCutin::DispPFWidget(KMCAnimST st) {
+    void KMCCutin::RefreshRandValues(size_t size, int min, int max, const std::vector<int> *random_indices,
+                                                  std::vector<int> &out_values){
+        if (random_indices) {
+            auto random_values = MakeRandArraySelect(size, min, max);
+
+            out_values.reserve(random_values.size());
+            for (int idx : random_values) {
+                out_values.push_back(random_indices->at(idx));
+            }
+        }
+    }
+
+    void KMCCutin::PlayDuoCutin(KMCAnimST st) {
         int r = st.rand;
         std::string srnd = std::to_string(r);
         std::string timing = KMCCT::ST_AFTER;
@@ -1375,45 +421,12 @@ namespace KMCCT {
                 timing = stimingit->second;
             }
         }
-
-        // auto ppl = KMCCT::KMCEventThread::GetSingleton()->getPlayerNamePlate();
-        // auto fpl = (*KMCCT::KMCEventThread::GetSingleton()->getFNamePlate())[st.frand];
-
-        // st.nppw = *ppl;
-        // st.npfw = fpl;
-        st.wt = simply;
-        st.wet = end_fadeout;
-
         std::map<int, KMCCutinOrder> *animmap = nullptr;
 
-        // disp widget
-        if (st.isAnim || st.isfAnim) {
-            if (st.isAnim && st.isfAnim) {
-                // player follower anim widget
-                if (timing == KMCCT::ST_BEFORE) {
-                    animmap = &AnimFtoAnimP;
-                } else {
-                    animmap = &AnimPtoAnimF;
-                }
-            } else if (st.isAnim) {
-                if (timing == KMCCT::ST_BEFORE) {
-                    animmap = &FtoAnimP;
-                } else {
-                    animmap = &AnimPtoF;
-                }
-            } else if (st.isfAnim) {
-                if (timing == KMCCT::ST_BEFORE) {
-                    animmap = &AnimFtoP;
-                } else {
-                    animmap = &PtoAnimF;
-                }
-            }
+        if (timing == KMCCT::ST_BEFORE) {
+            animmap = &AnimFtoAnimP;
         } else {
-            if (timing == KMCCT::ST_BEFORE) {
-                animmap = &FtoP;
-            } else {
-                animmap = &PtoF;
-            }
+            animmap = &AnimPtoAnimF;
         }
 
         if (animmap == nullptr) {
@@ -1422,24 +435,18 @@ namespace KMCCT {
         }
 
         for (auto [key, value] : *animmap) {
-            value.func(&st, value.playerorfollower);
+            value.func(&st, value.is_player);
             if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return;
             }
         }
     }
 
-    void KMCCutin::DispPWidget(KMCAnimST st) {
-        st.wt = simply;
-        st.wet = end_fadeout;
+    void KMCCutin::PlaySoloCutin(KMCAnimST st) {
         std::map<int, KMCCutinOrder> *animmap;
 
         // disp widget
-        if (st.isAnim) {
-            animmap = &AnimPlayerOnly;
-        } else {
-            animmap = &WidgetPlayerOnly;
-        }
+        animmap = &AnimPlayerOnly;
 
         if (animmap == nullptr) {
             ERROR("not found cutin type");
@@ -1447,7 +454,7 @@ namespace KMCCT {
         }
 
         for (auto [key, value] : *animmap) {
-            value.func(&st, value.playerorfollower);
+            value.func(&st, value.is_player);
             if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return;
             }
@@ -1455,110 +462,94 @@ namespace KMCCT {
     }
 
 
-    void KMCCutin::AnimationLoop(long long time, KMCLoadedWidgetData it) {
-        time_point<Clock> start = Clock::now();
-        time_point<Clock> end;
-        long long dur = 0;
-
+    void KMCCutin::AnimationLoopSimple(const KMCAnimData &anim_data) {
         LOG("--------------KMCEventThread::AnimationLoop START------------");
+       
+        if (anim_data.cf.Sound) {
+            KMCCT::KMCSound::GetSingleton()->PlayEx(anim_data.rand, anim_data.volum, anim_data.speaker,
+                                                    anim_data.frand);
+        }
 
-        bool isloop = it.isLoop;
-        std::vector<int>::iterator anim;
-
+        time_point<Clock> anim_start = Clock::now();
         while (true) {
             if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                 return;
             }
 
-            if (isloop == true) {
-                for (anim = it.animWedget.begin(); anim != it.animWedget.end(); ++anim) {
-                    if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                        return;
-                    }
-                    // int wid = *anim;
-                    if (*anim > 0) {
-                        IWW::MainFunctions::GetSingleton()->SendToFront(ct_aaaakmcroot, *anim);
-                        LOG("KMCEventThread::AnimationLoop wid = {}", *anim);
-                    }
+            auto now = Clock::now();
+            long long elapsed = duration_cast<milliseconds>(now - anim_start).count();
 
-                    std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::ANIMATION_FRAME_MS));
-                }
-            }
-
-            end = Clock::now();
-            milliseconds diff = duration_cast<milliseconds>(end - start);
-            dur = diff.count();
-            if (dur >= time) {
+            // Prisma側から終了通知(KMCOnCutinFinished)が来た
+            if (GetCutinFinished()) {
+                LOG("Cutin finished by JS notification.");
                 break;
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::ANIMATION_FRAME_MS));
+            // Prisma側からの通知が来ない場合の保険(設定時間 + 30秒)
+            if (elapsed >= anim_data.time + READY_TIMEOUT) {
+                SKSE::log::warn("Cutin timeout: JS Finished didn't respond, forcing break.");
+                break;
+            }
+
+            // 負荷軽減のための待機
+            std::this_thread::sleep_for(milliseconds(SE_PROGRESS_ADDTION_MS));
         }
+
 
         LOG("--------------KMCEventThread::AnimationLoop END------------");
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::ANIMATION_FRAME_MS));
+        std::this_thread::sleep_for(std::chrono::milliseconds(SE_PROGRESS_ADDTION_MS));
     }
 
-    void KMCCutin::AnimationLoop(long long time, KMCLoadedWidgetData it,
-                       int trackid, int frand, std::string record, float volume) {
-        time_point<Clock> start = Clock::now();
-        long long now = 0;
+    void KMCCutin::AnimationLoopWithSE(const KMCAnimData &anim_data) {
+        LOG("-------------- KMCCutin::AnimationLoopWithJSWait START ------------");
 
-        time_point<Clock> end;
-        long long dur = 0;
 
-        LOG("--------------KMCEventThread::AnimationLoop START------------");
+        if (anim_data.cf.Sound) {
+            KMCCT::KMCSound::GetSingleton()->PlayEx(anim_data.rand, anim_data.volum, anim_data.speaker,
+                                                    anim_data.frand);
+        }
 
-        bool isloop = it.isLoop;
-        std::vector<int>::iterator anim;
+        std::string se_record = anim_data.record;
+        time_point<Clock> anim_start_time = Clock::now();
+        long long play_se_timer = 0;
 
-        std::string nrecord = record;
         while (true) {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                return;
-            }
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) return;
 
-            if (isloop == true) {
-                for (anim = it.animWedget.begin(); anim != it.animWedget.end(); ++anim) {
-                    if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                        return;
-                    }
-                    // int wid = *anim;
-                    if (*anim > 0) {
-                        IWW::MainFunctions::GetSingleton()->SendToFront(ct_aaaakmcroot, *anim);
-                        LOG("KMCEventThread::AnimationLoop wid = {}", *anim);
-                    }
-
-                    std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::ANIMATION_FRAME_MS));
-
-                    now += KMCCT::ANIMATION_FRAME_MS;
-                    if (nrecord != "" && now >= time * std::stof(nrecord)) {
-                        LOG(" time ms {} record {} dur {}", time, nrecord, now);
-                        KMCCT::KMCSound::GetSingleton()->PlaySEEx(trackid, frand, &nrecord, volume);
-                    }
-                }
-            }
-
-            end = Clock::now();
-            milliseconds diff = duration_cast<milliseconds>(end - start);
-            dur = diff.count();
-            if (dur >= time) {
+            if (GetCutinFinished()) {
+                LOG("Cutin finished by JS notification.");
                 break;
             }
 
-            now = dur;
-            if (nrecord != "" && now >= time * std::stof(nrecord)) {
-                LOG(" time ms {} record {} dur {}", time, nrecord, now);
-                KMCCT::KMCSound::GetSingleton()->PlaySEEx(trackid, frand, &nrecord, volume);
+            auto now = Clock::now();
+            long long elapsed_limit = duration_cast<milliseconds>(now - anim_start_time).count();
+
+            // タイムアウト保険
+            if (elapsed_limit >= anim_data.time + READY_TIMEOUT) {
+                SKSE::log::warn("Cutin timeout: JS Finished didn't respond.");
+                break;
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::ANIMATION_FRAME_MS));
+            // 負荷軽減のための待機
+            std::this_thread::sleep_for(milliseconds(SE_PROGRESS_ADDTION_MS));
+
+            play_se_timer += SE_TIMER_INTERVAL_MS;
+            if (se_record != "" && play_se_timer >= anim_data.time * std::stof(se_record)) {
+                LOG(" time ms {} record {} dur {}", anim_data.time, se_record, play_se_timer);
+                KMCCT::KMCSound::GetSingleton()->PlaySEEx(anim_data.rand, anim_data.frand, &se_record, anim_data.volum);
+            }
         }
 
-        LOG("--------------KMCEventThread::AnimationLoop END------------");
+        // 1.0で設定されたSEの場合は再生されない可能性があるため
+        if (se_record != "") {
+            LOG(" time ms {} record {} dur {}", anim_data.time, se_record, play_se_timer);
+            KMCCT::KMCSound::GetSingleton()->PlaySEEx(anim_data.rand, anim_data.frand, &se_record, anim_data.volum);
+        }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::ANIMATION_FRAME_MS));
+        LOG("-------------- KMCCutin::AnimationLoopWithJSWait END ------------");
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(SE_PROGRESS_ADDTION_MS));
     }
 
     void KMCCutin::PlaySE(long long time, int trackid, int frand, std::string record, float volume) {
@@ -1598,85 +589,6 @@ namespace KMCCT {
         aaaakmcAnimtime = (*floatArray)[1];
         aaaakmctime = (*floatArray)[2];
         aaaakmcCycle = (*floatArray)[3];
-
-        struct internal_config {
-        public:
-            internal_config() {}
-            internal_config(std::string ex1, std::string ey1, std::string ex2, std::string ey2, std::string *ox,
-                            std::string *oy) {
-                x1 = ex1;
-                y1 = ey1;
-                x2 = ex2;
-                y2 = ey2;
-                outx = ox;
-                outy = oy;
-            }
-            std::string x1, y1, x2, y2, *outx, *outy;
-        };
-
-        std::string playerTX = std::to_string((int)(*floatArray)[4]);
-        std::string playerTY = std::to_string((int)(*floatArray)[5]);
-        std::string playerWX = std::to_string((int)(*floatArray)[6]);
-        std::string playerWY = std::to_string((int)(*floatArray)[7]);
-
-        std::string playerNTX = std::to_string((int)(*floatArray)[8]);
-        std::string playerNTY = std::to_string((int)(*floatArray)[9]);
-        std::string playerNWX = std::to_string((int)(*floatArray)[10]);
-        std::string playerNWY = std::to_string((int)(*floatArray)[11]);
-
-        std::string followerTX = std::to_string((int)(*floatArray)[12]);
-        std::string followerTY = std::to_string((int)(*floatArray)[13]);
-        std::string followerWX = std::to_string((int)(*floatArray)[14]);
-        std::string followerWY = std::to_string((int)(*floatArray)[15]);
-
-        std::string followerNTX = std::to_string((int)(*floatArray)[16]);
-        std::string followerNTY = std::to_string((int)(*floatArray)[17]);
-        std::string followerNWX = std::to_string((int)(*floatArray)[18]);
-        std::string followerNWY = std::to_string((int)(*floatArray)[19]);
-
-        LOG("MCMSettingChange aaaakmcvolum {}", (*floatArray)[0]);
-        LOG("MCMSettingChange aaaakmcAnimtime {}", (*floatArray)[1]);
-        LOG("MCMSettingChange aaaakmctime {}", (*floatArray)[2]);
-        LOG("MCMSettingChange aaaakmcCycle {}", (*floatArray)[3]);
-
-        std::vector<std::pair<std::string, internal_config>> posconfigs_loop = {
-            std::make_pair("PT", internal_config(playerTX, playerTY, aaaaPlayerTextX, aaaaPlayerTextY, &aaaaPlayerTextX,
-                                                 &aaaaPlayerTextY)),
-            std::make_pair("PW", internal_config(playerWX, playerWY, aaaaPlayerWidgetX, aaaaPlayerWidgetY,
-                                                 &aaaaPlayerWidgetX, &aaaaPlayerWidgetY)),
-            std::make_pair("FT", internal_config(followerTX, followerTY, aaaaFollowerTextX, aaaaFollowerTextY,
-                                                 &aaaaFollowerTextX, &aaaaFollowerTextY)),
-            std::make_pair("FW", internal_config(followerWX, followerWY, aaaaFollowerWidgetX, aaaaFollowerWidgetY,
-                                                 &aaaaFollowerWidgetX, &aaaaFollowerWidgetY)),
-            std::make_pair("NPT", internal_config(playerNTX, playerNTY, aaaaPlayerNTextX, aaaaPlayerNTextY,
-                                                  &aaaaPlayerNTextX, &aaaaPlayerNTextY)),
-            std::make_pair("NPW", internal_config(playerNWX, playerNWY, aaaaPlayerNWidgetX, aaaaPlayerNWidgetY,
-                                                  &aaaaPlayerNWidgetX, &aaaaPlayerNWidgetY)),
-            std::make_pair("NFT", internal_config(followerNTX, followerNTY, aaaaFollowerNTextX, aaaaFollowerNTextY,
-                                                  &aaaaFollowerNTextX, &aaaaFollowerNTextY)),
-            std::make_pair("NFW", internal_config(followerNWX, followerNWY, aaaaFollowerNWidgetX, aaaaFollowerNWidgetY,
-                                                  &aaaaFollowerNWidgetX, &aaaaFollowerNWidgetY))};
-
-        KMCWaitConfigs task;
-        for (int i = 0; i < posconfigs_loop.size(); i++) {
-            auto conf = posconfigs_loop.at(i);
-            std::string key = conf.first;
-            internal_config value = conf.second;
-            std::string x, y, x1, y1;
-            x = value.x1;
-            y = value.y1;
-            x1 = value.x2;
-            y1 = value.y2;
-            if (x != x1 || y != y1) {
-                *(value.outx) = x;
-                *(value.outy) = y;
-                task.SetCallBackTask(KMCMoveWidgetWaitTask, KMCWaitTaskParam(x, y, key));
-            }
-        }
-
-        if (task.isCBTask) {
-            KMCCT::KMCWaitTask::GetSingleton()->KMCPushWaitTask(KMCWaitType::move_widget, task);
-        }
     }
 
 #pragma region Randomizer Widget Function
@@ -1693,10 +605,10 @@ namespace KMCCT {
             int l = 0;
             int h = value - 1;
             size_t size = (h - l) + 1;
-            auto category_indices = index_map.at(key);
+            const auto &category_indices = index_map.at(key);
             if (l == h) {
                 int first_val = category_indices.at(0);
-                kmc_category_rand_map.emplace(key, KMCRandomData(0, 0, {first_val}, h, l, 1));
+                kmc_category_rand_map.emplace(key, KMCRandomData(0, 0, {first_val}, h, l, 1, nullptr));
                 kmc_category_first_values.push_back(first_val);
                 continue;
             }
@@ -1710,7 +622,8 @@ namespace KMCCT {
                 final_values.push_back(category_indices.at(idx));
             }
             int fv = final_values.at(0);
-            kmc_category_rand_map.emplace(key, KMCRandomData(0, h - l, std::move(final_values), h, l, size));
+            kmc_category_rand_map.emplace(
+                key, KMCRandomData(0, h - l, std::move(final_values), h, l, size, &category_indices));
             kmc_category_first_values.push_back(fv);
         }
     }
@@ -1746,121 +659,11 @@ namespace KMCCT {
 #pragma endregion
 
 #pragma region function pointer
-    void WidgetVisible(KMCAnimST *st, int &playerorfollower) {
-        int wid;
-        if (playerorfollower == 0) {
-            if (!st->pcf.Widget) return;
-            wid = st->t.wedget;
-        } else {
-            if (!st->fcf.Widget) return;
-            wid = st->ft.wedget;
-        }
-
-        if (wid > 0) {
-            IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, wid, true);
-        }
-    }
-
-    void WidgetInVisible(KMCAnimST *st, int &playerorfollower) {
-        int wid;
-        if (playerorfollower == 0) {
-            if (!st->pcf.Widget) return;
-            wid = st->t.wedget;
-        } else {
-            if (!st->fcf.Widget) return;
-            wid = st->ft.wedget;
-        }
-
-        if (wid > 0) {
-            IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, wid, false);
-        }
-    }
-
-    void AnimWidgetVisible(KMCAnimST *st, int &playerorfollower) {
-        KMCLoadedWidgetData it;
-        if (playerorfollower == 0) {
-            if (!st->pcf.Widget) return;
-            it = st->t;
-        } else {
-            if (!st->fcf.Widget) return;
-            it = st->ft;
-        }
-
-        std::vector<int>::iterator anim;
-        for (anim = it.animWedget.begin(); anim != it.animWedget.end(); ++anim) {
-            // int wid = *anim;
-            if (*anim > 0) {
-                IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, *anim, true);
-                std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::ANIMATION_FRAME_MS));
-            }
-        }
-    }
-
-    void AnimWidgetInVisible(KMCAnimST *st, int &playerorfollower) {
-        KMCLoadedWidgetData it;
-        if (playerorfollower == 0) {
-            if (!st->pcf.Widget) return;
-            it = st->t;
-        } else {
-            if (!st->fcf.Widget) return;
-            it = st->ft;
-        }
-
-        std::vector<int>::iterator anim;
-        for (anim = it.animWedget.begin(); anim != it.animWedget.end(); ++anim) {
-            if (*anim > 0) {
-                IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, *anim, false);
-                std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_INVISIBLE_MS));
-            }
-
-            // LOG("KMCEventThread::AnimationLoop visible false id = {}", *anim);
-        }
-    }
-
-    void TextVisible(KMCAnimST *st, int &playerorfollower) {
-        int tid;
-        if (playerorfollower == 0) {
-            if (!st->pcf.Word) return;
-            tid = st->tid;
-        } else {
-            if (!st->fcf.Word) return;
-            tid = st->ftid;
-        }
-
-        // sub title
-        if (tid > 0) {
-            IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, tid, true);
-        }
-    }
-
-    void TextInVisible(KMCAnimST *st, int &playerorfollower) {
-        int tid;
-        if (playerorfollower == 0) {
-            if (!st->pcf.Word) return;
-            tid = st->tid;
-        } else {
-            if (!st->fcf.Word) return;
-            tid = st->ftid;
-        }
-
-        // sub title
-        if (tid > 0) {
-            IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, tid, false);
-        }
-    }
 
     void KMCPlayAnim(KMCAnimST *st, int &is_player) {
-        bool isanim = false;
+        bool isanim = true;
+        
 
-        if (is_player == 0) {
-            if (st->pcf.Widget) {
-                isanim = true;
-            }
-        } else {
-            if (st->fcf.Widget) {
-                isanim = true;
-            }
-        }
         if (isanim) {
             int r;
             float volum;
@@ -1868,40 +671,47 @@ namespace KMCCT {
             KMCCompsFlag cf;
             int frand;
             long long time;
-            KMCLoadedWidgetData t;
             std::string record = "0.0";
+            CutinEntry entry; 
+
+            KMCAnimData anim_data;
+
             if (is_player == 0) {
                 // player
-                r = st->rand;
-                volum = st->volum;
-                target = st->speakerp;
-                frand = -1;
-                time = st->time;
-                t = st->t;
-                cf = st->pcf;
-                record = st->precord;
+                anim_data.rand = st->rand;
+                anim_data.next_rand = st->p_next_rand;
+                anim_data.volum = st->volum;
+                anim_data.speaker = st->speakerp;
+                anim_data.frand = -1;
+                anim_data.time = st->time;
+                anim_data.entry = st->t;
+                anim_data.cf = st->pcf;
+                anim_data.record = st->precord;
             } else {
-                r = st->rand;
-                volum = st->volum;
-                target = st->speakerf;
-                frand = st->frand;
-                time = st->time;
-                t = st->ft;
-                cf = st->fcf;
-                record = st->frecord;
+                anim_data.rand = st->rand;
+                anim_data.next_rand = st->f_netx_rand;
+                anim_data.volum = st->volum;
+                anim_data.speaker = st->speakerf;
+                anim_data.frand = st->frand;
+                anim_data.time = st->time;
+                anim_data.entry = st->ft;
+                anim_data.cf = st->fcf;
+                anim_data.record = st->frecord;
             }
+
+
 
             // play sound
-            if (cf.Sound) {
-                KMCCT::KMCSound::GetSingleton()->PlayEx(r, volum, target, frand);
-            }
 
-            if (cf.SE) {
-                KMCCT::KMCCutin::GetSingleton()->AnimationLoop(time, t, r, frand, record, volum);
+
+            if (anim_data.cf.SE) {
+                KMCCT::KMCCutin::GetSingleton()->AnimationLoopWithSE(anim_data);
             } else {
-                KMCCT::KMCCutin::GetSingleton()->AnimationLoop(time, t);
+                KMCCT::KMCCutin::GetSingleton()->AnimationLoopSimple(anim_data);
             }
         } else {
+            // 使うかもしれないので残しとく
+            // アニメーションではない場合
             KMCPlay(st, is_player);
         }
     }
@@ -1944,72 +754,50 @@ namespace KMCCT {
         }
     }
 
-    void KMCNamePlateStartAnim(KMCAnimST *st, int &playerorfollower) {
-        KMCNPLoadedWidget id;
-        KMCWipeType type;
-        KMCCompsFlag cf;
+    void KMCOnCutinStartReady(KMCAnimST *st, int &is_player) {
+        KMCCutin::GetSingleton()->SetCutinStartReady(false);
+        KMCCutin::GetSingleton()->SetCutinFinished(false);
 
-        if (playerorfollower == 0) {
-            id = st->nppw;
-            type = st->wt;
-            cf = st->pcf;
+        long long time = 0;
+
+        if (is_player == 0) {
+            KMCPrismaUIBridge::GetSingleton()->KMCPlayPlayerCutin(st->rand, st->p_next_rand);
+            time = st->time;
         } else {
-            id = st->npfw;
-            type = st->wt;
-            cf = st->fcf;
+            KMCPrismaUIBridge::GetSingleton()->KMCPlayFollowerCutin(st->frand + 1, st->rand, st->f_netx_rand);
+            time = st->ftime;
         }
 
-        if (cf.NamePlate && id.LoadedWidget != -1) {
-            // IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, id.LoadedWidget, id.defaultWX);
-            // IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, id.LoadedWidget, id.defaultWY);
+        time_point<Clock> start_time = Clock::now();
 
-            switch (type) {
-                case simply:
-                    NamePlateSimplyWipe(id, ct_aaaakmcroot);
-                    break;
+        while (!KMCCutin::GetSingleton()->GetCutinStartReady()) {
+            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) return;
+
+            auto now = Clock::now();
+            auto wait_duration = duration_cast<milliseconds>(now - start_time).count();
+
+            if (wait_duration >= READY_TIMEOUT + time) {
+                // 30秒＋カットイン時刻分経過したら待つのをやめる
+                SKSE::log::warn("Cutin timeout: JS Ready didn't respond.");
+                return;
             }
-        }
 
-        if (cf.NamePlateName && id.LoadedText != -1) {
-            IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, id.LoadedText, true);
+            std::this_thread::sleep_for(milliseconds(SE_PROGRESS_ADDTION_MS));
         }
     }
 
-    void KMCNamePlateEndAnim(KMCAnimST *st, int &playerorfollower) {
-        KMCNPLoadedWidget id;
-        KMCWipeType type;
-        KMCCompsFlag cf;
-
-        if (playerorfollower == 0) {
-            id = st->nppw;
-            type = st->wet;
-            cf = st->pcf;
-        } else {
-            id = st->npfw;
-            type = st->wet;
-            cf = st->fcf;
-        }
-
-        if (cf.NamePlate && id.LoadedWidget != -1) {
-            switch (type) {
-                case end_fadeout:
-                    NamePlateFadeOut(id, ct_aaaakmcroot);
-                    break;
-            }
-        }
-
-        if (cf.NamePlateName && id.LoadedText != -1) {
-            IWW::MainFunctions::GetSingleton()->SetVisible(ct_aaaakmcroot, id.LoadedText, false);
-        }
+    void KMCOnCutinEnd(KMCAnimST *st, int &is_player) {
+        KMCCutin::GetSingleton()->SetCutinStartReady(false);
+        KMCCutin::GetSingleton()->SetCutinFinished(false);
     }
 
-    void KMCOARFuncStart(KMCAnimST *st, int &playerorfollower) {
+    void KMCOARFuncStart(KMCAnimST *st, int &is_player) {
         int frand;
         int rand;
 
         rand = st->rand;
 
-        if (playerorfollower == 0) {
+        if (is_player == 0) {
             frand = -1;
         } else {
             frand = st->frand;
@@ -2018,13 +806,13 @@ namespace KMCCT {
         KMCCT::KMCOAR::GetSingleton()->PushOARFunc(rand, frand, st->overri_oar_time, st->oar_time);
     }
 
-    void KMCExpFuncStart(KMCAnimST* st, int& playerorfollower) {
+    void KMCExpFuncStart(KMCAnimST* st, int& is_player) {
         int frand;
         int rand;
 
         rand = st->exp_rand == -1 ? st->rand : st->exp_rand;
 
-        if (playerorfollower == 0) {
+        if (is_player == 0) {
             frand = -1;
         } else {
             frand = st->frand;
@@ -2034,73 +822,4 @@ namespace KMCCT {
     }
 #pragma endregion
 
-
-    void KMCMoveWidgetWaitTask(KMCWaitTaskParam st) {
-        std::unordered_map<int, KMCDispConfigs> *loadedIDsConfigs = nullptr;
-        KMCNPLoadedWidget *pnp = KMCCutin::GetSingleton()->GetPlayerNamePlate();
-        std::vector<KMCNPLoadedWidget> *fnp = KMCCutin::GetSingleton()->GetFNamePlate();
-
-        if (st.value3 == "PT") {
-            loadedIDsConfigs = KMCCutin::GetSingleton()->GetLoadedTIDsConfigs();
-        } else if (st.value3 == "PW") {
-            loadedIDsConfigs = KMCCutin::GetSingleton()->GetLoadedWIDsConfigs();
-        } else if (st.value3 == "FT") {
-            loadedIDsConfigs = KMCCutin::GetSingleton()->GetFLoadedTIDsConfigs();
-        } else if (st.value3 == "FW") {
-            loadedIDsConfigs = KMCCutin::GetSingleton()->GetFLoadedWIDsConfigs();
-        } else if (st.value3 == "NPT") {
-            loadedIDsConfigs = KMCCutin::GetSingleton()->GetLoadedNTIDsConfigs();
-        } else if (st.value3 == "NPW") {
-            loadedIDsConfigs = KMCCutin::GetSingleton()->GetLoadedNWIDsConfigs();
-        } else if (st.value3 == "NFT") {
-            loadedIDsConfigs = KMCCutin::GetSingleton()->GetFLoadedNTIDsConfigs();
-        } else if (st.value3 == "NFW") {
-            loadedIDsConfigs = KMCCutin::GetSingleton()->GetFLoadedNWIDsConfigs();
-        } else {
-            return;
-        }
-
-        for (int i = 0; i < loadedIDsConfigs->size(); i++) {
-            KMCDispConfigs configp = loadedIDsConfigs->at(i);
-            int id = configp.id;
-            int defx = configp.defx;
-            int defy = configp.defy;
-            int tox = std::stoi(st.value1);
-            int toy = std::stoi(st.value2);
-
-            int posx = defx + tox;
-            int posy = defy + toy;
-
-            IWW::MainFunctions::GetSingleton()->SetPosX(ct_aaaakmcroot, id, defx + tox);
-            IWW::MainFunctions::GetSingleton()->SetPosY(ct_aaaakmcroot, id, defy + toy);
-
-            if (st.value3 == "NPT") {
-                pnp->defaultTX = posx;
-                pnp->defaultTY = posy;
-            } else if (st.value3 == "NPW") {
-                pnp->defaultWX = posx;
-                pnp->defaultWY = posy;
-            } else if (st.value3 == "NFT") {
-                loadedIDsConfigs = KMCCutin::GetSingleton()->GetFLoadedNTIDsConfigs();
-                for (int j = 0; j < fnp->size(); j++) {
-                    auto *np = &((*fnp).at(j));
-                    if (np->LoadedText == id) {
-                        np->defaultTX = posx;
-                        np->defaultTY = posy;
-                    }
-                }
-            } else if (st.value3 == "NFW") {
-                loadedIDsConfigs = KMCCutin::GetSingleton()->GetFLoadedNWIDsConfigs();
-                for (int j = 0; j < fnp->size(); j++) {
-                    auto *np = &((*fnp).at(j));
-                    if (np->LoadedWidget == id) {
-                        np->defaultWX = posx;
-                        np->defaultWY = posy;
-                    }
-                }
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::SET_POS_MS));
-        }
-    }
 }

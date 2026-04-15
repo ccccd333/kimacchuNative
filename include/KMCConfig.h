@@ -43,11 +43,6 @@ namespace KMCCT {
     const std::string PROFILE_TEXT_FADE_FILE_NAME = "TextFade.json";
     const std::string PROFILE_SOUND_EFFECT_FILE_NAME = "SoundEffect.json";
 
-    const std::map<int, std::string> NAMEPLATE_SETTINGS_PATH = {
-        {(int)KMCWipeType::simply, "SimpleWipe.json"},
-        {(int)KMCWipeType::end_fadeout, "NamePlateFadeOut.json"}
-    };
-
     // player and follower
     const std::string AUTO_WORD_FILE_NAME = "AutoWord.json";
     const std::string AUTO_WORD_WF_FILE_NAME = "AutoWordAndWidgetConfigs.json";
@@ -96,8 +91,6 @@ namespace KMCCT {
         void Init();
         
         // common settings
-        std::vector<std::pair<std::string, std::string>>* getIAutoWordCategoriesConfigs() { return &IAutoWordCategoriesConfigs; }
-        std::vector<std::pair<std::string, std::string>>* getIAutoWordRangeConfigs() { return &IAutoWordRangeConfigs; }
         std::vector<std::pair<std::string, std::string>>* getISetting() { return &ISetting; }
         std::vector<std::pair<std::string, std::string>>* getIManagedFollower() { return &IManagedFollower; }
         std::vector<std::pair<std::string, KMCNamePlate>>* getINamePlate() { return &INamePlate; }
@@ -113,12 +106,7 @@ namespace KMCCT {
         std::vector<std::pair<std::string, std::string>>* getIProfileSoundEffect() { return &IProfileSoundEffect; } 
         
         // Player only(It's too much trouble to modify the program...)        
-        std::vector<std::pair<std::string, std::string>>* getIAutoWordWFConfigs() { return &IAutoWordWFConfigs; }
-        std::vector<std::pair<std::string, std::string>>* getIAutoWordConfigs() { return &IAutoWordConfigs; }
-        std::vector<std::pair<std::string, std::string>>* getIAnimationRange() { return &IAnimationRange; }
-
-        std::vector<std::pair<std::string, KMCCompsFlag>>* getIHideComponents() { return &IHideComponents; }
-        
+                
         RE::PlayerCharacter* GetPlayer() { return player; }
         // Player Profile
         std::vector<std::pair<std::string, std::string>>* getIWidgetSetting() { return &IWidgetSetting; }
@@ -135,11 +123,8 @@ namespace KMCCT {
         bool SetupJsonNestedNodes(std::vector<std::pair<std::string, std::map<std::string, std::string>>>* configs,
                                   std::string jsonFileName,
                                   std::string rootKeyName);
-        std::string ISetup(std::string target, std::vector<std::pair<std::string, std::string>>* awc,
-                           std::vector<std::pair<std::string, std::string>>* awwfc,
-                           std::vector<std::pair<std::string, std::string>>* ar,
-                           std::vector<std::pair<std::string, std::string>>* cond,
-                           std::vector<std::pair<std::string, KMCCompsFlag>>* hc);
+        std::string ISetup(std::string target, 
+                           std::vector<std::pair<std::string, std::string>>* cond);
 
         void ProfilSetup(std::string target, std::vector<std::pair<std::string, std::string>> *pws,
                          std::vector<std::pair<std::string, std::string>>* ts, std::vector<std::string>* pt);
@@ -149,8 +134,6 @@ namespace KMCCT {
 
         // common
         std::vector<std::pair<std::string, std::string>> ISetting;
-        std::vector<std::pair<std::string, std::string>> IAutoWordRangeConfigs;
-        std::vector<std::pair<std::string, std::string>> IAutoWordCategoriesConfigs;
         std::vector<std::pair<std::string, std::string>> IManagedFollower;
         std::vector<std::pair<std::string, std::string>> NamePlate;
         std::vector<std::pair<std::string, KMCNamePlate>> INamePlate;
@@ -167,11 +150,7 @@ namespace KMCCT {
 
 
         // Player
-        std::vector<std::pair<std::string, std::string>> IAutoWordConfigs;
-        std::vector<std::pair<std::string, std::string>> IAutoWordWFConfigs;
-        std::vector<std::pair<std::string, std::string>> IAnimationRange;
         std::vector<std::pair<std::string, std::string>> IConditions;
-        std::vector<std::pair<std::string, KMCCompsFlag>> IHideComponents;
 
         // Player profil
         std::vector<std::pair<std::string, std::string>> IWidgetSetting;

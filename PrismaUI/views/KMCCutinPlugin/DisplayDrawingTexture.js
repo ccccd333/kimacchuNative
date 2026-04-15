@@ -319,7 +319,12 @@ export class DisplayDrawingTexture {
                 }
             });
 
-            if (this.cache_type === 1 && this.current_next_group != this.current_group) {
+            if (this.cache_type === 1 && this.current_next_group != this.current_group && this.current_next_group != -1) {
+                // current_next_groupが-1の場合はフォロワーの場合ではあり得る。
+                // プレイヤーをベースにカットインIDが決定するため、プレイヤーの場合ここに来る条件に-1の場合はないが
+                // プレイヤーには存在するカットインIDで、フォロワー側には定義がない場合があるため。
+                // これはIDで一致するプレイヤー→フォロワーで順番にカットインする仕様によるもの
+
                 const group_promise = this.cache.get(this.current_group);
                 if (group_promise) {
                     group_promise.then(frames => {
@@ -345,8 +350,8 @@ export class DisplayDrawingTexture {
         // ゲームロード時
         this.animating = false;
 
-        if (this.cache_type === 1 && this.current_next_group && 
-            this.current_next_group != this.current_group
+        if (this.cache_type === 1 && this.current_next_group && this.current_group &&
+            this.current_next_group != this.current_group && this.current_next_group != -1
         ) {
             const group_promise = this.cache.get(this.current_group);
             if (group_promise) {
@@ -376,7 +381,7 @@ export class DisplayDrawingTexture {
                 canvas.style.display = "none";
             }
         });
-        
+
     }
 }
 

@@ -136,38 +136,6 @@ namespace KMCCT {
     }
 #pragma endregion
 
-    void KMCWaitTask::InitWaitTask(std::string skyroot, std::vector<float>* floatArray) { 
-        wt_aaaakmcroot = skyroot;
-        std::string filename = KMCCT::PICT_PATH1 + "/" + KMCCT::WAIT_WIDGET_PICT_NAME + KMCCT::PICT_TYPE;
-        int rwid = -1;
-        if (IsFileExist(KMCCT::PICT_ROOT + filename)) {
-            int wid = IWW::MainFunctions::GetSingleton()->LoadWidget(wt_aaaakmcroot, filename, 10000, 10000, false);
-            rwid = KMCCT::KMCEventThread::GetSingleton()->wrap_WaitLoadNamePlate(wid);
-        } else {
-            WARN("File path not found. If not intended, no problem. {}", filename);
-        }
-
-        aaaaWaitTextWidget = rwid;
-
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-            return;
-        }
-        auto namep = KMCCT::KMCConfig::GetSingleton()->getINamePlate();
-        if (namep->size() == 0) {
-            WARN("NamePlate.json undefine. disable wait widget.");
-            return;
-        }
-
-        KMCNamePlate pnpsetting = (*namep)[0].second;
-
-        if (rwid > 0) {
-            IWW::MainFunctions::GetSingleton()->SetPosX(wt_aaaakmcroot, rwid, pnpsetting.font_x);
-            IWW::MainFunctions::GetSingleton()->SetPosY(wt_aaaakmcroot, rwid, pnpsetting.font_y);
-            IWW::MainFunctions::GetSingleton()->SetSizeH(wt_aaaakmcroot, rwid, KMCCT::WAIT_WIDGET_SIZE);
-            IWW::MainFunctions::GetSingleton()->SetSizeW(wt_aaaakmcroot, rwid, KMCCT::WAIT_WIDGET_SIZE);
-        }
-    }
-
     bool KMCWaitTask::KMCCheckWait() {
         isinscene_state = KMCCT::KMCStateManager::GetSingleton()->IsInScene();
         //out_state = state;

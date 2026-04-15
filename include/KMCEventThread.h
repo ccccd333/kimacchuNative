@@ -20,13 +20,6 @@ namespace KMCCT {
     void ProfilePeriodicCall();
     void PapyrusPeriodicCall();
 #pragma region init function
-    int WaitLoad(int *wid, uint64_t *rand, std::string *root,
-                 std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> **loadedWedget);
-    int WaitMultLoad(int *wid, uint64_t *rand, std::string *root, int *index,
-                     std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> **loadedWedget);
-    int WaitLoadText(int *wid, uint64_t *rand, std::string *root, std::vector<std::pair<uint64_t, int>> **loadedText);
-    int WaitLoadNamePlate(int *wid);
-    void WaitOutputLoop();
     void InitMain(std::vector<float> *floatArray);
 #pragma endregion
 
@@ -47,7 +40,6 @@ namespace KMCCT {
     void wrap_InterruptCutInEventManager(std::function<void(void)> fn);
     void InterruptProfileEventManager();
 
-    void KMCLoadedWidget();
     void KMCSetInitFlag();
     bool KMCGetInitFlag();
     void LaunchOAR(OARCompDetail &ocd);
@@ -84,15 +76,6 @@ namespace KMCCT {
         void TryShowProfile();
         void MCMSettingChange(std::vector<float> floatArray);
         
-        int wrap_WaitLoadNamePlate(int &wid);
-        int wrap_WaitMultLoad(int &wid, uint64_t &rand, int &index,
-                              std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> *loadedWedget);
-        int wrap_WaitLoad(int &wid, uint64_t &rand, 
-                     std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> *loadedWedget);
-        int wrap_WaitLoadText(int &wid, uint64_t &rand, 
-                         std::vector<std::pair<uint64_t, int>> *loadedText);
-        void wrap_OutputLoop();
-
         void Reset();
         bool GetProfileInitEnd();
         bool GetInitFirstFlag();

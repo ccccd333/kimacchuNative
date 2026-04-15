@@ -1,11 +1,14 @@
 #include "KMCPrismaUIBridge.h"
 
 #include "KMCDisplayWordAndTexture.h"
+#include "KMCCutin.h"
 #include "KMCUtility.h"
 
 static void OnReceiveKMCDefineCutin(const char* data) { SKSE::log::info("KMCDefineCutin Result ==> {}", data); }
 
 static void OnReceiveKMCPlayPlayerCutin(const char* data) { SKSE::log::info("KMCPlayPlayerCutin Result ==> {}", data); }
+
+static void OnReceiveKMCPlayFollowerCutin(const char* data) { SKSE::log::info("KMCPlayFollowerCutin Result ==> {}", data); }
 
 SINGLETONBODY(KMCCT::KMCPrismaUIBridge)
 namespace KMCCT {
@@ -34,10 +37,12 @@ namespace KMCCT {
 
         prisma_ui->RegisterJSListener(cutin_view, "KMCOnCutinFinished", [](const char* data) -> void {
             SKSE::log::info("Cutin finished for display : {}", data);
+            KMCCutin::GetSingleton()->SetCutinFinished(true);
         });
 
         prisma_ui->RegisterJSListener(cutin_view, "KMCOnCutinStartReady", [](const char* data) -> void {
             SKSE::log::info("Cutin start for display : {}", data);
+            KMCCutin::GetSingleton()->SetCutinStartReady(true);
         });
 
         SKSE::log::info("PrismaUI API initialized successfully");
@@ -61,5 +66,12 @@ namespace KMCCT {
 
         std::string script = "KMCPlayPlayerCutin(" + group_data_map.dump() + ")";
         prisma_ui->Invoke(cutin_view, script.c_str(), OnReceiveKMCPlayPlayerCutin);
+    }
+
+    void KMCPrismaUIBridge::KMCPlayFollowerCutin(int id, int group, int next_group) {
+        json group_data_map = {{"id", id}, {"group", group}, {"next_group", next_group}};
+
+        std::string script = "KMCPlayFollowerCutin(" + group_data_map.dump() + ")";
+        prisma_ui->Invoke(cutin_view, script.c_str(), OnReceiveKMCPlayFollowerCutin);
     }
 }

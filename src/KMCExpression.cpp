@@ -581,10 +581,10 @@ namespace KMCCT {
             int l = 0;
             int h = value - 1;
             size_t size = (h - l) + 1;
-            auto category_indices = index_map.at(key);
+            auto &category_indices = index_map.at(key);
             if (l == h) {
                 int first_val = category_indices.at(0);
-                kmc_category_rand_map.emplace(key, KMCRandomData(0, 0, {first_val}, h, l, 1));
+                kmc_category_rand_map.emplace(key, KMCRandomData(0, 0, {first_val}, h, l, 1, nullptr));
                 kmc_category_first_values.push_back(first_val);
                 continue;
             }
@@ -598,7 +598,8 @@ namespace KMCCT {
                 final_values.push_back(category_indices.at(idx));
             }
             int fv = final_values.at(0);
-            kmc_category_rand_map.emplace(key, KMCRandomData(0, h - l, std::move(final_values), h, l, size));
+            kmc_category_rand_map.emplace(
+                key, KMCRandomData(0, h - l, std::move(final_values), h, l, size, &category_indices));
             kmc_category_first_values.push_back(fv);
         }
     }
