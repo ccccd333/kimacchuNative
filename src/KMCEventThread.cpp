@@ -1,7 +1,4 @@
 #include "KMCEventThread.h"
-
-#include <IWWPapyrus.h>
-
 #include <chrono>
 
 #include "KMCConfig.h"

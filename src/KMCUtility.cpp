@@ -1,8 +1,4 @@
 #include "KMCUtility.h"
-
-#include <IWWConfig.h>
-#include <IWWFunctions.h>
-
 #include "KMCEventThread.h"
 
 std::mt19937 create_rand_engine() {

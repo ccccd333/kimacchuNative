@@ -115,6 +115,8 @@ namespace KMCCT {
 
         // Follower         
         std::vector<KMCFollower>* GetFollowers() { return &IFollower; }
+
+        bool IsUnhookEnabled() const { return _unhook_papyrus; }
     private:
         bool SetupJsonSimpleNodes(std::vector<std::pair<std::string, std::string>> *configs, std::string jsonFileName,
                                   std::string rootKeyName);
@@ -161,5 +163,7 @@ namespace KMCCT {
         
         // follower
         std::vector<KMCFollower> IFollower;
+
+        bool _unhook_papyrus = true;
 	};
 }

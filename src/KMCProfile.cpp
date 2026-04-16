@@ -78,18 +78,17 @@ namespace KMCCT {
                 int rwid = -1;
                 std::string filename = KMCCT::PICT_PATH1 + "/" + values.any1 + KMCCT::PICT_TYPE;
                 if (IsFileExist(KMCCT::PICT_ROOT + filename)) {
-                    int wid =
-                        IWW::MainFunctions::GetSingleton()->LoadWidget(aaaakmcroot, filename, 10000, 10000, false);
-                    //rwid = WaitLoadNamePlate(&wid);
+                    //int wid =
+                    //    IWW::MainFunctions::GetSingleton()->LoadWidget(aaaakmcroot, filename, 10000, 10000, false);
                     if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                         return;
                     }
                     values.id = rwid;
                     if (rwid > 0) {
-                        IWW::MainFunctions::GetSingleton()->SetPosX(aaaakmcroot, rwid, values.defx);
-                        IWW::MainFunctions::GetSingleton()->SetPosY(aaaakmcroot, rwid, values.defy);
-                        IWW::MainFunctions::GetSingleton()->SetSizeW(aaaakmcroot, rwid, values.defsizex);
-                        IWW::MainFunctions::GetSingleton()->SetSizeH(aaaakmcroot, rwid, values.defsizey);
+                        //IWW::MainFunctions::GetSingleton()->SetPosX(aaaakmcroot, rwid, values.defx);
+                        //IWW::MainFunctions::GetSingleton()->SetPosY(aaaakmcroot, rwid, values.defy);
+                        //IWW::MainFunctions::GetSingleton()->SetSizeW(aaaakmcroot, rwid, values.defsizex);
+                        //IWW::MainFunctions::GetSingleton()->SetSizeH(aaaakmcroot, rwid, values.defsizey);
                     }
                 } else {
                     WARN("File path not found. If not intended, no problem. {}", filename);
@@ -113,19 +112,18 @@ namespace KMCCT {
                     format_map = &(PlayerProfil.format_map.at(key));
                 }
 
-                int tid = IWW::MainFunctions::GetSingleton()->LoadText(aaaakmcroot, text, tid_form->font,
-                                                                       tid_form->font_size, 10000, 10000, false);
-                //int rtid = WaitLoadNamePlate(&tid);
+                //int tid = IWW::MainFunctions::GetSingleton()->LoadText(aaaakmcroot, text, tid_form->font,
+                 //                                                      tid_form->font_size, 10000, 10000, false);
                 if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
                     return;
                 }
-                tid_form->id = rtid;
+                //tid_form->id = rtid;
                 if (format_map != nullptr) {
-                    format_map->tid = rtid;
+                    //format_map->tid = rtid;
                 }
-                IWW::MainFunctions::GetSingleton()->SetPosX(aaaakmcroot, rtid, tid_form->defx);
-                IWW::MainFunctions::GetSingleton()->SetPosY(aaaakmcroot, rtid, tid_form->defy);
-                IWW::MainFunctions::GetSingleton()->SetRGB(aaaakmcroot, rtid, tid_form->r, tid_form->g, tid_form->b);
+                //IWW::MainFunctions::GetSingleton()->SetPosX(aaaakmcroot, rtid, tid_form->defx);
+                //IWW::MainFunctions::GetSingleton()->SetPosY(aaaakmcroot, rtid, tid_form->defy);
+                //IWW::MainFunctions::GetSingleton()->SetRGB(aaaakmcroot, rtid, tid_form->r, tid_form->g, tid_form->b);
                 ++row_string_index_count;
             }
         } catch (std::exception &e) {
@@ -231,7 +229,7 @@ namespace KMCCT {
                 }
 
                 for (auto &[key, value] : formated_map) {
-                    IWW::MainFunctions::GetSingleton()->SetText(aaaakmcroot, value.tid, value.format_data);
+                    //IWW::MainFunctions::GetSingleton()->SetText(aaaakmcroot, value.tid, value.format_data);
                 }
             } catch (std::exception &e) {
                 ERROR("UpdateModifiedContainer Error {}", e.what());
@@ -361,9 +359,9 @@ namespace KMCCT {
                 }
 
                 if (value.id > 0 && value.widget_visible) {
-                    IWW::MainFunctions::GetSingleton()->SetTransparency(aaaakmcroot, value.id, 0);
+                   // IWW::MainFunctions::GetSingleton()->SetTransparency(aaaakmcroot, value.id, 0);
                     std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::SET_ALPHA_MS));
-                    IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, true);
+                    //IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, true);
                 }
             }
 
@@ -373,9 +371,9 @@ namespace KMCCT {
                 }
 
                 if (value.id > 0) {
-                    IWW::MainFunctions::GetSingleton()->SetTransparency(aaaakmcroot, value.id, 0);
+                    //IWW::MainFunctions::GetSingleton()->SetTransparency(aaaakmcroot, value.id, 0);
                     std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::SET_ALPHA_MS));
-                    IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, true);
+                    //IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, true);
                 }
             }
 
@@ -386,8 +384,8 @@ namespace KMCCT {
                 }
 
                 if (value.id > 0 && value.widget_visible) {
-                    IWW::MainFunctions::GetSingleton()->DoTransitionByTime(
-                        aaaakmcroot, value.id, 100, widget_fade_in_out_time, "alpha", "none", "none", 0.0);
+                    //IWW::MainFunctions::GetSingleton()->DoTransitionByTime(
+                    //    aaaakmcroot, value.id, 100, widget_fade_in_out_time, "alpha", "none", "none", 0.0);
                     std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::SET_ALPHA_MS));
                 }
             }
@@ -398,8 +396,8 @@ namespace KMCCT {
                 }
 
                 if (value.id > 0) {
-                    IWW::MainFunctions::GetSingleton()->DoTransitionByTime(
-                        aaaakmcroot, value.id, 100, text_fade_in_out_time, "alpha", "none", "none", 0.0);
+                    //IWW::MainFunctions::GetSingleton()->DoTransitionByTime(
+                    //    aaaakmcroot, value.id, 100, text_fade_in_out_time, "alpha", "none", "none", 0.0);
                     std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::SET_ALPHA_MS));
                     time += KMCCT::SET_ALPHA_MS;
                 }
@@ -416,8 +414,8 @@ namespace KMCCT {
                 }
 
                 if (value.id > 0 && value.widget_visible) {
-                    IWW::MainFunctions::GetSingleton()->DoTransitionByTime(
-                        aaaakmcroot, value.id, 0, widget_fade_in_out_time, "alpha", "none", "none", 0.0);
+                    //IWW::MainFunctions::GetSingleton()->DoTransitionByTime(
+                    //    aaaakmcroot, value.id, 0, widget_fade_in_out_time, "alpha", "none", "none", 0.0);
                     std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::SET_ALPHA_MS));
                 }
             }
@@ -427,8 +425,8 @@ namespace KMCCT {
                 }
 
                 if (value.id > 0) {
-                    IWW::MainFunctions::GetSingleton()->DoTransitionByTime(
-                        aaaakmcroot, value.id, 0, text_fade_in_out_time, "alpha", "none", "none", 0.0);
+                    //IWW::MainFunctions::GetSingleton()->DoTransitionByTime(
+                    //    aaaakmcroot, value.id, 0, text_fade_in_out_time, "alpha", "none", "none", 0.0);
                     time += KMCCT::SET_ALPHA_MS;
                     std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::SET_ALPHA_MS));
                 }
@@ -443,7 +441,7 @@ namespace KMCCT {
                 }
 
                 if (value.id > 0 && value.widget_visible) {
-                    IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, false);
+                   // IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, false);
                 }
             }
 
@@ -453,7 +451,7 @@ namespace KMCCT {
                 }
 
                 if (value.id > 0) {
-                    IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, false);
+                   // IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, false);
                 }
             }
             {

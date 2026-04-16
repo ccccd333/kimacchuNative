@@ -1,6 +1,5 @@
 #include "KMCCutinCond/KMCCJsonValueInterval.h"
 #include "KMCConfig.h"
-#include <IWWFunctions.h>
 
 namespace KMCCT {
     using namespace boost::property_tree;

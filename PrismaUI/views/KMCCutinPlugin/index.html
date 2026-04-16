@@ -27,6 +27,10 @@
         </div>
     </div>
 
+    <div id="global_stop_layer">
+        <canvas id="common_stop_icon"></canvas>
+    </div>
+
     <script type="module">
         import { DisplayManager } from "./DisplayManager.js";
 
@@ -62,6 +66,16 @@
         KMCDefineCutin(followerJson);
 
         setTimeout(() => {
+            console.log("Test: Showing stop icon...");
+            KMCShowStopIcon();
+
+            setTimeout(() => {
+                console.log("Test: Hiding stop icon (10s passed)");
+                KMCHideStopIcon();
+            }, 10000);
+        }, 1000);
+
+        setTimeout(() => {
             KMCPlayPlayerCutin({group:1,next_group:1});
         }, 500);
 
@@ -71,6 +85,8 @@
                 group: 1,next_group:1
             });
         }, 1500);
+
+
 
     </script>
 

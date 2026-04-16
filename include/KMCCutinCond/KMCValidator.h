@@ -1,5 +1,4 @@
 #pragma once
-#include <IWWFunctions.h>
 #include <KMCCutinCond/KMCCategory.h>
 
 #include "KMCCCJsonTags.h"

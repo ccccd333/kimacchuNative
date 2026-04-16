@@ -4,8 +4,6 @@
 namespace KMCCT {
     void WaitWidgetVisible(int tid);
     void WaitWidgetInVisible(int tid);
-    void WaitWidgetFadeIn(int tid);
-    void WaitWidgetFadeOut(int tid);
 
     class KMCWaitTask {
         SINGLETONHEADER(KMCWaitTask)

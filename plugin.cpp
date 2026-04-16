@@ -1,5 +1,4 @@
 #include "KMCRegister.h"
-#include <IWWPapyrus.h>
 
 //#include "src/hooks/hooks.h"
 

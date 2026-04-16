@@ -3,6 +3,8 @@
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
 
+extern bool g_enableLog;
+
 //we are not making nasa sw, so stfu
 #pragma warning( disable : 4100 ) 
 #pragma warning( disable : 4244 )
@@ -21,10 +23,22 @@ using namespace std::literals;
 
 #if(LOGGING != 0)
     #include <spdlog/sinks/basic_file_sink.h>
-    #define LOG(...)    {if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging",1) >= 2) SKSE::log::info(__VA_ARGS__);}
-    #define WARN(...)   {if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging",1) >= 1) SKSE::log::warn(__VA_ARGS__);}
-    #define ERROR(...)  {SKSE::log::error(__VA_ARGS__);}
-    #define DEBUG(...)  {SKSE::log::debug(__VA_ARGS__);}
+    #define LOG(...)                                       \
+        {                                                  \
+            if (g_enableLog) SKSE::log::info(__VA_ARGS__); \
+        }
+    #define WARN(...)                                      \
+        {                                                  \
+            if (g_enableLog) SKSE::log::warn(__VA_ARGS__); \
+        }
+    #define ERROR(...)                     \
+        {                                  \
+            SKSE::log::error(__VA_ARGS__); \
+        }
+    #define DEBUG(...)                                      \
+        {                                                   \
+            if (g_enableLog) SKSE::log::debug(__VA_ARGS__); \
+        }
 #else
     #define LOG(...)  {}
     #define ERROR(...){}

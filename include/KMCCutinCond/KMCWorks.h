@@ -1,5 +1,4 @@
 #pragma once
-#include "IWWFunctions.h"
 #include "KMCChecks.h"
 #include "KMCConfig.h"
 

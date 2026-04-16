@@ -175,13 +175,10 @@ namespace KMCCT {
         // init
         std::string aaaakmctype = val.aaaakmctype;
         float c_time = val.aaaakmctime;
-        float c_animtime = val.aaaakmcAnimtime;
         float c_volum = val.aaaakmcvolum;
         float c_oar_time = val.aaaakmcoar;
         float c_exp_time = val.aaaakmcexp;
 
-        long long t = c_time * KMCCT::TIME_SCALE_MS;
-        bool isAnim = false;
         if (aaaakmctype == "") {
             aaaakmctype = KMCCT::KMCStateManager::GetSingleton()->GetPlayerState();
 
@@ -207,11 +204,6 @@ namespace KMCCT {
             }
         }
 
-        int wid = -1;
-        int tid = -1;
-
-        int fwid = -1;
-        int ftid = -1;
         bool fSpeachFlag = true;
         RE::Actor *follower = nullptr;
         std::vector<std::pair<std::string, std::string>> *speakTiming = nullptr;
@@ -665,12 +657,7 @@ namespace KMCCT {
         
 
         if (isanim) {
-            int r;
-            float volum;
-            RE::TESObjectREFR *target;
             KMCCompsFlag cf;
-            int frand;
-            long long time;
             std::string record = "0.0";
             CutinEntry entry; 
 

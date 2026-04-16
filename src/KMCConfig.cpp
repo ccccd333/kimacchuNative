@@ -1,15 +1,37 @@
 #include "KMCConfig.h"
 
-#include <IWWConfig.h>
-
 #include "KMCEventThread.h"
+#include <yaml-cpp/yaml.h>
+
 
 SINGLETONBODY(KMCCT::KMCConfig)
+
+bool g_enableLog = false;
 
 namespace KMCCT {
     using namespace boost::property_tree;
 
     void KMCConfig::Setup() {
+        try {
+            // ファイルパスを指定してロード
+            YAML::Node config = YAML::LoadFile("Data\\skse\\plugins\\kimacchuNative.yaml");
+
+            // General: EnableOutputLog: の階層を辿る
+            if (config["General"] && config["General"]["EnableOutputLog"]) {
+                g_enableLog = config["General"]["EnableOutputLog"].as<bool>();
+                _unhook_papyrus = config["General"]["UnhookPapyrus"].as<bool>(true);
+            }
+        } catch (const std::exception &e) {
+            // ファイルがない、またはパースエラー時は安全のためログ無効
+            // ここでのエラーは SKSE ログに直接出す
+            SKSE::log::error("Failed to load kimacchuNative.yaml: {}", e.what());
+            g_enableLog = false;
+        }
+
+        // ここから LOG マクロが有効になる
+        LOG("KMCConfig: Setup started. Logging is {}", g_enableLog ? "enabled" : "disabled");
+
+
         player = RE::PlayerCharacter::GetSingleton();
 
 

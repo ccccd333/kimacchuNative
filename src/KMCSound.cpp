@@ -2,7 +2,6 @@
 #include "KMCConfig.h"
 #include "KMCDisplayAddon.h"
 #include "KMCDisplayWordAndTexture.h"
-#include <IWWConfig.h>
 
 SINGLETONBODY(KMCCT::KMCSound)
 

@@ -15,6 +15,7 @@
     "srell",
     "catch2",
     "nlohmann-json",
-    "minhook"
+    "minhook",
+    "yaml-cpp"
   ]
 }

@@ -10,6 +10,10 @@ static void OnReceiveKMCPlayPlayerCutin(const char* data) { SKSE::log::info("KMC
 
 static void OnReceiveKMCPlayFollowerCutin(const char* data) { SKSE::log::info("KMCPlayFollowerCutin Result ==> {}", data); }
 
+static void OnReceiveKMCShowStopIcon(const char* data) { SKSE::log::info("KMCShowStopIcon Result ==> {}", data); }
+
+static void OnReceiveKMCHideStopIcon(const char* data) { SKSE::log::info("KMCHideStopIcon Result ==> {}", data); }
+
 SINGLETONBODY(KMCCT::KMCPrismaUIBridge)
 namespace KMCCT {
 
@@ -73,5 +77,15 @@ namespace KMCCT {
 
         std::string script = "KMCPlayFollowerCutin(" + group_data_map.dump() + ")";
         prisma_ui->Invoke(cutin_view, script.c_str(), OnReceiveKMCPlayFollowerCutin);
+    }
+
+    void KMCPrismaUIBridge::KMCShowStopIcon() {
+        std::string script = "KMCShowStopIcon()";
+        prisma_ui->Invoke(cutin_view, script.c_str(), OnReceiveKMCShowStopIcon);
+    }
+
+    void KMCPrismaUIBridge::KMCHideStopIcon() {
+        std::string script = "KMCHideStopIcon()";
+        prisma_ui->Invoke(cutin_view, script.c_str(), OnReceiveKMCHideStopIcon);
     }
 }

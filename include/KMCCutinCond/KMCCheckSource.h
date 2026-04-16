@@ -1,7 +1,6 @@
 #pragma once
 #include "KMCUtility.h"
 #include "KMCCCJsonTags.h"
-#include "IWWFunctions.h"
 #include "KMCCutinCond/KMCCache.h"
 #include <boost/algorithm/string/trim.hpp>
 

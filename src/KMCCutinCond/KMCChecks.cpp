@@ -247,30 +247,30 @@ namespace KMCCT {
                 return true;
             }
             LOG("[TEMP_KEYWORD_CHECK[BOTH]] no match");
-            if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
-                for (auto& has : source.thas) {
-                    LOG("[HAS] ==> {}", has);
-                }
+            //if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
+            //    for (auto& has : source.thas) {
+            //        LOG("[HAS] ==> {}", has);
+            //    }
 
-                for (auto& nhas : source.tnhas) {
-                    LOG("[NHAS] ==> {}", nhas);
-                }
+            //    for (auto& nhas : source.tnhas) {
+            //        LOG("[NHAS] ==> {}", nhas);
+            //    }
 
-                KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
-            }
+            //    KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
+            //}
         } else if (source.thsnhs == HasNHan::has) {
             bool hasm = KMCCT::KMCTempKeywordManager::GetSingleton()->HasTempKeyword(source.thas, true);
             if (hasm) {
                 return true;
             }
             LOG("[TEMP_KEYWORD_CHECK[HAS]] no match");
-            if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
-                for (auto& has : source.thas) {
-                    LOG("[HAS] ==> {}", has);
-                }
+            //if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
+            //    for (auto& has : source.thas) {
+            //        LOG("[HAS] ==> {}", has);
+            //    }
 
-                KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
-            }
+            //    KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
+            //}
         } else if (source.thsnhs == HasNHan::nhas) {
             bool nhasm = KMCCT::KMCTempKeywordManager::GetSingleton()->NHasTempKeyword(source.tnhas, true);
             if (nhasm) {
@@ -278,13 +278,13 @@ namespace KMCCT {
             }
 
             LOG("[TEMP_KEYWORD_CHECK [NHAS]] no match");
-            if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
-                for (auto& nhas : source.tnhas) {
-                    LOG("[NHAS] ==> {}", nhas);
-                }
+            //if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
+            //    for (auto& nhas : source.tnhas) {
+            //        LOG("[NHAS] ==> {}", nhas);
+            //    }
 
-                KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
-            }
+            //    KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
+            //}
         }
 
         return false;

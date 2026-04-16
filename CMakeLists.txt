@@ -10,14 +10,11 @@ if(DEFINED ENV{SKYRIM_MODS_FOLDER} AND IS_DIRECTORY "$ENV{SKYRIM_MODS_FOLDER}")
     set(OUTPUT_FOLDER "$ENV{SKYRIM_MODS_FOLDER}/${PROJECT_NAME}")
 endif()
 
-include_directories(./IWW/iWantWidgetsNG/include)
-
-add_subdirectory(IWW/iWantWidgetsNG)
-
 find_package(CommonLibSSE CONFIG REQUIRED)
 find_package(Boost REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(minhook CONFIG REQUIRED)
+find_package(yaml-cpp CONFIG REQUIRED)
 
 add_commonlibsse_plugin(${PROJECT_NAME} SOURCES 
     src/KMCConfig.cpp
@@ -50,11 +47,10 @@ add_commonlibsse_plugin(${PROJECT_NAME} SOURCES
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ./include)
-
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
     minhook::minhook
-    IWantWidgetsNative
+    yaml-cpp::yaml-cpp
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)

@@ -20,6 +20,11 @@ namespace KMCCT {
         void KMCPlayPlayerCutin(int group, int next_group);
 
         void KMCPlayFollowerCutin(int id, int group, int next_group);
+
+        void KMCShowStopIcon();
+
+        void KMCHideStopIcon();
+
     private:
     };
 

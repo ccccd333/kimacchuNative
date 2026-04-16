@@ -2,6 +2,7 @@
 #include "KMCEventThread.h"
 #include "KMCWaitTask.h"
 #include "KMCStateManager.h"
+#include "KMCPrismaUIBridge.h"
 
 SINGLETONBODY(KMCCT::KMCWaitTask)
 
@@ -9,131 +10,19 @@ namespace KMCCT {
 	// カットインの停止などを管理
 	// ついでに停止中ウェジットも管理
     std::map<int, KMCCT::WaitWidgetFunction> AnimWaitWidget{
-        {0, KMCCT::WaitWidgetVisible}, {1, KMCCT::WaitWidgetFadeOut}, {2, KMCCT::WaitWidgetFadeIn}};
+        {0, KMCCT::WaitWidgetVisible}};
     std::string wt_aaaakmcroot = "";
     std::vector<KMCWaitConfigs> aaaaKmcPushTasks((size_t)KMCWaitType::max);
 
 #pragma region function pointer
 
-    void KMCCT::WaitWidgetVisible(int tid) {
-        if (tid != -1) {
-            IWW::MainFunctions::GetSingleton()->SetVisible(wt_aaaakmcroot, tid, true);
-        }
+    void KMCCT::WaitWidgetVisible(int tid) { 
+        KMCPrismaUIBridge::GetSingleton()->KMCShowStopIcon();
     }
 
-    void KMCCT::WaitWidgetInVisible(int tid) {
-        if (tid != -1) {
-            IWW::MainFunctions::GetSingleton()->SetVisible(wt_aaaakmcroot, tid, false);
-        }
+    void KMCCT::WaitWidgetInVisible(int tid) { KMCPrismaUIBridge::GetSingleton()->KMCHideStopIcon();
     }
 
-    void KMCCT::WaitWidgetFadeIn(int tid) {
-        // auto npafade = KMCCT::KMCConfig::GetSingleton()->getINamePlateAnimation((int)end_fadeout);
-
-        const static int strength = 1;       // KMCFindVector(&(npafade->settings), "fadeoutspeed", 1);
-        const static int speedupvalue = 1;   // KMCFindVector(&(npafade->settings), "speedupvalue", 1);
-        const static int startalpha = 0;     // KMCFindVector(&(npafade->settings), "startalpha", 255);
-        const static int stAddTiming = 100;  // KMCFindVector(&(npafade->settings), "switchgearsMS", 50);
-        const static int t =
-            2 *
-            KMCCT::TIME_SCALE_MS;  // KMCFindVector(&(npafade->settings), "animationtime", 1) * KMCCT::TIME_SCALE_MS;
-
-        long long freq = 2;
-        int add = speedupvalue;
-        int wid = tid;
-
-        int alpha = startalpha;
-        int stock = 0;
-
-        if (wid != -1) {
-            IWW::MainFunctions::GetSingleton()->SetVisible(wt_aaaakmcroot, wid, true);
-            time_point<Clock> start = Clock::now();
-
-            while (true) {
-                ++stock;
-                if (stock >= stAddTiming) {
-                    stock -= stAddTiming;
-                    add += speedupvalue;
-                }
-                alpha += (strength * add);
-
-                if (alpha > 0) {
-                    IWW::MainFunctions::GetSingleton()->SetTransparency(wt_aaaakmcroot, wid, alpha);
-                } else {
-                    break;
-                }
-
-                time_point<Clock> end;
-                long long dur = 0;
-
-                end = Clock::now();
-                milliseconds diff = duration_cast<milliseconds>(end - start);
-                dur = diff.count();
-                if (dur >= t) {
-                    break;
-                }
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(freq));
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                    break;
-                }
-            }
-        }
-    }
-
-    void KMCCT::WaitWidgetFadeOut(int tid) {
-        // auto npafade = KMCCT::KMCConfig::GetSingleton()->getINamePlateAnimation((int)end_fadeout);
-
-        const static int strength = 1;       // KMCFindVector(&(npafade->settings), "fadeoutspeed", 1);
-        const static int speedupvalue = 1;   // KMCFindVector(&(npafade->settings), "speedupvalue", 1);
-        const static int startalpha = 255;   // KMCFindVector(&(npafade->settings), "startalpha", 255);
-        const static int stAddTiming = 100;  // KMCFindVector(&(npafade->settings), "switchgearsMS", 50);
-        const static int t =
-            2 *
-            KMCCT::TIME_SCALE_MS;  // KMCFindVector(&(npafade->settings), "animationtime", 1) * KMCCT::TIME_SCALE_MS;
-
-        long long freq = 2;
-        int add = speedupvalue;
-        int wid = tid;
-
-        int alpha = startalpha;
-        int stock = 0;
-
-        if (wid != -1) {
-            IWW::MainFunctions::GetSingleton()->SetVisible(wt_aaaakmcroot, wid, true);
-            time_point<Clock> start = Clock::now();
-
-            while (true) {
-                ++stock;
-                if (stock >= stAddTiming) {
-                    stock -= stAddTiming;
-                    add += speedupvalue;
-                }
-                alpha -= (strength * add);
-
-                if (alpha > 0) {
-                    IWW::MainFunctions::GetSingleton()->SetTransparency(wt_aaaakmcroot, wid, alpha);
-                } else {
-                    break;
-                }
-
-                time_point<Clock> end;
-                long long dur = 0;
-
-                end = Clock::now();
-                milliseconds diff = duration_cast<milliseconds>(end - start);
-                dur = diff.count();
-                if (dur >= t) {
-                    break;
-                }
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(freq));
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                    break;
-                }
-            }
-        }
-    }
 #pragma endregion
 
     bool KMCWaitTask::KMCCheckWait() {
@@ -145,8 +34,8 @@ namespace KMCCT {
             KMCCT::KMCTimer(KMCCT::WAIT_CYCLE_MS);
         } else {
             if (KMCCheckWaitTask()) {
-                aaaaWaitWidgetDisped = true;
                 DispWWidget(true);
+                aaaaWaitWidgetDisped = true;
                 KMCCT::KMCTimer(KMCCT::WAIT_CYCLE_MS);
             } else if (aaaaWaitWidgetDisped) {
                 DispWWidget(false);
@@ -205,14 +94,13 @@ namespace KMCCT {
 
     void KMCWaitTask::DispWWidget(bool suspensionRequest) {
         if (suspensionRequest) {
-            for (auto [key, value] : AnimWaitWidget) {
-                value(aaaaWaitTextWidget);
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                    break;
-                }
+            if (!aaaaWaitWidgetDisped) {
+                KMCCT::WaitWidgetVisible(aaaaWaitTextWidget);
             }
         } else {
-            KMCCT::WaitWidgetInVisible(aaaaWaitTextWidget);
+            if (aaaaWaitWidgetDisped) {
+                KMCCT::WaitWidgetInVisible(aaaaWaitTextWidget);
+            }
         }
     }
 

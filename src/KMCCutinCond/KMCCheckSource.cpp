@@ -1,5 +1,4 @@
 #include "KMCCutinCond/KMCCheckSource.h"
-#include "IWWFunctions.h"
 #include "KMCCutinCondition.h"
 
 namespace KMCCT {

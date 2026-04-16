@@ -1,7 +1,4 @@
 #include "KMCStateManager.h"
-
-#include <IWWConfig.h>
-
 #include "KMCConfig.h"
 #include "KMCEventThread.h"
 #include "KMCUtility.h"
@@ -523,7 +520,7 @@ namespace KMCCT {
     int KMCStateManager::IsInScene() { 
         if (actorNPC == nullptr) return -1;
         auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
-        if (player == nullptr) return -2;
+        if (player == nullptr || !player->Is3DLoaded()) return -2;
 
         if (keywordsExcludeDuringScene.size() != 0) {
             if (player->HasKeywordInArray(keywordsExcludeDuringScene, false)) return 1;

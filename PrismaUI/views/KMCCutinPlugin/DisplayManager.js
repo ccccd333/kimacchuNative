@@ -1,11 +1,25 @@
 import { DisplayDrawingTexture } from "./DisplayDrawingTexture.js";
+import { DisplayStopIconTexture } from "./DisplayStopIconTexture.js";
+
 // カットイン関連の大本
 // ID = (0)=>プレイヤー (1以降)=>フォロワー
 // group = category_id なんでこんな名前にしたんだろ面倒なので今度直す
 // TODO:カットインドラッグできるけどドラッグ後に位置保存してないので意味ない。外だし。
+
+// stop iconからstop allとか呼ぶ
 export class DisplayManager {
     constructor() {
         this.displayMap = new Map();
+        this.stopIcon = null;
+    }
+
+    initStopIcon() {
+        if (!this.stopIcon) {
+            const canvas = document.getElementById("common_stop_icon");
+            if (canvas) {
+                this.stopIcon = new DisplayStopIconTexture(canvas);
+            }
+        }
     }
 
     create(id, canvas) {
@@ -48,6 +62,8 @@ window.KMCCreateDisplay = (id) => {
 };
 
 window.KMCDefineCutin = async (json) => {
+    window.KMCDisplayManager.initStopIcon();
+
     const id = json.display_type;
 
     let display = window.KMCDisplayManager.get(id);
@@ -170,3 +186,11 @@ function makeDraggable(target, handle = target) {
 
 makeDraggable(document.getElementById("player_pos"));
 makeDraggable(document.getElementById("follower_pos"));
+
+window.KMCShowStopIcon = () => {
+    window.KMCDisplayManager.stopIcon.show();
+};
+
+window.KMCHideStopIcon = () => {
+    window.KMCDisplayManager.stopIcon.hide();
+};

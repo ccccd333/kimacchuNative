@@ -1,7 +1,6 @@
 #include "KMCCutinCond/KMCCache.h"
 #include "KMCGameEventListener.h"
 #include "KMCConfig.h"
-#include "IWWFunctions.h"
 
 namespace KMCCT {
     void KMCCacheContainer::PreCache() { 
