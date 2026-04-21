@@ -136,8 +136,8 @@ namespace KMCCT {
         void Init(); 
         void Reset();
         //void SetFHUStatus(float vag, float ana, float ora);
-        std::vector<std::string> GetStrageUtilAccessKeys();
-        void SetResultStrageUtil(std::vector<std::string> result);
+        //std::vector<std::string> GetStrageUtilAccessKeys();
+        //void SetResultStrageUtil(std::vector<std::string> result);
         std::vector<MultiTypeValue> *GetStrageUtilResult() { return &strage_util_access_map.results; }
         std::vector<KMCValueType>* GetStrageUtilValueType() { return &strage_util_access_map.results_value_type; }
         //void AllowDialogue(RE::Actor* a_speaker, RE::TESTopic* a_topic);
@@ -151,7 +151,7 @@ namespace KMCCT {
         std::string GetHighestPriorityPlayer();
         void InitDetectionItems(std::vector<std::pair<std::string, std::string>>* dconfig, RE::Actor* actor,
                                 StateFunc f, KMCDetectionType type, std::vector<std::string> messages);
-        void InitDetectionStrageUtil(std::vector<std::pair<std::string, std::string>>* dconfig, RE::Actor* actor);
+        //void InitDetectionStrageUtil(std::vector<std::pair<std::string, std::string>>* dconfig, RE::Actor* actor);
     private:
         
         std::vector<RE::BGSKeyword*> keywordsExcludeDuringScene;

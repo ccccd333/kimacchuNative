@@ -495,6 +495,27 @@ namespace KMCCT {
         int defaultWX = 0, defaultWY = 0;
     };
 
+    struct KMCProfileReplaceMap {
+    public:
+        std::string id = "";
+        int row = -1;
+        /*
+        "所有権:{PlayerSLSValidFreedomLic} 日数:{PlayerSLSValidFreedomLic2} 日"を以下のように分解したものを保管する
+        [0]->所有権:
+        [1]->{PlayerSLSValidFreedomLic}
+        [2]-> 日数:
+        [3]->{PlayerSLSValidFreedomLic2}
+        [4]-> 日
+        */
+        std::vector<std::string> format_strings;
+        /*
+        \{([0-9]|[a-z]|[A-Z])+\}のパターンマッチでマッチした場合のもののindexを保管
+        [0]->1
+        [1]->3
+        */
+        std::vector<int> placeholder_indices;
+    };
+
     struct KMCProfilFormatIdMap {
     public:
         KMCProfilFormatIdMap() {}
@@ -526,6 +547,21 @@ namespace KMCCT {
         std::map<int, KMCDispConfigs> tids;
         std::map<int, KMCProfilFormatIdMap> format_map;
         bool isFormat = false;
+
+        // new ver
+        /*
+        {
+            "T01":{
+            1:"ヒナ[Hina] 種族[Erin]",
+            2:"年齢:1X",
+            3:"所有権:{PlayerSLSValidFreedomLic}",
+            4:"<プロフィール>"
+            }
+        }
+        */
+        std::unordered_map<std::string, std::map<int, std::string>> profile_lines;
+
+        std::vector<KMCProfileReplaceMap> format_maps;
     };
 
     struct STNodeRelations {

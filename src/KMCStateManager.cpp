@@ -425,7 +425,7 @@ namespace KMCCT {
         auto fk = KMCCT::KMCConfig::GetSingleton()->getIDetectionFaction();
         auto mek = KMCCT::KMCConfig::GetSingleton()->getIDetectionMagicEffectKeyword();
         auto glob = KMCCT::KMCConfig::GetSingleton()->getIDetectionGlobal();
-        auto stu = KMCCT::KMCConfig::GetSingleton()->getIDetectionStorageUtil();
+        //auto stu = KMCCT::KMCConfig::GetSingleton()->getIDetectionStorageUtil();
 
         InitDetectionItems(dk, player, STHasKeyword, KMCDetectionType::keyword,
                            {"DetectionKeyword.json Duplicate keyword priority",
@@ -443,7 +443,7 @@ namespace KMCCT {
                            {"DetectionGlobal.json Duplicate keyword priority",
                             "DetectionGlobal.json Keyword could not be loaded. Please review form IDs, etc.",
                             "DetectionGlobal.json", "DetectionGlobal.json error param 6 or 7 "});
-        InitDetectionStrageUtil(stu, player);
+        //InitDetectionStrageUtil(stu, player);
     }
 
     void KMCStateManager::Reset() { 
@@ -601,19 +601,19 @@ namespace KMCCT {
        return false;
     }
 
-    std::vector<std::string> KMCStateManager::GetStrageUtilAccessKeys() {
-        StrageUtilReady = false;
-        return strage_util_access_map.access_keys;
-    }
-    void KMCStateManager::SetResultStrageUtil(std::vector<std::string> result) { 
-        StrageUtilReady = false;
+    //std::vector<std::string> KMCStateManager::GetStrageUtilAccessKeys() {
+    //    StrageUtilReady = false;
+    //    return strage_util_access_map.access_keys;
+    //}
+    //void KMCStateManager::SetResultStrageUtil(std::vector<std::string> result) { 
+    //    StrageUtilReady = false;
 
-        if (!BuildMultTypeValues(&result, &strage_util_access_map.results_value_type, &strage_util_access_map.results)) {
-            ERROR("Attempt to retrieve StrageUtil results failed. Please review DetectionStorageUtil.json.");
-            return;
-        }
-        StrageUtilReady = true;
-    }
+    //    if (!BuildMultTypeValues(&result, &strage_util_access_map.results_value_type, &strage_util_access_map.results)) {
+    //        ERROR("Attempt to retrieve StrageUtil results failed. Please review DetectionStorageUtil.json.");
+    //        return;
+    //    }
+    //    StrageUtilReady = true;
+    //}
 
     //void KMCStateManager::AllowDialogue(RE::Actor* a_speaker, RE::TESTopic* a_topic) {
     //    using DialogueData = RE::DIALOGUE_DATA::Subtype;
@@ -779,50 +779,50 @@ namespace KMCCT {
         }
     }
 
-    void KMCStateManager::InitDetectionStrageUtil(std::vector<std::pair<std::string, std::string>>* dconfig,
-                                                  RE::Actor* actor) {
-        int offset = 0;
-        for (auto [key, value] : *dconfig) {
-            try {
-                auto spvalue = KMCSplit(value, ',');
+    //void KMCStateManager::InitDetectionStrageUtil(std::vector<std::pair<std::string, std::string>>* dconfig,
+    //                                              RE::Actor* actor) {
+    //    int offset = 0;
+    //    for (auto [key, value] : *dconfig) {
+    //        try {
+    //            auto spvalue = KMCSplit(value, ',');
 
-                int priority = std::stoi(spvalue.at(2));
-                if (states.contains(priority)) {
-                    ERROR("DetectionGlobal.json Duplicate keyword priority");
-                } else {
-                    
-                    std::string access_key = spvalue.at(0);
-                    std::string event_name = spvalue.at(1);
-                    int th = std::stoi(spvalue.at(3));
+    //            int priority = std::stoi(spvalue.at(2));
+    //            if (states.contains(priority)) {
+    //                ERROR("DetectionGlobal.json Duplicate keyword priority");
+    //            } else {
+    //                
+    //                std::string access_key = spvalue.at(0);
+    //                std::string event_name = spvalue.at(1);
+    //                int th = std::stoi(spvalue.at(3));
 
-                    std::string inequality_sign = spvalue.at(4);
-                    std::string value_type = spvalue.at(5);
-                    std::string base_value = spvalue.at(6);
+    //                std::string inequality_sign = spvalue.at(4);
+    //                std::string value_type = spvalue.at(5);
+    //                std::string base_value = spvalue.at(6);
 
-                    MultiTypeValue mtv;
-                    if (!mtv.SetValue(value_type, base_value)) {
-                        ERROR("DetectionGlobal.json value type error. Please choose one of the following (int or float or string or long) key: {} value : {} value type : {}", key, value,
-                              value_type);
-                        continue;
-                    }
+    //                MultiTypeValue mtv;
+    //                if (!mtv.SetValue(value_type, base_value)) {
+    //                    ERROR("DetectionGlobal.json value type error. Please choose one of the following (int or float or string or long) key: {} value : {} value type : {}", key, value,
+    //                          value_type);
+    //                    continue;
+    //                }
 
-                    std::string t_mod = mtv.GetMod(PAPYRUS_TYPE_MOD_NAME);
+    //                std::string t_mod = mtv.GetMod(PAPYRUS_TYPE_MOD_NAME);
 
-                    KMCCT::State state = KMCCT::State(actor, event_name, th);
-                    
-                    state.stuparam = KMCStrageUtilParam(StringToKMCInequalitySign(inequality_sign), mtv, offset);
+    //                KMCCT::State state = KMCCT::State(actor, event_name, th);
+    //                
+    //                state.stuparam = KMCStrageUtilParam(StringToKMCInequalitySign(inequality_sign), mtv, offset);
 
-                    states.insert(std::make_pair(priority, StateControll(STStrageUtil, state)));
+    //                states.insert(std::make_pair(priority, StateControll(STStrageUtil, state)));
 
-                    strage_util_access_map.access_keys.push_back(t_mod + access_key);
-                    strage_util_access_map.results_value_type.push_back(mtv.value_type);
+    //                strage_util_access_map.access_keys.push_back(t_mod + access_key);
+    //                strage_util_access_map.results_value_type.push_back(mtv.value_type);
 
-                    ++offset;
-                }
-            } catch (...) {
-                ERROR("ERROR DetectionStorageUtil.json key: {} value : {}", key, value);
-            }
-        }
+    //                ++offset;
+    //            }
+    //        } catch (...) {
+    //            ERROR("ERROR DetectionStorageUtil.json key: {} value : {}", key, value);
+    //        }
+    //    }
 
-    }
+    //}
 }

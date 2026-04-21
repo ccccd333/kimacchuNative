@@ -12,6 +12,8 @@ export class DisplayStopIconTexture {
             this.canvas.height = this.canvas.clientHeight;
         }
 
+        this.is_visible = false;
+
         this.loadIcon();
     }
 
@@ -28,22 +30,23 @@ export class DisplayStopIconTexture {
     }
 
     show() {
-        if (!this.icon_bitmap || !this.ctx) return;
+        if (!this.icon_bitmap || !this.ctx || this.is_visible) return;
 
         const parent = this.canvas.parentElement;
-        if (parent) {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            DrawUtility.drawImageFit(this.ctx, this.icon_bitmap, this.canvas, "center");
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        DrawUtility.drawImageFit(this.ctx, this.icon_bitmap, this.canvas, "center");
 
-            parent.classList.add("animating-pulse");
-        }
+        parent.classList.add("animating-pulse");
+        // C++側も制御はしてるけど一応
+        this.is_visible = true;
+
     }
 
     hide() {
         const parent = this.canvas.parentElement;
-        if (parent) {
-            parent.classList.remove("animating-pulse");
-            parent.style.opacity = "0";
-        }
+        parent.classList.remove("animating-pulse");
+        parent.style.opacity = "0";
+
+        this.is_visible = false;
     }
 }

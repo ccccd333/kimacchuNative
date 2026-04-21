@@ -147,8 +147,9 @@ namespace KMCCT {
         }
 
         if (eln || feln) {
+            auto* thread = KMCCT::KMCEventThread::GetSingleton();
             while (eln || feln) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                if (thread->forceendanim || thread->IsShuttingDown()) {
                     return -1;
                 }
 
@@ -197,6 +198,8 @@ namespace KMCCT {
         }
     }
     void KMCExpression::TryKMCExp(STMFGPair* mfg) {
+
+        auto* thread = KMCCT::KMCEventThread::GetSingleton();
         if (f_now.ac && p_now.ac) {
             if (f_now.ac->GetFormID() == p_now.ac->GetFormID()) {
                 bool end = false;
@@ -219,7 +222,7 @@ namespace KMCCT {
                             return;
                         }
 
-                        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                        if (thread->forceendanim || thread->IsShuttingDown()) {
                             return;
                         }
 
@@ -246,7 +249,7 @@ namespace KMCCT {
             return;
         }
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+        if (thread->forceendanim || thread->IsShuttingDown()) {
             return;
         }
 
@@ -270,7 +273,7 @@ namespace KMCCT {
 
         if (!end) {
             while (!end) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                if (thread->forceendanim || thread->IsShuttingDown()) {
                     return;
                 }
 
@@ -283,7 +286,7 @@ namespace KMCCT {
             }
         }
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+        if (thread->forceendanim || thread->IsShuttingDown()) {
             return;
         }
 
@@ -298,7 +301,7 @@ namespace KMCCT {
     }
 
     void KMCExpression::TryKMCFLExp(STMFGPair* mfg) {
-        
+        auto* thread = KMCCT::KMCEventThread::GetSingleton();
         if (f_now.ac && p_now.ac) {
             if (f_now.ac->GetFormID() == p_now.ac->GetFormID()) {
                 bool end = false;
@@ -320,7 +323,7 @@ namespace KMCCT {
                             return;
                         }
 
-                        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                        if (thread->forceendanim || thread->IsShuttingDown()) {
                             return;
                         }
 
@@ -348,7 +351,7 @@ namespace KMCCT {
             return;
         }
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+        if (thread->forceendanim || thread->IsShuttingDown()) {
             return;
         }
 
@@ -372,7 +375,7 @@ namespace KMCCT {
 
         if (!end) {
             while (!end) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                if (thread->forceendanim || thread->IsShuttingDown()) {
                     return;
                 }
 
@@ -385,7 +388,7 @@ namespace KMCCT {
             }
         }
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+        if (thread->forceendanim || thread->IsShuttingDown()) {
             return;
         }
 
@@ -525,13 +528,14 @@ namespace KMCCT {
         time_point<Clock> start = Clock::now();
         time_point<Clock> end;
         long long dur = 0;
+        auto* thread = KMCCT::KMCEventThread::GetSingleton();
         // sleep
         while (true) {
             if (GetWaitFlag()) {
                 return -1;
             }
 
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+            if (thread->forceendanim || thread->IsShuttingDown()) {
                 return -2;
             }
             end = Clock::now();

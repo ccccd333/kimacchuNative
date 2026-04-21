@@ -9,29 +9,32 @@ SINGLETONBODY(KMCCT::KMCOAR)
 namespace KMCCT {
     void KMCOAR::Init() { 
         const auto player_addon_set = KMCDisplayAddon::GetSingleton()->GetActorAddons((int)KMCDisplayType::PLAYER);
-       
-        for (const auto& [key, value] : player_addon_set->cutin_entries) {
-            try {
-                auto spvalue = KMCSplit(value.oar_ref, ',');
+        if (player_addon_set) {
+            for (const auto& [key, value] : player_addon_set->cutin_entries) {
+                try {
+                    auto spvalue = KMCSplit(value.oar_ref, ',');
 
-                if (spvalue.size() == 2) {
-                    RE::TESGlobal* global = nullptr;
-                    global = (RE::TESGlobal*)RE::TESDataHandler::GetSingleton()->LookupForm(
-                        std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
+                    if (spvalue.size() == 2) {
+                        RE::TESGlobal* global = nullptr;
+                        global = (RE::TESGlobal*)RE::TESDataHandler::GetSingleton()->LookupForm(
+                            std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
 
-                    if (global != nullptr) {
-                        global->value = 0.0f;
-                        oar_components.push_back(std::make_pair(key, OARCompDetail(global, value.anim_duration)));
+                        if (global != nullptr) {
+                            global->value = 0.0f;
+                            oar_components.push_back(std::make_pair(key, OARCompDetail(global, value.anim_duration)));
 
+                        } else {
+                            ERROR("[DisplayAddons.json] [OAR] [Player] GlobalForm not found. Key: {}", key);
+                        }
                     } else {
-                        ERROR("[DisplayAddons.json] [OAR] [Player] GlobalForm not found. Key: {}", key);
+                        ERROR(
+                            "[DisplayAddons.json] [OAR] [Player] Invalid oar_ref format (expected FormID,Plugin). Key: "
+                            "{}, Value: {}",
+                            key, value.oar_ref);
                     }
-                } else {
-                    ERROR("[DisplayAddons.json] [OAR] [Player] Invalid oar_ref format (expected FormID,Plugin). Key: {}, Value: {}",
-                          key, value.oar_ref);
+                } catch (...) {
+                    ERROR("[DisplayAddons.json] [OAR] [Player] Unknown fatal error.  Key: {}", key);
                 }
-            } catch (...) {
-                ERROR("[DisplayAddons.json] [OAR] [Player] Unknown fatal error.  Key: {}", key);
             }
         }
 
@@ -40,6 +43,8 @@ namespace KMCCT {
             try {
                 int f_index = fins.index + 1;
                 const auto follower_addon_set = KMCDisplayAddon::GetSingleton()->GetActorAddons(f_index);
+                if (!follower_addon_set) continue;
+
                 std::vector<std::pair<uint64_t, OARCompDetail>> oarc;
 
                 for (const auto &[key, value] : follower_addon_set->cutin_entries) {
@@ -105,7 +110,8 @@ namespace KMCCT {
 
         KMCCT::KMCTimer(ocd->time * KMCCT::WHILE_WAIT_TIME);
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+        auto* thread = KMCCT::KMCEventThread::GetSingleton();
+        if (thread->forceendanim || thread->IsShuttingDown()) {
             return;
         }
 

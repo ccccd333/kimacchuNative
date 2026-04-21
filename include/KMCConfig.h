@@ -102,7 +102,6 @@ namespace KMCCT {
         std::vector<std::pair<std::string, std::string>>* getIDetectionStorageUtil() { return &IDetectionStorageUtil; }     
 
         std::vector<std::pair<std::string, std::string>>* getIInvisibleTimingSetting() { return &IInvisibleTimingSetting; } 
-        std::vector<std::pair<std::string, std::string>>* getIProfileAnimTextFade() { return &IProfileAnimTextFade; } 
         std::vector<std::pair<std::string, std::string>>* getIProfileSoundEffect() { return &IProfileSoundEffect; } 
         
         // Player only(It's too much trouble to modify the program...)        
@@ -137,7 +136,6 @@ namespace KMCCT {
         // common
         std::vector<std::pair<std::string, std::string>> ISetting;
         std::vector<std::pair<std::string, std::string>> IManagedFollower;
-        std::vector<std::pair<std::string, std::string>> NamePlate;
         std::vector<std::pair<std::string, KMCNamePlate>> INamePlate;
         std::vector<KMCNamePlateAnimationSettings> INamePlateAnimation;
         std::vector<std::pair<std::string, std::string>> IDetectionKeyword;
@@ -147,7 +145,6 @@ namespace KMCCT {
         std::vector<std::pair<std::string, std::string>> IDetectionStorageUtil;
 
         std::vector<std::pair<std::string, std::string>> IInvisibleTimingSetting;
-        std::vector<std::pair<std::string, std::string>> IProfileAnimTextFade;
         std::vector<std::pair<std::string, std::string>> IProfileSoundEffect;
 
 

@@ -90,20 +90,23 @@ namespace KMCCT {
 
         const auto player_addon_set = KMCDisplayAddon::GetSingleton()->GetActorAddons((int)KMCDisplayType::PLAYER);
         const auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
-        InitLoop(&sound_descriptor_map, &sound_descriptor_se_map, player_addon_set, player, nullptr);
+        if (player_addon_set) {
+            InitLoop(&sound_descriptor_map, &sound_descriptor_se_map, player_addon_set, player, nullptr);
+        }
 
         auto* followers = KMCCT::KMCConfig::GetSingleton()->GetFollowers();
         for (const auto& f : *followers) {
-
-            std::vector<std::pair<int, RE::BGSSoundDescriptorForm*>> sd;
-            std::map<int, std::map<std::string, KMCSECond>> sd_se_map;
-            std::vector<std::pair<std::string, size_t>> si;
-
             const auto follower_addon_set = KMCDisplayAddon::GetSingleton()->GetActorAddons(f.index + 1);
 
-            InitLoop(&sd, &sd_se_map, follower_addon_set, player, f.follower);
+            if (follower_addon_set) {
+                std::vector<std::pair<int, RE::BGSSoundDescriptorForm*>> sd;
+                std::map<int, std::map<std::string, KMCSECond>> sd_se_map;
+                std::vector<std::pair<std::string, size_t>> si;
 
-            FSoundDescriptiorMap.push_back(std::make_pair(f.index, KMCFSoundDescription(sd, sd_se_map)));        
+                InitLoop(&sd, &sd_se_map, follower_addon_set, player, f.follower);
+
+                FSoundDescriptiorMap.push_back(std::make_pair(f.index, KMCFSoundDescription(sd, sd_se_map)));
+            }
         }
 
 

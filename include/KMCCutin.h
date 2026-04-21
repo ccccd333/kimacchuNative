@@ -4,7 +4,7 @@
 namespace KMCCT {
     const long long READY_TIMEOUT = 30000;
 
-    const long long SE_PROGRESS_ADDTION_MS = 200;
+    const long long SE_PROGRESS_ADDTION_MS = 100;
     const long long SE_TIMER_INTERVAL_MS = SE_PROGRESS_ADDTION_MS;
 
     struct KMCCutinValues {
@@ -45,6 +45,7 @@ namespace KMCCT {
     void KMCOnCutinEnd(KMCAnimST *st, int &playerorfollower);
     void KMCOARFuncStart(KMCAnimST *st, int &playerorfollower);
     void KMCExpFuncStart(KMCAnimST *st, int &playerorfollower);
+    void KMCBatchPreloadGroups(KMCAnimST *st, int &playerorfollower);
 
     class KMCCutin {
         SINGLETONHEADER(KMCCutin)

@@ -1,5 +1,6 @@
 import { DisplayDrawingTexture } from "./DisplayDrawingTexture.js";
 import { DisplayStopIconTexture } from "./DisplayStopIconTexture.js";
+import { DisplayProfile } from "./DisplayProfile.js";
 
 // カットイン関連の大本
 // ID = (0)=>プレイヤー (1以降)=>フォロワー
@@ -11,6 +12,7 @@ export class DisplayManager {
     constructor() {
         this.displayMap = new Map();
         this.stopIcon = null;
+        this.profile = new DisplayProfile();
     }
 
     initStopIcon() {
@@ -38,10 +40,16 @@ export class DisplayManager {
         return this.displayMap.get(id);
     }
 
-    stopAllDisplays() {
+    stopAndHideAll() {
         for (const display of this.displayMap.values()) {
             display.stopAll();
         }
+
+        if (this.stopIcon) {
+            this.stopIcon.hide();
+        }
+
+        this.profile.hide();
     }
 }
 
@@ -137,6 +145,18 @@ window.KMCPreloadGroups = async (json) => {
     }
 };
 
+window.KMCBatchPreloadGroups = async (json) => {
+    for (const [id_str, next_group] of Object.entries(json)) {
+        const id = Number(id_str);
+        if (id != -1 && next_group != -1) {
+            const display_instance = window.KMCDisplayManager.get(id);
+            await display_instance.preloadGroup(next_group);
+        } else {
+            console.warn(`[BatchPreload] Display instance or group not found for ID: ${id}`);
+        }
+    }
+};
+
 window.KMCPlayPlayerCutin = (json) => {
     const group = json.group;
     const next_group = json.next_group;
@@ -151,11 +171,6 @@ window.KMCPlayFollowerCutin = (json) => {
     if (id == null || group == null) return;
 
     window.KMCDisplayManager.play(id, group, next_group);
-};
-
-window.KMCStopAllAnimations = () => {
-    // インスタンスのメソッドを呼び出すことで、thisの混乱を防ぐ
-    window.KMCDisplayManager.stopAllDisplays();
 };
 
 function makeDraggable(target, handle = target) {
@@ -188,9 +203,40 @@ makeDraggable(document.getElementById("player_pos"));
 makeDraggable(document.getElementById("follower_pos"));
 
 window.KMCShowStopIcon = () => {
+    // さすがにプレイヤー＋フォロワーをstopallすると重いので流してしまう
     window.KMCDisplayManager.stopIcon.show();
 };
 
 window.KMCHideStopIcon = () => {
     window.KMCDisplayManager.stopIcon.hide();
+};
+
+window.KMCStopAndHideCutinAndIcon = () => {
+    window.KMCDisplayManager.stopAndHideAll();
+};
+
+/**
+ * プロフィール
+ */
+window.KMCPreloadProfile = async (json) => {
+    const tasks = [];
+    for (const [id, data] of Object.entries(json)) {
+        if (id.startsWith("D")) {
+            tasks.push(window.KMCDisplayManager.profile.preloadProfile(id, data));
+        }
+    }
+    await Promise.all(tasks);
+};
+
+window.KMCShowProfile = async (json) => {
+    await window.KMCDisplayManager.profile.setup(json);
+};
+
+
+window.KMCHideProfile = () => {
+    window.KMCDisplayManager.profile.hide();
+};
+
+window.KMCUpdateProfileText = (id, updates) => {
+    window.KMCDisplayManager.profile.updateText(id, updates);
 };

@@ -66,7 +66,10 @@ namespace KMCCT {
         SINGLETONHEADER(KMCEventThread)
     public:
 
-        ~KMCEventThread();
+        ~KMCEventThread() { 
+            forceendanim = true;
+            is_shutting_down.store(true);
+        }
 
         bool IsAlreadyInited();
         void InitWordsAndWidgets(RE::BSFixedString skyroot, std::vector<float> floatArray);
@@ -74,6 +77,8 @@ namespace KMCCT {
         void CutInCreate(std::vector<std::string> variableArray);
         void TryShowProfile();
         void MCMSettingChange(std::vector<float> floatArray);
+
+        bool IsShuttingDown() const { return is_shutting_down.load(); }
         
         void Reset();
         bool GetProfileInitEnd();
@@ -83,8 +88,9 @@ namespace KMCCT {
     public:
         std::atomic<bool> forceendanim;
         
-    private:
         
+    private:
+        std::atomic<bool> is_shutting_down{false};
         std::vector<float> papyrus_floatArray;
         std::vector<float> papyrus_mcm;
     };

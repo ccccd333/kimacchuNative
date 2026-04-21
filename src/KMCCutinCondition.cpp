@@ -288,30 +288,31 @@ namespace KMCCT {
     int KMCCutinCondition::ToMove(const KMCCCStartArg &args) {
         int result = 0;
         s_args = args;
+        auto *thread = KMCCT::KMCEventThread::GetSingleton();
         Update();
 
         RetryCache();
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+        if (thread->forceendanim || thread->IsShuttingDown()) {
             return result;
         }
 
         PreProcess();
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+        if (thread->forceendanim || thread->IsShuttingDown()) {
             return result;
         }
 
         if (!KMCCT::KMCStateManager::GetSingleton()->GetStoppingState()) {
             StartEvaluation();
 
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+            if (thread->forceendanim || thread->IsShuttingDown()) {
                 return result;
             }
 
             Commit();
 
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+            if (thread->forceendanim || thread->IsShuttingDown()) {
                 return result;
             }
         }
@@ -718,8 +719,10 @@ namespace KMCCT {
         custom_cond.completed_nodes.clear();
         custom_cond.post_nodes.clear();
 
+        auto *thread = KMCCT::KMCEventThread::GetSingleton();
+
         for (auto &manager : custom_cond.managers) {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+            if (thread->forceendanim || thread->IsShuttingDown()) {
                 return;
             }
 
@@ -754,8 +757,10 @@ namespace KMCCT {
             LOG("[CORRECTION] [CORRECTION][{}] [DUR][{}]", correction, dur);
         }
 
+        auto *thread = KMCCT::KMCEventThread::GetSingleton();
+
         for (auto &m_node : checked_nodes) {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+            if (thread->forceendanim || thread->IsShuttingDown()) {
                 return;
             }
 
@@ -765,7 +770,7 @@ namespace KMCCT {
             node->task_hub->Correction(correction);
 
             for (auto &sbt : node->node_relations) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                if (thread->forceendanim || thread->IsShuttingDown()) {
                     return;
                 }
 
@@ -795,7 +800,7 @@ namespace KMCCT {
         std::map<std::string, KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>> *> exp_work;
 
         for (auto &m_node : pre_commit_nodes) {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+            if (thread->forceendanim || thread->IsShuttingDown()) {
                 return;
             }
             std::string mpushed_key = m_node.first;
@@ -838,6 +843,7 @@ namespace KMCCT {
 
     void KMCCustomCondMain::Commit() {
         completed_nodes = pre_completed_nodes;
+        auto *thread = KMCCT::KMCEventThread::GetSingleton();
 
         std::chrono::duration<float> diff = Clock::now() - s_args.start_time;
         float dur = diff.count();
@@ -848,7 +854,7 @@ namespace KMCCT {
         }
 
         for (auto &m_node : pre_completed_nodes) {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+            if (thread->forceendanim || thread->IsShuttingDown()) {
                 return;
             }
 
@@ -856,7 +862,7 @@ namespace KMCCT {
             auto node = m_node.second;
 
             for (auto &sbt : node->node_relations) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                if (thread->forceendanim || thread->IsShuttingDown()) {
                     return;
                 }
 
@@ -881,7 +887,7 @@ namespace KMCCT {
         }
 
         for (auto &m_node : completed_nodes) {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+            if (thread->forceendanim || thread->IsShuttingDown()) {
                 return;
             }
 
@@ -900,8 +906,10 @@ namespace KMCCT {
     }
 
     void KMCCustomCondMain::Post() {
+        auto *thread = KMCCT::KMCEventThread::GetSingleton();
+
         for (auto &m_node : post_nodes) {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+            if (thread->forceendanim || thread->IsShuttingDown()) {
                 return;
             }
 
@@ -1238,8 +1246,10 @@ namespace KMCCT {
 
     template <>
     void KMCCustomCondManager<KMCCustomCondMain>::Instruct() {
+        auto *thread = KMCCT::KMCEventThread::GetSingleton();
+
         for (auto &node : nodes) {
-            if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+            if (thread->forceendanim || thread->IsShuttingDown()) {
                 return;
             }
             std::string push_key = node->push_key;

@@ -308,6 +308,7 @@ export class DisplayDrawingTexture {
 
         // アニメーション秒数を超えた場合C++に通知とキャッシュモード(1)の場合は再生済みは消す
         if ((time - this.start_time) >= this.duration_sec * 1000) {
+            this.animating = false;
 
             // 全てのレイヤー非表示
             Object.keys(this.ctxs).forEach(key => {
@@ -338,7 +339,7 @@ export class DisplayDrawingTexture {
                 this.preloadGroup(this.current_next_group);
             }
 
-            this.animating = false;
+            this.current_next_group = -1;
 
             // C++側に通知
             CutinFinished(this.display_type);
@@ -348,8 +349,10 @@ export class DisplayDrawingTexture {
 
     stopAll() {
         // ゲームロード時
+        if(!this.animating) return;
         this.animating = false;
 
+        // TODO:停止アイコン表示時stopするので、next_group -1はあり得るか(要テスト)
         if (this.cache_type === 1 && this.current_next_group && this.current_group &&
             this.current_next_group != this.current_group && this.current_next_group != -1
         ) {

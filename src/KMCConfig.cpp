@@ -65,29 +65,9 @@ namespace KMCCT {
             ERROR("Profile InvisibleTimingSetting.json json description error.");
         }
 
-        if (!SetupJsonSimpleNodes(&IProfileAnimTextFade,
-                                  PROFILE_PATH + "/" + PROFILE_ANIM_PATH + "/" + PROFILE_TEXT_FADE_FILE_NAME,
-                                  JSON_ROOT_KEY_STRING)) {
-            ERROR("Profile TextFade.json json description error.");
-        }
-
         if (!SetupJsonSimpleNodes(&IProfileSoundEffect, PROFILE_PATH + "/" + PROFILE_SOUND_EFFECT_FILE_NAME,
                                   JSON_ROOT_KEY_STRING)) {
             ERROR("Profile SoundEffect.json json description error.");
-        }
-
-        // NamePlate.json
-        if (!SetupJsonSimpleNodes(&NamePlate, NAME_PLATE_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            ERROR("NamePlate.json json description error.");
-        } else {
-            try {
-                for (auto [key, value] : NamePlate) {
-                    std::vector<std::string> conf = KMCSplit(value, ',');
-                    INamePlate.push_back(std::make_pair(key, KMCNamePlate(conf)));
-                }
-            } catch (...) {
-                ERROR("ERROR Setup NamePlate.json. The number of elements in the value is wrong.");
-            }
         }
 
         ISetup(PLAYER_WORD_PATH, &IConditions);
