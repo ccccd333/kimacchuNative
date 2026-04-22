@@ -214,14 +214,13 @@ void KMCCT::ProfilePeriodicCall() {
         }
         
         if (isProfileInitEnd) {
-            if (!KMCCT::KMCProfile::GetSingleton()->GetUpdateProfile() &&
-                KMCCT::KMCProfile::GetSingleton()->Get_show_prifile() &&
-                !KMCCT::KMCProfile::GetSingleton()->Get_showing_profile() &&
+            auto *profile = KMCCT::KMCProfile::GetSingleton();
+            if (!profile->GetUpdateProfile() && profile->GetShowProfile() && !profile->GetShowingProfile() &&
                 KMCCT::KMCStateManager::GetSingleton()->GetProfileInvisibleState(
                     KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag())) {
                 // í“¬’†‚È‚Ç‚ÍÁ‚·‚æ‚¤‚É‚·‚éBjson“à—eŽŸ‘æB
-                KMCCT::KMCProfile::GetSingleton()->ShowProfile(false);
-                KMCCT::KMCProfile::GetSingleton()->Set_switch_disp_profile_flag(false);
+                profile->ShowProfile(false);
+                profile->Set_switch_disp_profile_flag(false);
             }
         }
 

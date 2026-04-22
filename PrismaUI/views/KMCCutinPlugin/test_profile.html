@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>DisplayProfile Test</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* デバッグ用にコンテナを可視化 */
+        #profile_display { border: 2px dashed red; }
+        .controls { position: fixed; bottom: 10px; left: 10px; z-index: 1000; background: #fff; padding: 10px; border: 1px solid #000; }
+    </style>
+</head>
+<body>
+
+<div id="profile_display" class="profile-container">
+    <div class="image-area">
+        <div class="image-frame d01"><div class="label">D01</div><canvas id="D01"></canvas></div>
+        <div class="image-frame d02"><div class="label">D02</div><canvas id="D02"></canvas></div>
+        <div class="image-frame d03"><div class="label">D03</div><canvas id="D03"></canvas></div>
+    </div>
+    <div class="text-area">
+        <div id="T01" class="text-box tall"><div class="title">Status</div><div class="content"></div></div>
+        <div class="small-grid">
+            <div id="T02" class="text-box small"><div class="title">T02</div><div class="content"></div></div>
+            <div id="T03" class="text-box small"><div class="title">T03</div><div class="content"></div></div>
+            <div id="T04" class="text-box small"><div class="title">T04</div><div class="content"></div></div>
+            <div id="T05" class="text-box small"><div class="title">T05</div><div class="content"></div></div>
+        </div>
+        <div id="T06" class="text-box tall"><div class="title">Logs</div><div class="content"></div></div>
+    </div>
+</div>
+
+<div class="controls">
+    <button onclick="runSetup()">1. Setup (Load)</button>
+    <button onclick="runShow()">2. Show</button>
+    <button onclick="runHide()">3. Hide</button>
+    <button onclick="runUpdate()">4. Update Text</button>
+</div>
+
+<script type="module">
+    import { DisplayProfile } from './DisplayProfile.js';
+
+    const profile = new DisplayProfile();
+    window.profileInstance = profile;
+
+    // ダミー画像の生成関数 (実際に画像ファイルがなくてもテストできるように)
+    // 本番環境では fetch になるため、URL.createObjectURL で代用
+    async function createDummyImage(id, index) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 100; canvas.height = 100;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = id === 'D01' ? 'blue' : 'green';
+        ctx.fillRect(0, 0, 100, 100);
+        ctx.fillStyle = 'white';
+        ctx.font = '30px Arial';
+        ctx.fillText(`${index}`, 30, 60);
+        return await createImageBitmap(canvas);
+    }
+
+    // 1. セットアップのテスト
+    window.runSetup = async () => {
+        console.log("Setting up...");
+        const mockJson = {
+            "D01": { base_path: "dummy/", texture_range: { start: 0, end: 10 } },
+            "D02": { base_path: "dummy/", texture_range: { start: 0, end: 5 } },
+            "T01": { lines: ["Loading data...", "Level: 50", "HP: 100/100"], bg_path: "" },
+            "T02": { lines: ["Strength: 10"] }
+        };
+
+        // preloadProfileをオーバーライドして、ダミー画像を注入するように一時的に書き換え
+        // (実際の画像ファイルがない場合のテスト用)
+        profile.preloadProfile = async function(id, data) {
+            const bitmaps = [];
+            for(let i=data.texture_range.start; i<=data.texture_range.end; i++) {
+                bitmaps.push(await createDummyImage(id, i));
+            }
+            this.image_cache.set(id, bitmaps);
+        };
+
+        await profile.setup(mockJson);
+        console.log("Setup Complete");
+    };
+
+    // 2. 表示のテスト
+    window.runShow = () => profile.show();
+
+    // 3. 非表示のテスト
+    window.runHide = () => profile.hide();
+
+    // 4. テキスト更新のテスト
+    window.runUpdate = () => {
+        profile.updateText({
+            "T01": { 0: "Updated Name", 2: "HP: 20/100 (DANGER)" },
+            "T02": { 0: "Strength: 999" }
+        });
+    };
+</script>
+</body>
+</html>

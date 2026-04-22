@@ -13,7 +13,6 @@ namespace KMCCT {
 
         ~KMCProfile();
         void Init();
-        void InitProfile(std::string skyroot, std::vector<float> *floatArray);
         void Reset() {
             //BefResultModifiedContainer.clear();
             //ResultModifiedContainer.clear();
@@ -37,9 +36,9 @@ namespace KMCCT {
         void Set_update_prifile(bool set) { update_prifile = set; }
         bool Get_first_profile_update() { return first_profile_update; }
         void Set_first_profile_update(bool set) { first_profile_update = set; }
-        bool Get_show_prifile() { return show_prifile; }
+        bool GetShowProfile() { return show_prifile; }
         void Set_show_prifile(bool set) { show_prifile = set; }
-        bool Get_showing_profile() { return showing_profile; }
+        bool GetShowingProfile() { return showing_profile; }
         void Set_showing_profile(bool set) { showing_profile = set; }
         bool Get_interrupt_show_profile() { return interrupt_show_profile; }
         void Set_interrupt_show_profile(bool set) { interrupt_show_profile = set; }

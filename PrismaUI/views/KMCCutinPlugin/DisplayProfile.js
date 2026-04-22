@@ -7,6 +7,9 @@ export class DisplayProfile {
         this.animating = false;
         this.frame = 0;
         this.animate = this.animate.bind(this);
+        this.FPS = 24;
+        this.last_time = 0;
+        this.interval = 1000 / this.FPS;
 
         this.container = document.getElementById("profile_display");
         
@@ -27,6 +30,59 @@ export class DisplayProfile {
         });
     }
 
+    async setup(json) {
+        const tasks = [];
+        for (const [id, data] of Object.entries(json)) {
+            if (id.startsWith("T")) {
+                this.initTextStructure(id, data);
+            } else if (id.startsWith("D")) {
+                tasks.push(this.preloadProfile(id, data));
+            }
+        }
+        await Promise.all(tasks);
+    }
+
+    initTextStructure(id, data) {
+        const parent = this.text_containers[id];
+        if (!parent) return;
+
+        const target = parent.querySelector(".content") || parent;
+        target.innerHTML = "";
+        
+        const lines = [];
+        if (data.lines) {
+            data.lines.forEach(text => {
+                const div = document.createElement("div");
+                div.className = "profile-text-line";
+                div.innerText = text;
+                target.appendChild(div);
+                lines.push(div);
+            });
+        }
+        this.text_line_elements.set(id, lines);
+
+        if (data.bg_path) {
+            parent.style.backgroundImage = `url(${data.bg_path})`;
+            parent.style.backgroundSize = "cover";
+        }
+    }
+
+    async preloadProfile(id, data) {
+        if (this.image_cache.has(id)) return;
+        const { base_path, texture_range } = data;
+        const fetchPromises = [];
+        for (let i = texture_range.start; i <= texture_range.end; i++) {
+            fetchPromises.push(
+                fetch(`${base_path}${i}.png`)
+                    .then(r => r.blob())
+                    .then(blob => createImageBitmap(blob))
+                    .catch(e => console.error(`[Profile] Load fail: ${id}_${i}`, e))
+            );
+        }
+        const bitmaps = await Promise.all(fetchPromises);
+        this.image_cache.set(id, bitmaps.filter(b => b));
+    }
+
     show() {
         if (this.container) {
             this.container.style.display = "block"; // または contents
@@ -34,6 +90,10 @@ export class DisplayProfile {
 
         if (!this.animating) {
             this.animating = true;
+
+            this.last_time = 0;
+            this.frame = 0;
+
             requestAnimationFrame(this.animate);
         }
     }
@@ -45,9 +105,15 @@ export class DisplayProfile {
         }
     }
 
-    animate() {
+    animate(time) {
         if (!this.animating) return;
         requestAnimationFrame(this.animate);
+
+        const elapsed = time - this.last_time;
+
+        if (elapsed < this.interval) return;
+
+        this.last_time = time - (elapsed % this.interval);
 
         for (const [id, ctx] of this.ctxs) {
             const frames = this.image_cache.get(id);
@@ -58,5 +124,19 @@ export class DisplayProfile {
             DrawUtility.drawImageFit(ctx, bmp, ctx.canvas, "center");
         }
         this.frame++;
+    }
+
+    updateText(json) {
+        for (const [id, lines] of Object.entries(json)) {
+            const lineElements = this.text_line_elements.get(id);
+            if (!lineElements) continue;
+
+            for (const [index, text] of Object.entries(lines)) {
+                const el = lineElements[index];
+                if (el) {
+                    el.innerText = text;
+                }
+            }
+        }
     }
 }

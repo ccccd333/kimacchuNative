@@ -14,22 +14,7 @@ namespace KMCCT {
     void KMCProfile::Init() {
         StrageUtilStartIndex = 0;
         StrageUtilEndIndex = 0;
-        //ModifiedContainer = KMCCT::KMCStateManager::GetSingleton()->GetStrageUtilAccessKeys();
-        //StrageUtilEndIndex = (int)ModifiedContainer.size() - 1;
-        //if (StrageUtilEndIndex < 0) StrageUtilEndIndex = 0;
 
-        // Player Profile
-        //auto pws = KMCCT::KMCConfig::GetSingleton()->getIWidgetSetting();
-        //auto pts = KMCCT::KMCConfig::GetSingleton()->getITextSetting();
-        //auto ppt = KMCCT::KMCConfig::GetSingleton()->getIProfileText();
-
-        //if (StrageUtilEndIndex == 0) {
-        //    ModStartIndex = 0;
-        //} else {
-        //    ModStartIndex = StrageUtilEndIndex + 1;
-        //}
-
-        //ProfileInit(profil_ex_data, KMCCT::PLAYER_WORD_PATH, pws, pts, ppt);
         Parse(COMMON_PATH + PROFILE_PATH + "/" + DISPLAY_PROFILE_PATH);
         
         mod_end_index = mod_start_index + profil_ex_data.format_id_num;
@@ -40,132 +25,7 @@ namespace KMCCT {
                     modified_container.push_back(fs);
                 }
             }
-
-            //std::vector<std::string> sp_format_id_string = KMCSplit(profil_ex_data.format_id_strings, ',');
-            //for (int i = 0; i < profil_ex_data.format_id_num; i++) {
-            //    try {
-            //        std::string fid = sp_format_id_string.at(i);
-            //        ModifiedContainer.push_back(fid);
-            //    } catch (...) {
-            //        ERROR("KMCEventThread::Init not found format id key : {}", i);
-            //        mod_end_index = mod_start_index + i;
-            //        break;
-            //    }
-            //}
         }
-
-        // for (auto &[key, value] : PlayerProfil.tids) {
-        //     LOG("KMCEventThread::Init ROW : {} size {}", key, PlayerProfil.tids.size());
-        //     LOG("Params x {} y {} font {} fsize {} r {} g {} b {}", value.defx, value.defy, value.font,
-        //     value.font_size, value.r, value.g, value.b);
-        // }
-
-        // for (auto &[key, value] : PlayerProfil.format_map) {
-        //     LOG("KMCEventThread::Init format_map ROW : {}", key);
-        //     LOG("Params row {} row_string {} tid {} ", value.row, value.row_string, value.tid);
-        // }
-
-        // for (auto &[key, value] : PlayerProfil.map_index) {
-        //     LOG("KMCEventThread::Init map_index before : {} after : {}", key, value);
-        // }
-
-        // for (auto &value : PlayerProfil.row_string) {
-        //     LOG("KMCEventThread::Init row_string value : {}", value);
-        // }
-        //
-        // LOG("KMCEventThread::Init format_id_strings {}", PlayerProfil.format_id_strings);
-    }
-
-    void KMCProfile::InitProfile(std::string skyroot, std::vector<float> *floatArray) {
-        aaaakmcroot = skyroot;
-        aaaakmcvolum = (*floatArray)[0];
-        auto *thread = KMCCT::KMCEventThread::GetSingleton();
-
-        if (profil_ex_data.tids.size() == 0) return;
-
-        if (profil_ex_data.wids.size() != 0) {
-            for (auto &values : profil_ex_data.wids) {
-                int rwid = -1;
-                std::string filename = KMCCT::PICT_PATH1 + "/" + values.any1 + KMCCT::PICT_TYPE;
-                if (IsFileExist(KMCCT::PICT_ROOT + filename)) {
-                    //int wid =
-                    //    IWW::MainFunctions::GetSingleton()->LoadWidget(aaaakmcroot, filename, 10000, 10000, false);
-                    if (thread ->forceendanim || thread->IsShuttingDown()) {
-                        return;
-                    }
-                    values.id = rwid;
-                    if (rwid > 0) {
-                        //IWW::MainFunctions::GetSingleton()->SetPosX(aaaakmcroot, rwid, values.defx);
-                        //IWW::MainFunctions::GetSingleton()->SetPosY(aaaakmcroot, rwid, values.defy);
-                        //IWW::MainFunctions::GetSingleton()->SetSizeW(aaaakmcroot, rwid, values.defsizex);
-                        //IWW::MainFunctions::GetSingleton()->SetSizeH(aaaakmcroot, rwid, values.defsizey);
-                    }
-                } else {
-                    WARN("File path not found. If not intended, no problem. {}", filename);
-                }
-            }
-        }
-
-        if (thread->forceendanim || thread->IsShuttingDown()) {
-            return;
-        }
-
-        try {
-            int row_string_index_count = 0;
-            std::map<int, KMCDispConfigs> copy_tids = profil_ex_data.tids;
-            for (auto &[key, value] : copy_tids) {
-                std::string text = profil_ex_data.row_string.at(row_string_index_count);
-                auto tid_form = &(profil_ex_data.tids.at(key));
-                KMCProfilFormatIdMap *format_map = nullptr;
-
-                if (profil_ex_data.format_map.contains(key)) {
-                    format_map = &(profil_ex_data.format_map.at(key));
-                }
-
-                //int tid = IWW::MainFunctions::GetSingleton()->LoadText(aaaakmcroot, text, tid_form->font,
-                 //                                                      tid_form->font_size, 10000, 10000, false);
-                if (thread->forceendanim || thread->IsShuttingDown()) {
-                    return;
-                }
-                //tid_form->id = rtid;
-                if (format_map != nullptr) {
-                    //format_map->tid = rtid;
-                }
-                //IWW::MainFunctions::GetSingleton()->SetPosX(aaaakmcroot, rtid, tid_form->defx);
-                //IWW::MainFunctions::GetSingleton()->SetPosY(aaaakmcroot, rtid, tid_form->defy);
-                //IWW::MainFunctions::GetSingleton()->SetRGB(aaaakmcroot, rtid, tid_form->r, tid_form->g, tid_form->b);
-                ++row_string_index_count;
-            }
-        } catch (std::exception &e) {
-            ERROR("InitProfile error {}", e.what());
-        }
-
-        // for (int i = 0; i < ppro->tids.size(); i++) {
-        //     std::string text = ppro->row_string.at(i);
-        //     auto tid_form = &(ppro->tids[i]);
-        //     KMCProfilFormatIdMap* format_map = nullptr;
-        //
-        //     if (ppro->format_map.contains(i)) {
-        //         format_map = &(ppro->format_map[i]);
-        //     }
-        //
-        //     int tid = IWW::MainFunctions::GetSingleton()->LoadText(aaaakmcroot, text, tid_form->font,
-        //     tid_form->font_size,
-        //                                                            10000, 10000, false);
-        //     auto lwID = executor.submit(WaitLoadNamePlate, &tid);
-        //     lwID.wait();
-        //     int rtid = lwID.get();
-        //     if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
-        //         return;
-        //     }
-        //     tid_form->id = rtid;
-        //     if (format_map != nullptr) {
-        //         format_map->tid = rtid;
-        //     }
-        //     IWW::MainFunctions::GetSingleton()->SetPosX(aaaakmcroot, rtid, tid_form->defx);
-        //     IWW::MainFunctions::GetSingleton()->SetPosY(aaaakmcroot, rtid, tid_form->defy);
-        //     IWW::MainFunctions::GetSingleton()->SetRGB(aaaakmcroot, rtid, tid_form->r, tid_form->g, tid_form->b);
-        // }
     }
 
     std::vector<std::string> KMCProfile::GetModifiedContainer() { 
@@ -367,54 +227,14 @@ namespace KMCCT {
             KMCCT::KMCSound::GetSingleton()->PlayProfileSE(KMCProfileSEType::open, aaaakmcvolum, player);
 
             // visible
-            for (auto &value : profil_ex_data.wids) {
-                if (thread->IsShuttingDown() || thread->forceendanim) {
-                    return;
-                }
-
-                if (value.id > 0 && value.widget_visible) {
-                   // IWW::MainFunctions::GetSingleton()->SetTransparency(aaaakmcroot, value.id, 0);
-                    std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::SET_ALPHA_MS));
-                    //IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, true);
-                }
-            }
-
-            for (auto &[key, value] : profil_ex_data.tids) {
-                if (thread->IsShuttingDown() || thread->forceendanim) {
-                    return;
-                }
-
-                if (value.id > 0) {
-                    //IWW::MainFunctions::GetSingleton()->SetTransparency(aaaakmcroot, value.id, 0);
-                    std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::SET_ALPHA_MS));
-                    //IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, true);
-                }
-            }
+            KMCPrismaUIBridge::GetSingleton()->KMCShowProfile();
 
             std::this_thread::sleep_for(std::chrono::milliseconds(time));
         } else {
             KMCCT::KMCSound::GetSingleton()->PlayProfileSE(KMCProfileSEType::end, aaaakmcvolum, player);
 
             // invisible
-            for (auto &value : profil_ex_data.wids) {
-                if (thread->IsShuttingDown() || thread->forceendanim) {
-                    return;
-                }
-
-                if (value.id > 0 && value.widget_visible) {
-                   // IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, false);
-                }
-            }
-
-            for (auto &[key, value] : profil_ex_data.tids) {
-                if (thread->IsShuttingDown() || thread->forceendanim) {
-                    return;
-                }
-
-                if (value.id > 0) {
-                   // IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, false);
-                }
-            }
+            KMCPrismaUIBridge::GetSingleton()->KMCHideProfile();
 
             std::this_thread::sleep_for(std::chrono::milliseconds(time));
 

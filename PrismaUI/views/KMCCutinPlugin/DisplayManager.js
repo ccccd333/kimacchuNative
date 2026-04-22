@@ -218,25 +218,18 @@ window.KMCStopAndHideCutinAndIcon = () => {
 /**
  * プロフィール
  */
-window.KMCPreloadProfile = async (json) => {
-    const tasks = [];
-    for (const [id, data] of Object.entries(json)) {
-        if (id.startsWith("D")) {
-            tasks.push(window.KMCDisplayManager.profile.preloadProfile(id, data));
-        }
-    }
-    await Promise.all(tasks);
-};
-
-window.KMCShowProfile = async (json) => {
+window.KMCSetupProfile = async (json) => {
     await window.KMCDisplayManager.profile.setup(json);
 };
 
+window.KMCShowProfile = () => {
+    window.KMCDisplayManager.profile.show();
+};
 
 window.KMCHideProfile = () => {
     window.KMCDisplayManager.profile.hide();
 };
 
-window.KMCUpdateProfileText = (id, updates) => {
-    window.KMCDisplayManager.profile.updateText(id, updates);
+window.KMCUpdateProfileText = (json) => {
+    window.KMCDisplayManager.profile.updateText(json);
 };
