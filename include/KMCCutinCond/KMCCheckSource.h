@@ -232,11 +232,11 @@ namespace KMCCT {
         int cache_index = 0;
         
     public:
-        void body_slot_build() { 
+        void BodySlotBuild() { 
             body_slot.Init();
         }
 
-        bool keyword_has_nhas_build(std::string ctgry) {
+        bool KeywordHasNHasBuild(std::string ctgry) {
             auto sp = KMCSplit(ctgry, ',');
             if (keywords.size() != sp.size()) {
                 return false;
@@ -265,7 +265,7 @@ namespace KMCCT {
             return true;
         }
 
-        bool temp_keyword_has_nhas_build(std::string ctgry) {
+        bool TempKeywordHasNHasBuild(std::string ctgry) {
             auto sp = KMCSplit(ctgry, ',');
             auto tkeysp = KMCSplit(temp_keyword_name, ',');
             if (tkeysp.size() != sp.size()) {
@@ -294,7 +294,7 @@ namespace KMCCT {
             return true;
         }
 
-        bool build_formula(KMCCCheckSource &source);
+        bool BuildFormula(KMCCCheckSource &source);
 
         //bool EvaluateFormula() {
         //    for (auto &[key, value] : cond_formula) {

@@ -6,6 +6,9 @@
 #include "KMCStateManager.h"
 #include "KMCWaitTask.h"
 #include "KMCPrismaUIBridge.h"
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 SINGLETONBODY(KMCCT::KMCProfile)
 
@@ -21,8 +24,8 @@ namespace KMCCT {
 
         if (mod_start_index != mod_end_index) {
             for (const auto &fm : profil_ex_data.format_maps) {
-                for (const auto &fs :fm.format_strings) {
-                    modified_container.push_back(fs);
+                for (const auto &index :fm.placeholder_indices) {
+                    modified_container.push_back(fm.format_strings.at(index));
                 }
             }
         }
@@ -56,13 +59,6 @@ namespace KMCCT {
     void KMCProfile::UpdateModifiedContainer(std::vector<std::string> *mod_container, int *SUtilEndIndex,
                                              int *ModStIndex, int *ModEnIndex, KMCProfil *profile) {
 
-        int profile_start_index = 0;
-        //if (*SUtilEndIndex > 0) {
-        //    profile_start_index += *SUtilEndIndex + 1;
-        //    KMCCT::KMCStateManager::GetSingleton()->SetResultStrageUtil(*mod_container);
-        //} else {
-        //    profile_start_index = 0;
-        //}
         if (mod_container->size() <= *ModEnIndex && *ModStIndex != *ModEnIndex) {
             if (!KMCCT::KMCEventThread::GetSingleton()->GetProfileInitEnd()) {
                 {
@@ -76,30 +72,33 @@ namespace KMCCT {
             }
 
             try {
-                auto formmap = profile->format_map;
-                std::map<int, KMCUpdateProfileData> formated_map;
-                for (int i = profile_start_index; i < mod_container->size(); i++) {
-                    std::string value = mod_container->at(i);
-                    std::string format_id = profile->format_id_strings_array.at(i - profile_start_index);
-                    int row = profile->map_index.at(i - profile_start_index).second;
-                    if (formmap.contains(row)) {
-                        auto pfm = formmap.at(row);
-                        if (formated_map.contains(row)) {
-                            std::string formated = formated_map.at(row).format_data;
-                            Replace(formated, format_id, value);
-                            formated_map.at(row).format_data = formated;
-                        } else {
-                            formated_map.insert(std::make_pair(row, KMCUpdateProfileData()));
-                            std::string formated = pfm.row_string;
-                            Replace(formated, format_id, value);
-                            formated_map.at(row).format_data = formated;
-                            formated_map.at(row).tid = pfm.tid;
-                        }
-                    }
-                }
+                json js = json::object();
+                std::unordered_map<std::string, std::map<std::string, std::string>> formated_map;
+                if (profil_ex_data.format_id_num != mod_container->size()) {
+                    ERROR(
+                        "UpdateModifiedContainer: Data count mismatch. Expected (format_id_num): {}, Actual "
+                        "(mod_container size): {}",
+                        profil_ex_data.format_id_num, mod_container->size());
+                } else {
+                    for (int i = 0; i < mod_container->size();) {
+                        const auto &cross_ref = profile->format_maps.at(i);
 
-                for (auto &[key, value] : formated_map) {
-                    //IWW::MainFunctions::GetSingleton()->SetText(aaaakmcroot, value.tid, value.format_data);
+                        int j = i;
+                        std::string edited_sring = "";
+                        for (int index = 0; index < cross_ref.format_strings.size(); index++) {
+                            if (std::ranges::contains(cross_ref.placeholder_indices, index)) {
+                                edited_sring += mod_container->at(j);
+                                ++j;
+                            } else {
+                                edited_sring += cross_ref.format_strings.at(index);
+                            }
+                        }
+                        formated_map[cross_ref.id][std::to_string(cross_ref.row)] = edited_sring;
+
+                        i = j;
+                    }
+                    js = formated_map;
+                    KMCPrismaUIBridge::GetSingleton()->KMCUpdateProfileText(js);
                 }
             } catch (std::exception &e) {
                 ERROR("UpdateModifiedContainer Error {}", e.what());
@@ -210,7 +209,7 @@ namespace KMCCT {
             showing_profile = true;
         }
         // player only
-        if (profil_ex_data.tids.size() == 0) return;
+        if (is_missing_file) return;
         auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player == nullptr) return;
 
@@ -307,7 +306,8 @@ namespace KMCCT {
         linesへstd::unordered_map<id, std::map<row, std::string>>でアクセスする。
         papyrus側で{PlayerSLSValidFreedomLic}を文字列に置き換えた後の値を
         */
-        std::vector<KMCProfileReplaceMap> format_map;
+        //std::vector<KMCProfileReplaceMap> format_map;
+
 
         for (auto &[key, profile] : j.items()) {
             if (key.empty()) continue;
@@ -362,11 +362,41 @@ namespace KMCCT {
                         profil_ex_data.format_maps.push_back(std::move(rep_map));
                         current_row++;
                     }
+                } else if (profile.contains("bg_path") && profile["bg_path"].is_string()) {
+                    profil_ex_data.bg_map.emplace(key, profile.value("bg_path", ""));
                 }
             } else if (type == 'D') {
+                KMCProfileDrawingData data;
 
+                data.base_path = profile.value("bg_path", "");
+
+                if (profile.contains("texture_range") && profile["texture_range"].is_object()) {
+                    data.start = profile["texture_range"].value("start", 1);
+                    data.end = profile["texture_range"].value("end", 1);
+                } else {
+                    data.start = 1;
+                    data.end = 1;
+                }
+
+                profil_ex_data.drawing_data[key] = data;
+
+                for (int i = data.start; i <= data.end; i++) {
+                    std::string file_path = data.base_path + key + "/" + std::to_string(i) + ".png";
+                    if (!fs::exists(file_path)) {
+                        ERROR("Missing file: {}", file_path);
+                        is_missing_file = true;
+                    }
+                }
             }
         }
+
+        if (is_missing_file) {
+            // 1つでもpngが無ければNG、JS側でエラーになる
+            ERROR("[Error]Some image files could not be loaded. Therefore, the profile function will be disabled.");
+            return false;
+        }
+
+        return true;
     }
     // レガシー
 //    void KMCProfile::ProfileInit(KMCProfil &profil, std::string target,

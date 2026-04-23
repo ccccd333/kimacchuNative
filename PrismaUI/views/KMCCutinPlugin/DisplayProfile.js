@@ -71,9 +71,10 @@ export class DisplayProfile {
         if (this.image_cache.has(id)) return;
         const { base_path, texture_range } = data;
         const fetchPromises = [];
+        const dir = base_path + id + "/";
         for (let i = texture_range.start; i <= texture_range.end; i++) {
             fetchPromises.push(
-                fetch(`${base_path}${i}.png`)
+                fetch(`${dir}${i}.png`)
                     .then(r => r.blob())
                     .then(blob => createImageBitmap(blob))
                     .catch(e => console.error(`[Profile] Load fail: ${id}_${i}`, e))
@@ -85,7 +86,7 @@ export class DisplayProfile {
 
     show() {
         if (this.container) {
-            this.container.style.display = "block"; // または contents
+            this.container.style.display = "block";
         }
 
         if (!this.animating) {

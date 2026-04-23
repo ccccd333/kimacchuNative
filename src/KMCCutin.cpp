@@ -81,8 +81,6 @@ namespace KMCCT {
         aaaakmcAnimtime = (*floatArray)[1];
         aaaakmctime = (*floatArray)[2];
         aaaakmcCycle = (*floatArray)[3];
-
-        CategoryRandomizer();
     }
 
     void KMCCutin::InterruptCutInEventManager(KMCInterruptPushCutInData data) {
@@ -91,7 +89,7 @@ namespace KMCCT {
                           KMCCT::INTERRUPT_EVENT_COOL_TIME) *
             KMCCT::TIME_SCALE_MS;
         auto *thread = KMCCT::KMCEventThread::GetSingleton();
-        if (!thread->forceendanim && !thread->IsShuttingDown() && !thread->IsShuttingDown() &&
+        if (!thread->forceendanim && !thread->IsShuttingDown() &&
             thread->GetInitEndFlag() &&
             !KMCCT::KMCCutin::GetSingleton()->GetAnimNow() &&
             !KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag()) {

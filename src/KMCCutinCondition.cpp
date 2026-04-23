@@ -115,7 +115,7 @@ namespace KMCCT {
                         // has nhas‚ð‚·‚®Žg‚¦‚é‚æ‚¤‚É‚·‚é
                         if (source.sub1_category == KMCCCSubCategory::KEYWORD ||
                             source.sub1_category == KMCCCSubCategory::MAGIC_EFFECT_KEYWORD) {
-                            if (!mnger->source.keyword_has_nhas_build(source.sub2_category)) {
+                            if (!mnger->source.KeywordHasNHasBuild(source.sub2_category)) {
                                 mnger->disable = true;
                                 ERROR(
                                     "The number of (sub_category2) definitions for has and nhas does not match the "
@@ -128,15 +128,15 @@ namespace KMCCT {
 
                 if (!mnger->disable) {
                     if (source.sub1_category == KMCCCSubCategory::BODY_SLOT) {
-                        mnger->source.body_slot_build();
+                        mnger->source.BodySlotBuild();
                     } else if (source.main_category == KMCCCMainCategory::FORMULA) {
-                        if (!mnger->source.build_formula(mnger->source)) {
+                        if (!mnger->source.BuildFormula(mnger->source)) {
                             mnger->disable = true;
                             ERROR("An error has occurred in formula");
                         }
 
                     } else if (source.main_category == KMCCCMainCategory::TEMP_KEYWORD) {
-                        if (!mnger->source.temp_keyword_has_nhas_build(source.sub1_category)) {
+                        if (!mnger->source.TempKeywordHasNHasBuild(source.sub1_category)) {
                             mnger->disable = true;
                             ERROR(
                                 "The number of (sub_category1) definitions for has and nhas does not match the "
@@ -280,7 +280,7 @@ namespace KMCCT {
             }
         }
 
-        if (custom_cond.cache_container.isCacheable) {
+        if (custom_cond.cache_container.is_cacheable) {
             custom_cond.cache_container.PreCache();
         }
     }
@@ -355,7 +355,7 @@ namespace KMCCT {
             wnv->Reset();
         }
 
-        if (custom_cond.cache_container.isCacheable) {
+        if (custom_cond.cache_container.is_cacheable) {
             custom_cond.cache_container.CacheReset();
         }
     }

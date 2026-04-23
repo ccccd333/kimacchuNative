@@ -256,7 +256,7 @@ namespace KMCCT {
 
     }
 
-    bool KMCCCheckSource::build_formula(KMCCCheckSource &source) {
+    bool KMCCCheckSource::BuildFormula(KMCCCheckSource &source) {
         int andor_c = 0;
         
         for (int formi = 0; formi < source.formula.size(); formi++) {

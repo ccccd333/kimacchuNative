@@ -533,22 +533,21 @@ namespace KMCCT {
         std::vector<std::string> format_id;
     };
 
+    struct KMCProfileDrawingData {
+        std::string base_path;
+        int start = 0;
+        int end = 0;
+    };
+
     struct KMCProfil {
     public:
         KMCProfil() {}
 
     public:
-        std::vector<KMCDispConfigs> wids;
-        std::vector<std::string> row_string;
         int format_id_num = 0;
-        std::string format_id_strings = "";
-        std::vector<std::string> format_id_strings_array;
-        std::vector<std::pair<int, int>> map_index;
-        std::map<int, KMCDispConfigs> tids;
-        std::map<int, KMCProfilFormatIdMap> format_map;
-        bool isFormat = false;
 
-        // new ver
+        std::unordered_map<std::string, std::string> bg_map;
+
         /*
         {
             "T01":{
@@ -562,6 +561,8 @@ namespace KMCCT {
         std::unordered_map<std::string, std::map<int, std::string>> profile_lines;
 
         std::vector<KMCProfileReplaceMap> format_maps;
+
+        std::unordered_map<std::string, KMCProfileDrawingData> drawing_data;
     };
 
     struct STNodeRelations {

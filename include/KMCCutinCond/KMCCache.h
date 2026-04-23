@@ -12,7 +12,7 @@ namespace KMCCT {
         int Add(RE::FormID armo) { 
             int idx = c_index;
             cache_worn_armor[c_index] = armo;
-            isCacheable = true;
+            is_cacheable = true;
             c_index++;
             return idx;
         }
@@ -51,7 +51,7 @@ namespace KMCCT {
         }
 
     public:
-        bool isCacheable = false;
+        bool is_cacheable = false;
         bool end_cache = false;
 
     private:

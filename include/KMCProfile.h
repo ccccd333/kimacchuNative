@@ -74,5 +74,7 @@ namespace KMCCT {
         bool interrupt_show_profile = false;
         bool switch_disp_profile_flag = false;
 
+        bool is_missing_file = false;
+
     };
 }
