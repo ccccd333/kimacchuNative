@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 #include "KMCUtility.h"
 
 namespace KMCCT {
@@ -45,7 +45,7 @@ namespace KMCCT {
         bool Get_switch_disp_profile_flag() { return switch_disp_profile_flag; }
         void Set_switch_disp_profile_flag(bool set) { switch_disp_profile_flag = set; }
     private:
-        // ÉåÉKÉVÅ[
+        // „É¨„Ç¨„Ç∑„Éº
         /*void ProfileInit(KMCProfil &profil, std::string target, std::vector<std::pair<std::string, std::string>> *ws,
                          std::vector<std::pair<std::string, std::string>> *ts, std::vector<std::string> *pt);
         */

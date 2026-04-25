@@ -1,4 +1,4 @@
-#include "KMCRegister.h"
+﻿#include "KMCRegister.h"
 
 //#include "src/hooks/hooks.h"
 

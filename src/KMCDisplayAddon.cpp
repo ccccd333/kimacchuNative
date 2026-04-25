@@ -1,4 +1,4 @@
-#include "KMCDisplayAddon.h"
+﻿#include "KMCDisplayAddon.h"
 
 #include <fstream>
 #include <nlohmann/json.hpp>

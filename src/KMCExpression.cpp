@@ -1,4 +1,4 @@
-#include "KMCExpression.h"
+ï»¿#include "KMCExpression.h"
 
 #include "KMCConfig.h"
 #include "KMCEventThread.h"
@@ -73,7 +73,7 @@ namespace KMCCT {
     void InitLoop(int actor_id, STMFG& result) {
         const auto* addons = KMCDisplayAddon::GetSingleton()->GetActorAddons(actor_id);
 
-        // ƒAƒhƒIƒ“‚ª‘¶Ý‚µ‚È‚¢ê‡‚Í‰½‚à‚µ‚È‚¢
+        // ã‚¢ãƒ‰ã‚ªãƒ³ãŒå­˜åœ¨ã—ãªã„å ´åˆã¯ä½•ã‚‚ã—ãªã„
         if (!addons) return;
 
         try {
@@ -149,7 +149,7 @@ namespace KMCCT {
         if (eln || feln) {
             auto* thread = KMCCT::KMCEventThread::GetSingleton();
             while (eln || feln) {
-                if (thread->forceendanim || thread->IsShuttingDown()) {
+                if (thread->GetForceEndAnim() || thread->IsShuttingDown()) {
                     return -1;
                 }
 
@@ -222,7 +222,7 @@ namespace KMCCT {
                             return;
                         }
 
-                        if (thread->forceendanim || thread->IsShuttingDown()) {
+                        if (thread->GetForceEndAnim() || thread->IsShuttingDown()) {
                             return;
                         }
 
@@ -249,7 +249,7 @@ namespace KMCCT {
             return;
         }
 
-        if (thread->forceendanim || thread->IsShuttingDown()) {
+        if (thread->GetForceEndAnim() || thread->IsShuttingDown()) {
             return;
         }
 
@@ -273,7 +273,7 @@ namespace KMCCT {
 
         if (!end) {
             while (!end) {
-                if (thread->forceendanim || thread->IsShuttingDown()) {
+                if (thread->GetForceEndAnim() || thread->IsShuttingDown()) {
                     return;
                 }
 
@@ -286,7 +286,7 @@ namespace KMCCT {
             }
         }
 
-        if (thread->forceendanim || thread->IsShuttingDown()) {
+        if (thread->GetForceEndAnim() || thread->IsShuttingDown()) {
             return;
         }
 
@@ -323,7 +323,7 @@ namespace KMCCT {
                             return;
                         }
 
-                        if (thread->forceendanim || thread->IsShuttingDown()) {
+                        if (thread->GetForceEndAnim() || thread->IsShuttingDown()) {
                             return;
                         }
 
@@ -351,7 +351,7 @@ namespace KMCCT {
             return;
         }
 
-        if (thread->forceendanim || thread->IsShuttingDown()) {
+        if (thread->GetForceEndAnim() || thread->IsShuttingDown()) {
             return;
         }
 
@@ -375,7 +375,7 @@ namespace KMCCT {
 
         if (!end) {
             while (!end) {
-                if (thread->forceendanim || thread->IsShuttingDown()) {
+                if (thread->GetForceEndAnim() || thread->IsShuttingDown()) {
                     return;
                 }
 
@@ -388,7 +388,7 @@ namespace KMCCT {
             }
         }
 
-        if (thread->forceendanim || thread->IsShuttingDown()) {
+        if (thread->GetForceEndAnim() || thread->IsShuttingDown()) {
             return;
         }
 
@@ -535,7 +535,7 @@ namespace KMCCT {
                 return -1;
             }
 
-            if (thread->forceendanim || thread->IsShuttingDown()) {
+            if (thread->GetForceEndAnim() || thread->IsShuttingDown()) {
                 return -2;
             }
             end = Clock::now();

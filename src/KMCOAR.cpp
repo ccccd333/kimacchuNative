@@ -1,4 +1,4 @@
-#include "KMCOAR.h"
+﻿#include "KMCOAR.h"
 #include "KMCConfig.h"
 #include "KMCEventThread.h"
 #include "KMCDisplayAddon.h"
@@ -111,7 +111,7 @@ namespace KMCCT {
         KMCCT::KMCTimer(ocd->time * KMCCT::WHILE_WAIT_TIME);
 
         auto* thread = KMCCT::KMCEventThread::GetSingleton();
-        if (thread->forceendanim || thread->IsShuttingDown()) {
+        if (thread->GetForceEndAnim() || thread->IsShuttingDown()) {
             return;
         }
 

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "KMCUtility.h"
 
 #include <RE/Skyrim.h>

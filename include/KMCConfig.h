@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "KMCUtility.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -13,7 +13,7 @@ namespace KMCCT {
     const std::string COMMON_PATH = "Data\\skse\\plugins\\KimachuuCutIn\\";
     // prisma ui html path
     const std::string PRISMA_UI_HTML_PATH = "Data\\PrismaUI\\views\\KMCCutinPlugin\\";
-    // json path (player or Follower1�`n)
+    // json path (player or Follower1～n)
     const std::string PLAYER_WORD_PATH = "Player";
     const std::string FOLLOWER_WORD_PATH = "Follower";
     // json path nameplate

@@ -1,4 +1,4 @@
-#include "KMCPrismaUIBridge.h"
+﻿#include "KMCPrismaUIBridge.h"
 
 #include "KMCDisplayWordAndTexture.h"
 #include "KMCCutin.h"

@@ -1,4 +1,4 @@
-#include "KMCCutinCond/KMCCJsonValueInterval.h"
+﻿#include "KMCCutinCond/KMCCJsonValueInterval.h"
 #include "KMCConfig.h"
 
 namespace KMCCT {

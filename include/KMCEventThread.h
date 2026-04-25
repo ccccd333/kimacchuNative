@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "KMCConfig.h"
 #include "KMCUtility.h"
 
@@ -67,7 +67,7 @@ namespace KMCCT {
     public:
 
         ~KMCEventThread() { 
-            forceendanim = true;
+            force_end_anim.store(true);
             is_shutting_down.store(true);
         }
 
@@ -78,7 +78,10 @@ namespace KMCCT {
         void TryShowProfile();
         void MCMSettingChange(std::vector<float> floatArray);
 
-        bool IsShuttingDown() const { return is_shutting_down.load(); }
+        bool IsShuttingDown() const { return is_shutting_down.load(std::memory_order_relaxed); }
+
+        int GetForceEndAnim() const { return force_end_anim.load(std::memory_order_relaxed); }
+        void SetForceEndAnim(bool flag) { force_end_anim.store(flag, std::memory_order_relaxed); }
         
         void Reset();
         bool GetProfileInitEnd();
@@ -86,7 +89,7 @@ namespace KMCCT {
         bool GetEnableProfileFlag();
         bool GetInitEndFlag();
     public:
-        std::atomic<bool> forceendanim;
+        std::atomic<bool> force_end_anim;
         
         
     private:

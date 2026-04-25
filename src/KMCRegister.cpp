@@ -1,4 +1,4 @@
-#include "KMCRegister.h"
+﻿#include "KMCRegister.h"
 #include "KMCConfig.h"
 #include "KMCOAR.h"
 #include "KMCSound.h"
@@ -41,7 +41,7 @@ namespace KMCCT {
                 KMCCT::KMCOAR::GetSingleton()->Init();
                 KMCCT::KMCSound::GetSingleton()->Init();
                 KMCCT::KMCStateManager::GetSingleton()->Init();
-                KMCCT::KMCEventThread::GetSingleton()->Init();
+                
                 
                 KMCCT::KMCCutinCondition::GetSingleton()->Init();
 
@@ -51,13 +51,13 @@ namespace KMCCT {
                 
 
                 KMCCT::KMCGameEventListener::GetSingleton()->Init();
-                
+                KMCCT::KMCEventThread::GetSingleton()->Init();
 
                 break;
             case SKSE::MessagingInterface::kPreLoadGame:  // set reload flag, so we can prevent in papyrus calls of
                                                           // native function untill view get reset by invoking _reset
                 KMC_LOG("kPreLoadGame")
-                KMCCT::KMCEventThread::GetSingleton()->forceendanim = true;
+                KMCCT::KMCEventThread::GetSingleton()->SetForceEndAnim(true);
                 // Wait for animation process to finish.
                 //KMCLoadedWidget();
                 KMCCT::KMCSetInitFlag();

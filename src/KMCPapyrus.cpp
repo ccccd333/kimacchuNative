@@ -1,4 +1,4 @@
-#include "KMCPapyrus.h"
+﻿#include "KMCPapyrus.h"
 
 SINGLETONBODY(KMCCT::KMCPapyrus)
 

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <chrono>
 
 using Clock = std::chrono::steady_clock;
@@ -67,7 +67,7 @@ namespace KMCCT {
 
     enum class KMCValueType { KM_INT, KM_FLOAT, KM_STRING, KM_LONG, UNK };
 
-    enum class KMCWaitType { in_scene, move_widget, max };
+    enum class KMCWaitType { in_scene, max };
 
     enum class KMCInterruptType { add_item, on_hit };
 
@@ -500,16 +500,16 @@ namespace KMCCT {
         std::string id = "";
         int row = -1;
         /*
-        "Š—LŒ :{PlayerSLSValidFreedomLic} “ú”:{PlayerSLSValidFreedomLic2} “ú"‚ğˆÈ‰º‚Ì‚æ‚¤‚É•ª‰ğ‚µ‚½‚à‚Ì‚ğ•ÛŠÇ‚·‚é
-        [0]->Š—LŒ :
+        "æ‰€æœ‰æ¨©:{PlayerSLSValidFreedomLic} æ—¥æ•°:{PlayerSLSValidFreedomLic2} æ—¥"ã‚’ä»¥ä¸‹ã®ã‚ˆã†ã«åˆ†è§£ã—ãŸã‚‚ã®ã‚’ä¿ç®¡ã™ã‚‹
+        [0]->æ‰€æœ‰æ¨©:
         [1]->{PlayerSLSValidFreedomLic}
-        [2]-> “ú”:
+        [2]-> æ—¥æ•°:
         [3]->{PlayerSLSValidFreedomLic2}
-        [4]-> “ú
+        [4]-> æ—¥
         */
         std::vector<std::string> format_strings;
         /*
-        \{([0-9]|[a-z]|[A-Z])+\}‚Ìƒpƒ^[ƒ“ƒ}ƒbƒ`‚Åƒ}ƒbƒ`‚µ‚½ê‡‚Ì‚à‚Ì‚Ìindex‚ğ•ÛŠÇ
+        \{([0-9]|[a-z]|[A-Z])+\}ã®ãƒ‘ã‚¿ãƒ¼ãƒ³ãƒãƒƒãƒã§ãƒãƒƒãƒã—ãŸå ´åˆã®ã‚‚ã®ã®indexã‚’ä¿ç®¡
         [0]->1
         [1]->3
         */
@@ -551,10 +551,10 @@ namespace KMCCT {
         /*
         {
             "T01":{
-            1:"ƒqƒi[Hina] í‘°[Erin]",
-            2:"”N—î:1X",
-            3:"Š—LŒ :{PlayerSLSValidFreedomLic}",
-            4:"<ƒvƒƒtƒB[ƒ‹>"
+            1:"ãƒ’ãƒŠ[Hina] ç¨®æ—[Erin]",
+            2:"å¹´é½¢:1X",
+            3:"æ‰€æœ‰æ¨©:{PlayerSLSValidFreedomLic}",
+            4:"<ãƒ—ãƒ­ãƒ•ã‚£ãƒ¼ãƒ«>"
             }
         }
         */

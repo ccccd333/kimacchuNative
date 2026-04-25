@@ -1,4 +1,4 @@
-#include "KMCUtility.h"
+﻿#include "KMCUtility.h"
 #include "KMCEventThread.h"
 
 std::mt19937 create_rand_engine() {

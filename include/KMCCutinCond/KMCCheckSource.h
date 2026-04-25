@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "KMCUtility.h"
 #include "KMCCCJsonTags.h"
 #include "KMCCutinCond/KMCCache.h"

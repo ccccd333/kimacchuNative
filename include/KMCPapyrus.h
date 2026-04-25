@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "KMCEventThread.h"
 #include "KMCProfile.h"
 #include "KMCStateManager.h"

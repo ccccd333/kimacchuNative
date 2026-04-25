@@ -1,4 +1,4 @@
-#include "KMCSound.h"
+﻿#include "KMCSound.h"
 #include "KMCConfig.h"
 #include "KMCDisplayAddon.h"
 #include "KMCDisplayWordAndTexture.h"

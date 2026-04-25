@@ -1,4 +1,4 @@
-#include "KMCStateManager.h"
+ï»¿#include "KMCStateManager.h"
 #include "KMCConfig.h"
 #include "KMCEventThread.h"
 #include "KMCUtility.h"
@@ -520,7 +520,9 @@ namespace KMCCT {
     int KMCStateManager::IsInScene() { 
         if (actorNPC == nullptr) return -1;
         auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
-        if (player == nullptr || !player->Is3DLoaded()) return -2;
+        if (player == nullptr || !player->Is3DLoaded()) {
+            return -3;
+        }
 
         if (keywordsExcludeDuringScene.size() != 0) {
             if (player->HasKeywordInArray(keywordsExcludeDuringScene, false)) return 1;
@@ -540,31 +542,29 @@ namespace KMCCT {
             return -3;
         }
 
-        pcell->ForEachReferenceInRange(
-            player->data.location, isinsceneDetectRange, [&](RE::TESObjectREFR& b_ref) {
-                if (b_ref.Is3DLoaded()) {
-                    bool success = false;
-                    success = b_ref.HasKeyword(actorNPC);
+        auto processLists = RE::ProcessLists::GetSingleton();
+        if (processLists) {
+            float detectRangeSq = isinsceneDetectRange * isinsceneDetectRange;
+            processLists->ForEachHighActor([&](RE::Actor& act_ref) {
+                RE::Actor* act = &act_ref;
+                if (act && act->Is3DLoaded() && !act->IsPlayerRef()) {
+                    if (act->GetPosition().GetSquaredDistance(player->GetPosition()) <= detectRangeSq) {
+                        if (act->HasKeyword(actorNPC) && act->GetCurrentScene() != nullptr) {
+                            auto charc = act->As<RE::Character>();
+                            if (charc && KMCCT::IsTalking(charc)) {
+                                KMC_LOG("[CURRENT SCENE] name {} range {}", act->GetName(), isinsceneDetectRange);
 
-                    if (success) {
-                        if (b_ref.GetCurrentScene() != nullptr) {
-                            auto act = b_ref.As<RE::Actor>();
-                            if (act) {
-                                auto charc = act->As<RE::Character>();
-                                if (charc && KMCCT::IsTalking(charc)) {
-                                    KMC_LOG("[CURRENT SCENE] name {} range {}", b_ref.GetName(), isinsceneDetectRange);
-
-                                    KMCCT::KMCWaitTask::GetSingleton()->KMCPushWaitTask(
-                                        KMCWaitType::in_scene,
-                                        KMCWaitConfigs(inSceneMS, Clock::now(), KMCWaitType::in_scene, true));
-                                    return RE::BSContainer::ForEachResult::kStop;
-                                }
+                                KMCCT::KMCWaitTask::GetSingleton()->KMCPushWaitTask(
+                                    KMCWaitType::in_scene,
+                                    KMCWaitConfigs(inSceneMS, Clock::now(), KMCWaitType::in_scene, true));
+                                return RE::BSContainer::ForEachResult::kStop;
                             }
                         }
                     }
                 }
                 return RE::BSContainer::ForEachResult::kContinue;
             });
+        }
 
         return 0;
     }
@@ -686,7 +686,7 @@ namespace KMCCT {
 
     bool KMCStateManager::GetWhetherThereNoState() {
         if (GetStoppingState()) {
-            // ˜b’†‚Ìê‡
+            // è©±ä¸­ã®å ´åˆ
             return false;
         }
 
@@ -698,7 +698,7 @@ namespace KMCCT {
         if (KMCCT::KMCCutin::GetSingleton()->ExistCategory(cutin_name)) {
             return true;
         } else {
-            // auto word‚Æ‚µ‚Ä‘¶İ‚·‚é‚Ì‚ÅƒJƒbƒgƒCƒ“‰ñ”ğ—p‚Ìcut in–¼‚Å‚Í‚È‚¢‚Æ”»’f‚·‚é
+            // auto wordã¨ã—ã¦å­˜åœ¨ã™ã‚‹ã®ã§ã‚«ãƒƒãƒˆã‚¤ãƒ³å›é¿ç”¨ã®cut inåã§ã¯ãªã„ã¨åˆ¤æ–­ã™ã‚‹
             return false;
         }
     }

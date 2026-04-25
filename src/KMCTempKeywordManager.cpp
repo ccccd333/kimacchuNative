@@ -1,4 +1,4 @@
-#include "KMCTempKeywordManager.h"
+﻿#include "KMCTempKeywordManager.h"
 
 SINGLETONBODY(KMCCT::KMCTempKeywordManager)
 

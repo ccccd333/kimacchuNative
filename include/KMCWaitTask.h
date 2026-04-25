@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "KMCUtility.h"
 
 namespace KMCCT {
@@ -18,7 +18,8 @@ namespace KMCCT {
         bool GetWaitFlag() { return aaaaWaitWidgetDisped; }
         void SetWaitFlag(bool set) { aaaaWaitWidgetDisped = set; }
 
-        int GetIsinSceneState() { return isinscene_state; }
+        int GetIsinSceneState() const { return isinscene_state.load(std::memory_order_relaxed); }
+        void SetIsinSceneState(int next_state) { isinscene_state.store(next_state, std::memory_order_relaxed); }
 
         void Reset();
     private:
@@ -27,7 +28,7 @@ namespace KMCCT {
 
     private:
         std::mutex aaaakmc_waittask_mtx_;
-        int isinscene_state = 0;
+        std::atomic<int> isinscene_state{0};
         bool aaaaWaitWidgetDisped = false;
         int aaaaWaitTextWidget = -1;
     };

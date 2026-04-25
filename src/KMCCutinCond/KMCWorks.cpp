@@ -1,4 +1,4 @@
-#include <boost/any.hpp>
+﻿#include <boost/any.hpp>
 
 #include "KMCCutinCond/KMCWorks.h"
 #include "KMCGameEventListener.h"

@@ -1,4 +1,4 @@
-#include "KMCProfile.h"
+ï»¿#include "KMCProfile.h"
 #include "KMCConfig.h"
 #include "KMCEventThread.h"
 #include "KMCSound.h"
@@ -135,7 +135,7 @@ namespace KMCCT {
                                                  KMCCT::PROFILE_POLLING_COUNT_CONFIG_KEY, KMCCT::PROFILE_POLLING_COUNT);
         
         auto *thread = KMCCT::KMCEventThread::GetSingleton();
-        if (!thread->IsShuttingDown() && !thread->forceendanim) {
+        if (!thread->IsShuttingDown() && !thread->GetForceEndAnim()) {
             for (int i = 0; i < polling_count; i++) {
                 time_point<Clock> start = Clock::now();
                 time_point<Clock> end;
@@ -166,7 +166,7 @@ namespace KMCCT {
                 }
                 // sleep
                 while (true) {
-                    if (thread->IsShuttingDown() || thread->forceendanim) {
+                    if (thread->IsShuttingDown() || thread->GetForceEndAnim()) {
                         return;
                     }
 
@@ -192,7 +192,7 @@ namespace KMCCT {
 
         auto *thread = KMCCT::KMCEventThread::GetSingleton();
 
-        if (thread->IsShuttingDown() && thread->forceendanim &&
+        if (thread->IsShuttingDown() && thread->GetForceEndAnim() &&
             !KMCCT::KMCEventThread::GetSingleton()->GetProfileInitEnd()) {
             return;
         }
@@ -265,9 +265,10 @@ namespace KMCCT {
             isp = interrupt_show_profile;
         }
 
-        if (!KMCCT::KMCEventThread::GetSingleton()->GetInitFirstFlag()) {
-            return -4;  // not work iwant widget ng
-        } else if (!KMCCT::KMCEventThread::GetSingleton()->GetEnableProfileFlag()) {
+        //if (!KMCCT::KMCEventThread::GetSingleton()->GetInitFirstFlag()) {
+        //    return -4;  // not work iwant widget ng
+        //} else 
+            if (!KMCCT::KMCEventThread::GetSingleton()->GetEnableProfileFlag()) {
             return -5;  // profile disable
         } else if (KMCCT::KMCEventThread::GetSingleton()->IsShuttingDown() ||
                    !KMCCT::KMCEventThread::GetSingleton()->GetProfileInitEnd()) {
@@ -301,9 +302,9 @@ namespace KMCCT {
         json j = json::parse(stream);
 
         /*
-        {PlayerSLSValidFreedomLic}‚İ‚½‚¢‚È‚Ì‚ğ’~Ï‚µ‚Ä‚¢‚­B
-        lines‚Östd::unordered_map<id, std::map<row, std::string>>‚ÅƒAƒNƒZƒX‚·‚éB
-        papyrus‘¤‚Å{PlayerSLSValidFreedomLic}‚ğ•¶š—ñ‚É’u‚«Š·‚¦‚½Œã‚Ì’l‚ğ
+        {PlayerSLSValidFreedomLic}ã¿ãŸã„ãªã®ã‚’è“„ç©ã—ã¦ã„ãã€‚
+        linesã¸std::unordered_map<id, std::map<row, std::string>>ã§ã‚¢ã‚¯ã‚»ã‚¹ã™ã‚‹ã€‚
+        papyruså´ã§{PlayerSLSValidFreedomLic}ã‚’æ–‡å­—åˆ—ã«ç½®ãæ›ãˆãŸå¾Œã®å€¤ã‚’
         */
         //std::vector<KMCProfileReplaceMap> format_map;
 
@@ -329,7 +330,7 @@ namespace KMCCT {
                         std::smatch match;
 
                         if (!std::regex_search(original_text, match, re_placeholder)) {
-                            // {~}’†Š‡ŒÊ‚Ì‚à‚Ì‚ª‚È‚¯‚ê‚Î‚»‚Ì‚Ü‚ÜƒeƒLƒXƒg‚Ì‚İ‚ğ•ÛŠÇ‚·‚é
+                            // {~}ä¸­æ‹¬å¼§ã®ã‚‚ã®ãŒãªã‘ã‚Œã°ãã®ã¾ã¾ãƒ†ã‚­ã‚¹ãƒˆã®ã¿ã‚’ä¿ç®¡ã™ã‚‹
                             current_row++;
                             continue;
                         }
@@ -364,7 +365,8 @@ namespace KMCCT {
                 } else if (profile.contains("bg_path") && profile["bg_path"].is_string()) {
                     std::string bg_path = profile.value("bg_path", "");
                     if (!fs::exists(PRISMA_UI_HTML_PATH + bg_path)) {
-                        KMC_ERROR("Missing back ground file: {}", PRISMA_UI_HTML_PATH + bg_path);
+                        std::string error_path = PRISMA_UI_HTML_PATH + bg_path;
+                        KMC_ERROR("Missing back ground file: {}", error_path);
                         is_missing_file = true;
                     }
 
@@ -375,7 +377,8 @@ namespace KMCCT {
 
                 std::string bg_path = profile.value("bg_path", "");
                 if (!fs::exists(PRISMA_UI_HTML_PATH + bg_path)) {
-                    KMC_ERROR("Missing back ground file: {}", PRISMA_UI_HTML_PATH + bg_path);
+                    std::string error_path = PRISMA_UI_HTML_PATH + bg_path;
+                    KMC_ERROR("Missing back ground file: {}", error_path);
                     is_missing_file = true;
                 }
                 profil_ex_data.bg_map.emplace(key, bg_path);
@@ -393,7 +396,8 @@ namespace KMCCT {
                 for (int i = data.start; i <= data.end; i++) {
                     std::string file_path = data.base_path + key + "/" + std::to_string(i) + ".png";
                     if (!fs::exists(PRISMA_UI_HTML_PATH + file_path)) {
-                        KMC_ERROR("Missing file: {}", PRISMA_UI_HTML_PATH + file_path);
+                        std::string error_path = PRISMA_UI_HTML_PATH + file_path;
+                        KMC_ERROR("Missing file: {}", error_path);
                         is_missing_file = true;
                     }
                 }
@@ -403,14 +407,16 @@ namespace KMCCT {
         }
 
         if (is_missing_file) {
-            // 1‚Â‚Å‚àpng‚ª–³‚¯‚ê‚ÎNGAJS‘¤‚ÅƒGƒ‰[‚É‚È‚é
+            // 1ã¤ã§ã‚‚pngãŒç„¡ã‘ã‚Œã°NGã€JSå´ã§ã‚¨ãƒ©ãƒ¼ã«ãªã‚‹
             KMC_ERROR("[Error]Some image files could not be loaded. Therefore, the profile function will be disabled.");
             return false;
         }
 
+        KMCPrismaUIBridge::GetSingleton()->KMCSetupProfile(j);
+
         return true;
     }
-    // ƒŒƒKƒV[
+    // ãƒ¬ã‚¬ã‚·ãƒ¼
 //    void KMCProfile::ProfileInit(KMCProfil &profil, std::string target,
 //                                 std::vector<std::pair<std::string, std::string>> *ws,
 //                                 std::vector<std::pair<std::string, std::string>> *ts, std::vector<std::string> *pt) {
