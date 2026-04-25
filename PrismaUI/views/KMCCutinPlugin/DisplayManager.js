@@ -118,15 +118,42 @@ window.KMCDefineCutin = async (json) => {
     const cache_mode = json.cache_mode ?? 1;
     display.setCacheType(cache_mode);
 
+    // if (cache_mode === 0) {
+    //     // 全画像を事前にプリロード(32GB/64GB向け)
+    //     console.log(`[CacheMode 0] Bulk Preload Start`);
+    //     const all_groups = Object.keys(json.entries).map(key => Number(key.trim()));
+    //     await display.bulkPreloadGroups(all_groups);
+    // } else if (cache_mode === 1 && json.first_values) {
+    //     // 最初のカットイン候補だけプリロード(RAM16GB向け)
+    //     console.log(`[CacheMode 1] Partial Bulk Preload`, json.first_values);
+    //     await display.bulkPreloadGroups(json.first_values);
+    // }
+
+    const loading_overlay = document.getElementById("loading_overlay");
+    const progress_bar = document.getElementById("progress_bar");
+    const progress_text = document.getElementById("progress_text");
+
+    const update_progress = (percent) => {
+        if (progress_bar) progress_bar.style.width = `${percent}%`;
+        if (progress_text) progress_text.innerText = `${percent}%`;
+    };
+
     if (cache_mode === 0) {
-        // 全画像を事前にプリロード(32GB/64GB向け)
+        // 全画像を事前にプリロード
         console.log(`[CacheMode 0] Bulk Preload Start`);
+        if (loading_overlay) loading_overlay.style.display = "block";
+
         const all_groups = Object.keys(json.entries).map(key => Number(key.trim()));
-        await display.bulkPreloadGroups(all_groups);
+        await display.bulkPreloadGroupsWithProgress(all_groups, update_progress);
+
+        if (loading_overlay) {
+            setTimeout(() => { loading_overlay.style.display = "none"; }, 500);
+        }
     } else if (cache_mode === 1 && json.first_values) {
-        // 最初のカットイン候補だけプリロード(RAM16GB向け)
+        // 最初のカットイン候補だけプリロード
         console.log(`[CacheMode 1] Partial Bulk Preload`, json.first_values);
-        await display.bulkPreloadGroups(json.first_values);
+        
+        await display.bulkPreloadGroupsWithProgress(json.first_values, update_progress);
     }
 
     return "KMCAddCutinPaths loaded id " + id;

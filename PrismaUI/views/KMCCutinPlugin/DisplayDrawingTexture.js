@@ -153,6 +153,70 @@ export class DisplayDrawingTexture {
         }
     }
 
+    async bulkPreloadGroupsWithProgress(group_ids, on_progress) {
+        if (!this.cache) this.cache = new Map();
+
+        const all_paths_to_load = [];
+        const group_assignments = [];
+
+        for (const raw_id of group_ids) {
+            const group_id = Number(raw_id);
+            if (this.cache.has(group_id)) continue;
+
+            const cutin_data = this.cutin_map.get(group_id);
+            if (!cutin_data) continue;
+
+            const paths = cutin_data.layers.get("CUTIN") || [];
+            if (paths.length === 0) continue;
+
+            const start_idx = all_paths_to_load.length;
+            all_paths_to_load.push(...paths);
+            const end_idx = all_paths_to_load.length;
+
+            group_assignments.push({
+                id: group_id,
+                start: start_idx,
+                end: end_idx
+            });
+        }
+
+        const total_images = all_paths_to_load.length;
+        if (total_images === 0) {
+            if (on_progress) on_progress(100);
+            return;
+        }
+
+        let loaded_count = 0;
+
+        // 全パスに対して一斉に非同期処理を開始 上限なし
+        const load_tasks = all_paths_to_load.map(async (path) => {
+            try {
+                const response = await fetch(path);
+                const blob = await response.blob();
+                const bitmap = await createImageBitmap(blob);
+                return bitmap;
+            } catch (error) {
+                console.error(`[Bulk] Load failed: ${path}`, error);
+                return null;
+            } finally {
+                loaded_count++;
+                if (on_progress) {
+                    const percent = Math.floor((loaded_count / total_images) * 100);
+                    on_progress(percent);
+                }
+            }
+        });
+
+        const all_bitmaps = await Promise.all(load_tasks);
+
+        for (const assign of group_assignments) {
+            const group_bitmaps = all_bitmaps.slice(assign.start, assign.end);
+            this.cache.set(assign.id, Promise.resolve(group_bitmaps));
+        }
+
+        console.info(`[Bulk Preload] Completed: ${total_images} images (Unlimited Parallel).`);
+    }
+
     async bulkPreloadGroups(group_ids) {
         if (!this.cache) this.cache = new Map();
 
@@ -205,8 +269,6 @@ export class DisplayDrawingTexture {
 
             // CUTINレイヤーの画像のみをプリロード対象
             const paths = cutin.layers.get("CUTIN") || [];
-
-console.info(`[Preload Start] Group: ${group}, Total paths: ${paths.length}`);
 
             const frames = new Array(paths.length);
 
