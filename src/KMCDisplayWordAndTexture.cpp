@@ -23,10 +23,11 @@ namespace KMCCT {
             std::vector<KMCFollower> *followers = KMCConfig::GetSingleton()->GetFollowers();
             if (followers && !followers->empty()) {
                 for (const auto &follower : *followers) {
-                    if (!follower.follower) continue;
+                    auto actorPtr = follower.followerHandle.get();
+                    if (!actorPtr) continue;
                     int follower_index = follower.index + 1;
                     if (!Parse(COMMON_PATH + FOLLOWER_WORD_PATH + std::to_string(follower_index) + "/" + DISPLAY_WORD_AND_TEXTURE_PATH,
-                               follower_index, follower.follower->GetName())) {
+                               follower_index, actorPtr.get()->GetName())) {
                         loaded = false;
                     }
                 }

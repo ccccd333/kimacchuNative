@@ -9,6 +9,8 @@ namespace KMCCT {
 	class KMCPrismaUIBridge {
         SINGLETONHEADER(KMCPrismaUIBridge)
     public:
+        ~KMCPrismaUIBridge();
+
         void Init();
 
         void Focus();
@@ -39,6 +41,8 @@ namespace KMCCT {
         void KMCHideProfile();
 
         void KMCUpdateProfileText(const json &j);
+
+        void KMCPrismaViewDestroy();
 
     private:
     };

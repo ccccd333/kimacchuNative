@@ -117,8 +117,11 @@ namespace KMCCT {
             KMCFollower *target = &(IFollower[i]);
             std::string formid = target->formId;
             std::string pluginname = target->pluginName;
-            IFollower[i].follower =
-                (RE::Actor *)RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll(formid, NULL, 16), pluginname);
+            if (auto form = RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll(formid, NULL, 16), pluginname)) {
+                if (auto actor = form->As<RE::Actor>()) {
+                    IFollower[i].followerHandle = actor->GetHandle();
+                }
+            }
             IFollower[i].index = i;
         }
 

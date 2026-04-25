@@ -10,8 +10,6 @@ namespace KMCCT {
     class KMCPapyrus {
         SINGLETONHEADER(KMCPapyrus)
     public:
-        ~KMCPapyrus() {}
-
         // form
         bool KMCIsCapturedForm();
         void KMCCacheForms(std::vector<std::string> form_names);

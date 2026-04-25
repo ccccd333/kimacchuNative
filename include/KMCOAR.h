@@ -29,7 +29,6 @@ namespace KMCCT {
     class KMCOAR {
         SINGLETONHEADER(KMCOAR)
     public:
-        ~KMCOAR();
         void Init();
         void Reset();
         void PushOARFunc(uint64_t rand, uint64_t frand, bool force, float ex_oar_time);

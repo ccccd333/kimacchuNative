@@ -456,5 +456,8 @@ namespace KMCCT {
     bool KMCEventThread::GetEnableProfileFlag() { return enable_profile; }
     bool KMCEventThread::GetInitEndFlag() { return isInitEnd; }
 
-
+    KMCEventThread::~KMCEventThread() {
+        force_end_anim.store(true);
+        is_shutting_down.store(true);
+    }
 }

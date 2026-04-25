@@ -84,8 +84,6 @@ namespace KMCCT {
 	{
         SINGLETONHEADER(KMCConfig)
     public:
-        ~KMCConfig() {}
-
         void Setup();
         
         void Init();

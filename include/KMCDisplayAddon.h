@@ -30,8 +30,6 @@ namespace KMCCT {
     class KMCDisplayAddon {
         SINGLETONHEADER(KMCDisplayAddon)
     public:
-        ~KMCDisplayAddon() {}
-
         const std::string DISPLAY_ADD_ON_PATH = "DisplayAddons.json";
 
         void Setup();

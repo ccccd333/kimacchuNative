@@ -48,19 +48,19 @@ using namespace std::literals;
     #define DEBUG(...){}
 #endif
 
-#define SINGLETONHEADER(cname)                          \
-        public:                                         \
-            cname(cname &) = delete;                    \
-            void operator=(const cname &) = delete;     \
-            static cname* GetSingleton();               \
-        protected:                                      \
-            cname(){}                                   \
-            static cname* _this;
-
-#define SINGLETONBODY(cname)                            \
-        cname * cname::_this = new cname;               \
-        cname * cname::GetSingleton(){return _this;}
-
+#define SINGLETONHEADER(cname)               \
+public:                                      \
+    cname(const cname&) = delete;            \
+    cname& operator=(const cname&) = delete; \
+    static cname* GetSingleton();            \
+                                             \
+protected:                                   \
+    cname() = default;
+#define SINGLETONBODY(cname)       \
+    cname* cname::GetSingleton() { \
+        static cname instance;     \
+        return &instance;          \
+    }
 namespace Papyrus {
 #define REGISTERFUNC(func, class, dont_delay) a_vm->RegisterFunction(#func##sv, class, func, dont_delay)
 

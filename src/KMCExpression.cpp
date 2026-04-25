@@ -498,7 +498,8 @@ namespace KMCCT {
             auto fmfg = follower_mfg.at(frand);
 
             auto followers = KMCCT::KMCConfig::GetSingleton()->GetFollowers();
-            auto actor = followers->at(frand).follower;
+            auto actorPtr = followers->at(frand).followerHandle.get();
+            auto actor = actorPtr.get();
             if (actor) {
                 if (fmfg.mfg.contains(rand)) {
                     f_now = fmfg.mfg.at(rand);

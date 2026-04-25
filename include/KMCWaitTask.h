@@ -8,7 +8,6 @@ namespace KMCCT {
     class KMCWaitTask {
         SINGLETONHEADER(KMCWaitTask)
     public:
-        ~KMCWaitTask();
         bool KMCCheckWait();
         void KMCPushWaitTask(KMCWaitType id, KMCWaitConfigs config);
         void KMCPushWaitTaskReset();

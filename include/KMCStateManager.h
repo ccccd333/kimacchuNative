@@ -123,8 +123,6 @@ namespace KMCCT {
     class KMCStateManager {
         SINGLETONHEADER(KMCStateManager)
     public:
-        ~KMCStateManager() {}
-
         void Register();
         std::string GetPlayerState();
         int IsInScene();

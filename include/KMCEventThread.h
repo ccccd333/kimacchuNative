@@ -65,12 +65,7 @@ namespace KMCCT {
     class KMCEventThread {
         SINGLETONHEADER(KMCEventThread)
     public:
-
-        ~KMCEventThread() { 
-            force_end_anim.store(true);
-            is_shutting_down.store(true);
-        }
-
+        ~KMCEventThread();
         bool IsAlreadyInited();
         void InitWordsAndWidgets(RE::BSFixedString skyroot, std::vector<float> floatArray);
         void Init();

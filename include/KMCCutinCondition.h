@@ -182,7 +182,6 @@ namespace KMCCT {
     class KMCCutinCondition {
         SINGLETONHEADER(KMCCutinCondition)
     public:
-        ~KMCCutinCondition(){};
         void Setup();
         void Init();
         int ToMove(const KMCCCStartArg &args);

@@ -11,7 +11,6 @@ namespace KMCCT {
     public:
         const std::string DISPLAY_PROFILE_PATH = "DisplayProfile.json";
 
-        ~KMCProfile();
         void Init();
         void Reset() {
             //BefResultModifiedContainer.clear();

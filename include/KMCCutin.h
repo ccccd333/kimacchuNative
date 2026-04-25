@@ -50,7 +50,6 @@ namespace KMCCT {
     class KMCCutin {
         SINGLETONHEADER(KMCCutin)
     public:
-        ~KMCCutin();
         void InitCutin();
 
         void InterruptCutInEventManager(KMCInterruptPushCutInData data);

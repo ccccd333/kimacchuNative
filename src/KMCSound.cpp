@@ -1,4 +1,4 @@
-﻿#include "KMCSound.h"
+#include "KMCSound.h"
 #include "KMCConfig.h"
 #include "KMCDisplayAddon.h"
 #include "KMCDisplayWordAndTexture.h"
@@ -103,7 +103,9 @@ namespace KMCCT {
                 std::map<int, std::map<std::string, KMCSECond>> sd_se_map;
                 std::vector<std::pair<std::string, size_t>> si;
 
-                InitLoop(&sd, &sd_se_map, follower_addon_set, player, f.follower);
+                if (auto actorPtr = f.followerHandle.get()) {
+                    InitLoop(&sd, &sd_se_map, follower_addon_set, player, actorPtr.get());
+                }
 
                 FSoundDescriptiorMap.push_back(std::make_pair(f.index, KMCFSoundDescription(sd, sd_se_map)));
             }

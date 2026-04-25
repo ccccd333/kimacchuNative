@@ -242,7 +242,11 @@ namespace KMCCT {
 
             const auto &fentry = KMCDisplayWordAndTexture::GetSingleton()->GetEntriesDataMap(frand + 1);
             if (fentry.contains(rand)) {
-                follower = f[target_index].follower;
+                if (auto actorPtr = f[target_index].followerHandle.get()) {
+                    follower = actorPtr.get();
+                } else {
+                    fSpeachFlag = false;
+                }
                 speakTiming = &(f[target_index].ISpeachTiming);
                 fcf.Sound = KMCCT::KMCSound::GetSingleton()->IsPlayableSoundEx(rand, frand);
 

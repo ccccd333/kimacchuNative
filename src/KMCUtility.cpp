@@ -1,4 +1,4 @@
-﻿#include "KMCUtility.h"
+#include "KMCUtility.h"
 #include "KMCEventThread.h"
 
 std::mt19937 create_rand_engine() {
@@ -140,7 +140,8 @@ namespace KMCCT {
         RE::NiPoint3 ppos = player->GetPosition();
 
         for (int i = 0; i < followers->size(); i++) {
-            RE::Actor *f = (*followers)[i].follower;
+            auto actorPtr = (*followers)[i].followerHandle.get();
+            RE::Actor *f = actorPtr.get();
             if (f != nullptr) {
                 bool checkOK = false;
                 float dist = f->GetPosition().GetDistance(ppos);

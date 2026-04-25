@@ -264,7 +264,7 @@ namespace KMCCT {
         std::vector<std::pair<std::string, std::string>> ISpeachTiming;
         std::vector<std::pair<std::string, std::string>> IConditions;
         std::vector<std::pair<std::string, RE::BGSKeyword *>> IKeywords;
-        RE::Actor *follower = nullptr;
+        RE::ActorHandle followerHandle;
         std::string formId = "";
         std::string pluginName = "";
         int index = 0;

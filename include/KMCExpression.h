@@ -21,7 +21,6 @@ namespace KMCCT {
         const int EXP_WAIT_LOOP = 250;
         const int EXP_TIMER_LOOP = 500;
 
-        ~KMCExpression();
         void Setup();
         void Init();
         void Reset() { 

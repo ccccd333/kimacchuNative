@@ -82,73 +82,140 @@ namespace KMCCT {
     }
 
     void KMCPrismaUIBridge::Focus() { 
-        prisma_ui->Focus(cutin_view); 
+        if (prisma_ui->IsValid(cutin_view)) {
+            prisma_ui->Focus(cutin_view);
+        } else {
+            SKSE::log::warn("Focus failed: cutin_view is invalid.");
+        }
     }
 
-    void KMCPrismaUIBridge::UnFocus() { 
-        prisma_ui->Unfocus(cutin_view);
+    void KMCPrismaUIBridge::UnFocus() {
+        if (prisma_ui->IsValid(cutin_view)) {
+            prisma_ui->Unfocus(cutin_view);
+        } else {
+            SKSE::log::warn("UnFocus failed: cutin_view is invalid.");
+        }
     }
 
     void KMCPrismaUIBridge::KMCDefineCutin(const json& j) {
-        std::string script = "KMCDefineCutin(" + j.dump() + ")";
-        prisma_ui->Invoke(cutin_view, script.c_str());
+        if (prisma_ui->IsValid(cutin_view)) {
+            std::string script = "KMCDefineCutin(" + j.dump() + ")";
+            prisma_ui->Invoke(cutin_view, script.c_str());
+        } else {
+            SKSE::log::warn("KMCDefineCutin failed: cutin_view is invalid.");
+        }
     }
 
     void KMCPrismaUIBridge::KMCBatchPreloadGroups(int id, int next_group, int f_id, int f_next_group) {
-        nlohmann::json group_data_map;
-        group_data_map[std::to_string(id)] = next_group;
-        group_data_map[std::to_string(f_id)] = f_next_group;
+        if (prisma_ui->IsValid(cutin_view)) {
+            nlohmann::json group_data_map;
+            group_data_map[std::to_string(id)] = next_group;
+            group_data_map[std::to_string(f_id)] = f_next_group;
 
-        std::string script = "KMCBatchPreloadGroups(" + group_data_map.dump() + ")";
-        prisma_ui->Invoke(cutin_view, script.c_str());
+            std::string script = "KMCBatchPreloadGroups(" + group_data_map.dump() + ")";
+            prisma_ui->Invoke(cutin_view, script.c_str());
+        } else {
+            SKSE::log::warn("KMCBatchPreloadGroups failed: cutin_view is invalid.");
+        }
     }
 
     void KMCPrismaUIBridge::KMCPlayPlayerCutin(int group, int next_group) {
-        json group_data_map = {{"group", group}, {"next_group", next_group}};
+        if (prisma_ui->IsValid(cutin_view)) {
+            json group_data_map = {{"group", group}, {"next_group", next_group}};
 
-        std::string script = "KMCPlayPlayerCutin(" + group_data_map.dump() + ")";
-        prisma_ui->Invoke(cutin_view, script.c_str());
+            std::string script = "KMCPlayPlayerCutin(" + group_data_map.dump() + ")";
+            prisma_ui->Invoke(cutin_view, script.c_str());
+        } else {
+            SKSE::log::warn("KMCPlayPlayerCutin failed: cutin_view is invalid.");
+        }
     }
 
     void KMCPrismaUIBridge::KMCPlayFollowerCutin(int id, int group, int next_group) {
-        json group_data_map = {{"id", id}, {"group", group}, {"next_group", next_group}};
+        if (prisma_ui->IsValid(cutin_view)) {
+            json group_data_map = {{"id", id}, {"group", group}, {"next_group", next_group}};
 
-        std::string script = "KMCPlayFollowerCutin(" + group_data_map.dump() + ")";
-        prisma_ui->Invoke(cutin_view, script.c_str());
+            std::string script = "KMCPlayFollowerCutin(" + group_data_map.dump() + ")";
+            prisma_ui->Invoke(cutin_view, script.c_str());
+        } else {
+            SKSE::log::warn("KMCPlayFollowerCutin failed: cutin_view is invalid. ID: {}", id);
+        }
     }
 
     void KMCPrismaUIBridge::KMCShowStopIcon() {
-        std::string script = "KMCShowStopIcon()";
-        prisma_ui->Invoke(cutin_view, script.c_str());
+        if (prisma_ui->IsValid(cutin_view)) {
+            std::string script = "KMCShowStopIcon()";
+            prisma_ui->Invoke(cutin_view, script.c_str());
+        } else {
+            SKSE::log::warn("KMCShowStopIcon failed: cutin_view is invalid.");
+        }
     }
 
     void KMCPrismaUIBridge::KMCHideStopIcon() {
-        std::string script = "KMCHideStopIcon()";
-        prisma_ui->Invoke(cutin_view, script.c_str());
+        if (prisma_ui->IsValid(cutin_view)) {
+            std::string script = "KMCHideStopIcon()";
+            prisma_ui->Invoke(cutin_view, script.c_str());
+        } else {
+            SKSE::log::warn("KMCHideStopIcon failed: cutin_view is invalid.");
+        }
     }
 
     void KMCPrismaUIBridge::KMCStopAndHideCutinAndIcon() {
-        std::string script = "KMCStopAndHideCutinAndIcon()";
-        prisma_ui->Invoke(cutin_view, script.c_str());
+        if (prisma_ui->IsValid(cutin_view)) {
+            std::string script = "KMCStopAndHideCutinAndIcon()";
+            prisma_ui->Invoke(cutin_view, script.c_str());
+        } else {
+            SKSE::log::warn("KMCStopAndHideCutinAndIcon failed: cutin_view is invalid.");
+        }
     }
 
     void KMCPrismaUIBridge::KMCSetupProfile(const json& j) {
-        std::string script = "KMCSetupProfile(" + j.dump() + ")";
-        prisma_ui->Invoke(cutin_view, script.c_str());
+        if (prisma_ui->IsValid(cutin_view)) {
+            std::string script = "KMCSetupProfile(" + j.dump() + ")";
+            prisma_ui->Invoke(cutin_view, script.c_str());
+        } else {
+            SKSE::log::warn("KMCSetupProfile failed: cutin_view is invalid.");
+        }
     }
 
     void KMCPrismaUIBridge::KMCShowProfile() {
-        std::string script = "KMCShowProfile()";
-        prisma_ui->Invoke(cutin_view, script.c_str());
+        if (prisma_ui->IsValid(cutin_view)) {
+            std::string script = "KMCShowProfile()";
+            prisma_ui->Invoke(cutin_view, script.c_str());
+        } else {
+            SKSE::log::warn("KMCShowProfile failed: cutin_view is invalid.");
+        }
     }
 
     void KMCPrismaUIBridge::KMCHideProfile() {
-        std::string script = "KMCHideProfile()";
-        prisma_ui->Invoke(cutin_view, script.c_str());
+        if (prisma_ui->IsValid(cutin_view)) {
+            std::string script = "KMCHideProfile()";
+            prisma_ui->Invoke(cutin_view, script.c_str());
+        } else {
+            SKSE::log::warn("KMCHideProfile failed: cutin_view is invalid.");
+        }
     }
 
     void KMCPrismaUIBridge::KMCUpdateProfileText(const json& j) {
-        std::string script = "KMCUpdateProfileText(" + j.dump() + ")";
-        prisma_ui->Invoke(cutin_view, script.c_str());
+        if (prisma_ui->IsValid(cutin_view)) {
+            std::string script = "KMCUpdateProfileText(" + j.dump() + ")";
+            prisma_ui->Invoke(cutin_view, script.c_str());
+        } else {
+            SKSE::log::warn("KMCUpdateProfileText failed: cutin_view is invalid.");
+        }
+    }
+
+    void KMCPrismaUIBridge::KMCPrismaViewDestroy() {
+        if (prisma_ui->IsValid(cutin_view)) {
+            prisma_ui->Destroy(cutin_view);
+            SKSE::log::info("View destroyed and memory freed");
+        } else {
+            SKSE::log::warn("KMCPrismaViewDestroy: View was already invalid or prisma_ui is null.");
+        }
+    }
+
+    KMCPrismaUIBridge::~KMCPrismaUIBridge() { 
+        // share pointerでviewをprismaUI側が持っててviewを解放している
+        // なのでここでやる必要がない
+        //KMCPrismaViewDestroy();
     }
 }
