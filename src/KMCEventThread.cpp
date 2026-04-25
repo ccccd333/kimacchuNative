@@ -133,7 +133,7 @@ void KMCCT::CutInPeriodicCall() {
         if (isInitEnd) {
             // ƒ^ƒCƒgƒ‹‰æ–Ê(-3)‚É“ü‚Á‚½‚Æ‚«‚¾‚¯JS‚ÌStopAll‚ðŒÄ‚Ô
             if (current_state == -3 && last_state != -3) {
-                LOG("Title screen detected. Sending StopAll to JS.");
+                KMC_LOG("Title screen detected. Sending StopAll to JS.");
                 KMCCT::KMCPrismaUIBridge::GetSingleton()->KMCStopAndHideCutinAndIcon();
             }
         }
@@ -274,23 +274,23 @@ void KMCCT::PapyrusPeriodicCall() {
 
 #pragma region cutin init function
 
-void KMCCT::InitMain(std::vector<float> *floatArray) {
-    isInitEnd = false;
-    isProfileInitEnd = false;
-
-    if (enable_profile) {
-        isProfileInitEnd = true;
-    }
-
-    if (enable_cutin) {
-
-        KMCCT::KMCCutin::GetSingleton()->InitCutin(aaaakmcroot, floatArray);
-
-        isInitEnd = true;
-    }
-
-    RE::DebugNotification("KMC Init End");
-}
+//void KMCCT::InitMain(std::vector<float> *floatArray) {
+//    isInitEnd = false;
+//    isProfileInitEnd = false;
+//
+//    if (enable_profile) {
+//        isProfileInitEnd = true;
+//    }
+//
+//    if (enable_cutin) {
+//
+//        KMCCT::KMCCutin::GetSingleton()->InitCutin(aaaakmcroot, floatArray);
+//
+//        isInitEnd = true;
+//    }
+//
+//    RE::DebugNotification("KMC Init End");
+//}
 #pragma endregion
 
 #pragma region oar
@@ -348,48 +348,7 @@ namespace KMCCT {
         {
             std::lock_guard<std::mutex> lock(aaaakmc_wait_init_mtx_);
             if (init_first) return;
-            init_first = true;
 
-            aaaakmcroot = skyroot.c_str();
-            aaaakmcvolum = floatArray.at(0);
-            aaaakmcAnimtime = floatArray.at(1);
-            aaaakmctime = floatArray.at(2);
-            aaaakmcCycle = floatArray.at(3);
-            aaaakmcUpdatePapyrusCycle = floatArray.at(20);
-
-            isInitEnd = false;
-            isProfileInitEnd = false;
-            forceendanim = false;
-
-            KMCCT::KMCWaitTask::GetSingleton()->SetWaitFlag(false);
-
-            KMCCT::KMCCutin::GetSingleton()->SetAnimNow(false);
-
-            Reset();
-            KMCCT::KMCWaitTask::GetSingleton()->KMCPushWaitTaskClear();
-
-            // CategoryRandomizer();
-
-            // KMCCT::KMCStateManager::GetSingleton()->SetFHUStatus(0.0f, 0.0f, 0.0f);
-
-            if (aaaakmcroot != "") {
-                papyrus_floatArray = std::move(floatArray);
-                executor.submit(InitMain, &papyrus_floatArray).wait_for(std::chrono::seconds(0));
-
-                if (enable_cutin) {
-                    executor.submit(CutInPeriodicCall).wait_for(std::chrono::seconds(0));
-                    executor.submit(CutInConditionPeriodicCall).wait_for(std::chrono::seconds(0));
-                }
-
-                if (enable_profile) {
-                    executor.submit(ProfilePeriodicCall).wait_for(std::chrono::seconds(0));
-                }
-
-                executor.submit(PapyrusPeriodicCall).wait_for(std::chrono::seconds(0));
-                
-            } else {
-                ERROR("Error KMCEventThread::Init skyroot not found.");
-            }
         }
     }
 
@@ -399,6 +358,47 @@ namespace KMCCT {
         enable_cutin = KMCFindVector(setting, ENABLE_CUT_IN_SETTING, true);
         enable_profile = KMCFindVector(setting, ENABLE_PROFILE_SETTING, true);
         form = RE::TESDataHandler::GetSingleton()->LookupForm(0x806, "KimachuuCutIn.esp"); 
+
+        init_first = true;
+        isInitEnd = false;
+        isProfileInitEnd = false;
+        forceendanim = false;
+
+        KMCCT::KMCWaitTask::GetSingleton()->SetWaitFlag(false);
+
+        KMCCT::KMCCutin::GetSingleton()->SetAnimNow(false);
+
+        Reset();
+        KMCCT::KMCWaitTask::GetSingleton()->KMCPushWaitTaskClear();
+
+        // CategoryRandomizer();
+
+        // KMCCT::KMCStateManager::GetSingleton()->SetFHUStatus(0.0f, 0.0f, 0.0f);
+        isInitEnd = false;
+        isProfileInitEnd = false;
+
+        if (enable_profile) {
+            isProfileInitEnd = true;
+        }
+
+        if (enable_cutin) {
+            KMCCT::KMCCutin::GetSingleton()->InitCutin();
+
+            isInitEnd = true;
+        }
+        //executor.submit(InitMain, &papyrus_floatArray).wait_for(std::chrono::seconds(0));
+
+        if (enable_cutin) {
+            executor.submit(CutInPeriodicCall).wait_for(std::chrono::seconds(0));
+            executor.submit(CutInConditionPeriodicCall).wait_for(std::chrono::seconds(0));
+        }
+
+        if (enable_profile) {
+            executor.submit(ProfilePeriodicCall).wait_for(std::chrono::seconds(0));
+        }
+
+        executor.submit(PapyrusPeriodicCall).wait_for(std::chrono::seconds(0));
+
     }
 
     void KMCEventThread::MCMSettingChange(std::vector<float> floatArray) {

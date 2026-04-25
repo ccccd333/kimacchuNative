@@ -73,14 +73,13 @@ namespace KMCCT {
     int KMC_DEFAULT_TEXT_POS_X = 640;
     int KMC_DEFAULT_TEXT_POS_Y = 535;
 
-    void KMCCutin::InitCutin(std::string skyroot, std::vector<float> *floatArray) {
+    void KMCCutin::InitCutin() {
         animnow = false;
 
-        ct_aaaakmcroot = skyroot;
-        aaaakmcvolum = (*floatArray)[0];
-        aaaakmcAnimtime = (*floatArray)[1];
-        aaaakmctime = (*floatArray)[2];
-        aaaakmcCycle = (*floatArray)[3];
+        aaaakmcvolum = 1.0f;
+        aaaakmcAnimtime = 5.0f;
+        aaaakmctime = 5.0f;
+        aaaakmcCycle = 10.0f;
     }
 
     void KMCCutin::InterruptCutInEventManager(KMCInterruptPushCutInData data) {
@@ -97,7 +96,7 @@ namespace KMCCT {
             milliseconds diff = duration_cast<milliseconds>(interrupt_time - event_start);
             long long dur = diff.count();
             if (dur < event_cool_time) {
-                LOG("InterruptCutInEventManager cool time {} {}", dur, event_cool_time);
+                KMC_LOG("InterruptCutInEventManager cool time {} {}", dur, event_cool_time);
                 return;
             }
             event_start = Clock::now();
@@ -177,17 +176,17 @@ namespace KMCCT {
                 return -2;
             }
         }
-        LOG("CutIn type {}", aaaakmctype);
+        KMC_LOG("CutIn type {}", aaaakmctype);
 
         int exp_rand = -1;
         std::string exp_type = val.aaaakmcExptype;
-        LOG("EXP type ===> {}, CUTIN type ===> {}", exp_type, aaaakmctype);
+        KMC_LOG("EXP type ===> {}, CUTIN type ===> {}", exp_type, aaaakmctype);
         if (val.overri_fc_exp) {
-            LOG("[EXP type] ===> {}", exp_type);
+            KMC_LOG("[EXP type] ===> {}", exp_type);
             if (aaaakmctype != exp_type) {
                 exp_rand = KMCCT::KMCExpression::GetSingleton()->GetCutInID(exp_type);
                 if (exp_rand == 0) {
-                    LOG("EXP type ===> not found", exp_type, aaaakmctype);
+                    KMC_LOG("EXP type ===> not found", exp_type, aaaakmctype);
                     exp_rand = -1;
                 }
             }
@@ -232,7 +231,7 @@ namespace KMCCT {
         if (f.size() != 0) {
             frand = f.begin()->index;
             int target_index = 0;
-            LOG("fsize {}", f.size());
+            KMC_LOG("fsize {}", f.size());
             if (f.size() > 1) {
                 std::random_device rnd;
                 std::mt19937 mt(rnd());
@@ -408,7 +407,7 @@ namespace KMCCT {
         }
 
         if (animmap == nullptr) {
-            ERROR("not found cutin type");
+            KMC_ERROR("not found cutin type");
             return;
         }
 
@@ -423,7 +422,7 @@ namespace KMCCT {
         } catch (const std::exception &e) {
             // タイムアウト発生時
             // あってはならない
-            ERROR("PlayDuoCutin aborted: {}", e.what());
+            KMC_ERROR("PlayDuoCutin aborted: {}", e.what());
         }
     }
 
@@ -434,7 +433,7 @@ namespace KMCCT {
         animmap = &AnimPlayerOnly;
 
         if (animmap == nullptr) {
-            ERROR("not found cutin type");
+            KMC_ERROR("not found cutin type");
             return;
         }
 
@@ -449,12 +448,12 @@ namespace KMCCT {
         } catch (const std::exception &e) {
             // タイムアウト発生時
             // あってはならない
-            ERROR("PlayDuoCutin aborted: {}", e.what());
+            KMC_ERROR("PlayDuoCutin aborted: {}", e.what());
         }
     }
 
     void KMCCutin::AnimationLoopSimple(const KMCAnimData &anim_data) {
-        LOG("--------------KMCEventThread::AnimationLoop START------------");
+        KMC_LOG("--------------KMCEventThread::AnimationLoop START------------");
 
         if (anim_data.cf.Sound) {
             KMCCT::KMCSound::GetSingleton()->PlayEx(anim_data.rand, anim_data.volum, anim_data.speaker,
@@ -473,13 +472,13 @@ namespace KMCCT {
 
             // Prisma側から終了通知(KMCOnCutinFinished)が来た
             if (GetCutinFinished()) {
-                LOG("Cutin finished by JS notification.");
+                KMC_LOG("Cutin finished by JS notification.");
                 break;
             }
 
             // Prisma側からの通知が来ない場合の保険(設定時間 + 30秒)
             if (elapsed >= anim_data.time + READY_TIMEOUT) {
-                ERROR("Cutin timeout: JS Finished didn't respond, forcing break.");
+                KMC_ERROR("Cutin timeout: JS Finished didn't respond, forcing break.");
                 throw std::runtime_error("[AnimationLoopSimple] Cutin response timeout");
             }
 
@@ -487,13 +486,13 @@ namespace KMCCT {
             std::this_thread::sleep_for(milliseconds(SE_PROGRESS_ADDTION_MS));
         }
 
-        LOG("--------------KMCEventThread::AnimationLoop END------------");
+        KMC_LOG("--------------KMCEventThread::AnimationLoop END------------");
 
         std::this_thread::sleep_for(std::chrono::milliseconds(SE_PROGRESS_ADDTION_MS));
     }
 
     void KMCCutin::AnimationLoopWithSE(const KMCAnimData &anim_data) {
-        LOG("-------------- KMCCutin::AnimationLoopWithJSWait START ------------");
+        KMC_LOG("-------------- KMCCutin::AnimationLoopWithJSWait START ------------");
 
         if (anim_data.cf.Sound) {
             KMCCT::KMCSound::GetSingleton()->PlayEx(anim_data.rand, anim_data.volum, anim_data.speaker,
@@ -511,7 +510,7 @@ namespace KMCCT {
                 return;
 
             if (GetCutinFinished()) {
-                LOG("Cutin finished by JS notification.");
+                KMC_LOG("Cutin finished by JS notification.");
                 break;
             }
 
@@ -520,7 +519,7 @@ namespace KMCCT {
 
             // タイムアウト保険
             if (elapsed_limit >= anim_data.time + READY_TIMEOUT) {
-                ERROR("Cutin timeout: JS Finished didn't respond.");
+                KMC_ERROR("Cutin timeout: JS Finished didn't respond.");
                 throw std::runtime_error("[AnimationLoopWithSE] Cutin response timeout");
             }
 
@@ -529,18 +528,18 @@ namespace KMCCT {
 
             play_se_timer += SE_TIMER_INTERVAL_MS;
             if (se_record != "" && play_se_timer >= anim_data.time * std::stof(se_record)) {
-                LOG(" time ms {} record {} dur {}", anim_data.time, se_record, play_se_timer);
+                KMC_LOG(" time ms {} record {} dur {}", anim_data.time, se_record, play_se_timer);
                 KMCCT::KMCSound::GetSingleton()->PlaySEEx(anim_data.rand, anim_data.frand, &se_record, anim_data.volum);
             }
         }
 
         // 1.0で設定されたSEの場合は再生されない可能性があるため
         if (se_record != "") {
-            LOG(" time ms {} record {} dur {}", anim_data.time, se_record, play_se_timer);
+            KMC_LOG(" time ms {} record {} dur {}", anim_data.time, se_record, play_se_timer);
             KMCCT::KMCSound::GetSingleton()->PlaySEEx(anim_data.rand, anim_data.frand, &se_record, anim_data.volum);
         }
 
-        LOG("-------------- KMCCutin::AnimationLoopWithJSWait END ------------");
+        KMC_LOG("-------------- KMCCutin::AnimationLoopWithJSWait END ------------");
 
         std::this_thread::sleep_for(std::chrono::milliseconds(SE_PROGRESS_ADDTION_MS));
     }
@@ -571,7 +570,7 @@ namespace KMCCT {
 
             now = dur;
             if (nrecord != "" && now >= time * std::stof(nrecord)) {
-                LOG(" time ms {} record {} dur {}", time, nrecord, now);
+                KMC_LOG(" time ms {} record {} dur {}", time, nrecord, now);
                 KMCCT::KMCSound::GetSingleton()->PlaySEEx(trackid, frand, &nrecord, volume);
             }
 
@@ -774,7 +773,7 @@ namespace KMCCT {
 
             if (wait_duration >= READY_TIMEOUT + time) {
                 // 30秒＋カットイン時刻分経過したら待つのをやめる
-                ERROR("Cutin timeout: JS Ready didn't respond. ID: {} Category ID: {}", id, st->rand);
+                KMC_ERROR("Cutin timeout: JS Ready didn't respond. ID: {} Category ID: {}", id, st->rand);
                 throw std::runtime_error("[KMCOnCutinStartReady] Cutin response timeout");
             }
 

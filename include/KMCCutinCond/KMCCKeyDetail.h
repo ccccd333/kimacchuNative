@@ -129,10 +129,10 @@ namespace KMCCT {
                 double t = boost::any_cast<double>(any);
                 result = path + "/" + name + "/l" + "/" + inte + "/" + std::to_string(t);
             } else {
-                ERROR("KMCCKeyDetail Build unkown type");
+                KMC_ERROR("KMCCKeyDetail Build unkown type");
             }
 
-            LOG("KMCCKeyDetail result : [{}]", result);
+            KMC_LOG("KMCCKeyDetail result : [{}]", result);
 
             return result;
         }

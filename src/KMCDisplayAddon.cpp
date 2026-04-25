@@ -32,7 +32,7 @@ namespace KMCCT {
                 }
             }
         } catch (std::runtime_error ex) {
-            ERROR("ERROR LOADING {}", ex.what());
+            KMC_ERROR("ERROR LOADING {}", ex.what());
             loaded = false;
         }
     }
@@ -94,7 +94,7 @@ namespace KMCCT {
                 new_set.cutin_entries.push_back({cutin_no, data});
 
             } catch (...) {
-                ERROR("ERROR [KMCDisplayAddon::Parse] Entry no {}", cutin_no_str);
+                KMC_ERROR("ERROR [KMCDisplayAddon::Parse] Entry no {}", cutin_no_str);
                 continue;
             }
         }

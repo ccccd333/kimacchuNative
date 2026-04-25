@@ -21,7 +21,7 @@ namespace KMCCT {
                     auto* sd = (RE::BGSSoundDescriptorForm*)RE::TESDataHandler::GetSingleton()->LookupForm(
                         std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
                     if (!sd) {
-                        ERROR("ERROR Possibly wrong definition of SoundDescriptorForm. key: {} FORM ID: {} {}",
+                        KMC_ERROR("ERROR Possibly wrong definition of SoundDescriptorForm. key: {} FORM ID: {} {}",
                               track_id, spvalue.at(0), spvalue.at(1));
                         continue;
                     }
@@ -39,7 +39,7 @@ namespace KMCCT {
                                 auto* sd = (RE::BGSSoundDescriptorForm*)RE::TESDataHandler::GetSingleton()->LookupForm(
                                     std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
                                 if (sd == nullptr) {
-                                    ERROR(
+                                    KMC_ERROR(
                                         "ERROR Possibly wrong definition of SoundDescriptorFormSE. key: {} FORM ID: {} {}",
                                         track_id, spvalue.at(0), spvalue.at(1));
                                     continue;
@@ -47,7 +47,7 @@ namespace KMCCT {
                                 RE::Actor* SEPoint = player;
                                 if (values.emit_from != PLAY_SE_PLAYER_POS) {
                                     if (follower == nullptr) {
-                                        ERROR(
+                                        KMC_ERROR(
                                             "ERROR LOADING SoundEffect.json. Error at nested node. not found "
                                             "follower {}",
                                             track_id);
@@ -61,7 +61,7 @@ namespace KMCCT {
                                 if (target_sound_effect->contains(key)) {
                                     const auto& recordmap = (*target_sound_effect).at(key);
                                     if (recordmap.contains(record)) {
-                                        LOG("SoundDiscription SE Sound effects cannot be played at the same "
+                                        KMC_LOG("SoundDiscription SE Sound effects cannot be played at the same "
                                             "time.Please use different values. = key:{} FORM ID:{} {} record:{}",
                                             track_id, spvalue.at(0), spvalue.at(1), record);
                                         continue;
@@ -69,15 +69,15 @@ namespace KMCCT {
                                 }
                                 (*target_sound_effect)[key][record] = KMCSECond(sd, SEPoint);
 
-                                LOG("SoundDiscription SE Loaded = key:{} FORM ID:{} {} record:{}", track_id,
+                                KMC_LOG("SoundDiscription SE Loaded = key:{} FORM ID:{} {} record:{}", track_id,
                                     spvalue.at(0), spvalue.at(1),
                                     record);
                             } catch (...) {
-                                ERROR("ERROR LOADING SoundDescriptorSEFormId.json. Error at nested node. {}", track_id);
+                                KMC_ERROR("ERROR LOADING SoundDescriptorSEFormId.json. Error at nested node. {}", track_id);
                             }
                         }
                     } catch (...) {
-                        ERROR("ERROR LOADING SoundDiscription.json. The number of elements in the value is wrong.");
+                        KMC_ERROR("ERROR LOADING SoundDiscription.json. The number of elements in the value is wrong.");
                         // return;
                     }
                 }
@@ -162,7 +162,7 @@ namespace KMCCT {
     }
 
     bool KMCSound::PlaySEEx(int trackid, int frand, std::string* record, float volume) {
-        LOG("KMCSound::PlaySEEx");
+        KMC_LOG("KMCSound::PlaySEEx");
 
         std::string findid = trackid + "," + *record;
         if (frand == -1) {
@@ -208,7 +208,7 @@ namespace KMCCT {
             handle.SetObjectToFollow(target->Get3D());
             handle.Play();
         } else {
-            LOG("KMCSound Player::Play the pair was not found trackid = {}", trackid);
+            KMC_LOG("KMCSound Player::Play the pair was not found trackid = {}", trackid);
         }
     }
 
@@ -223,14 +223,14 @@ namespace KMCCT {
             if (it2 != fsd.end()) {
                 RE::BSSoundHandle handle;
                 if ((it2->second)->soundDescriptor == nullptr) {
-                    LOG("KMCSound::Play follower {} track id {}", frand, trackid);
+                    KMC_LOG("KMCSound::Play follower {} track id {}", frand, trackid);
                 }
                 AudioManager->BuildSoundDataFromDescriptor(handle, (it2->second)->soundDescriptor);
                 handle.SetVolume(volume);
                 handle.SetObjectToFollow(target->Get3D());
                 handle.Play();
             } else {
-                LOG("KMCSound Follower::Play the pair was not found trackid = {}", trackid);
+                KMC_LOG("KMCSound Follower::Play the pair was not found trackid = {}", trackid);
             }
         }
     }
@@ -284,7 +284,7 @@ namespace KMCCT {
 
                 if (recordmap.contains(record)) {
                     auto v = recordmap[record];
-                    LOG("PlaySE Follower : trackid {} record {} pos {}", trackid, record,
+                    KMC_LOG("PlaySE Follower : trackid {} record {} pos {}", trackid, record,
                         v.SEPoint->GetName());
                     RE::BSSoundHandle handle;
                     AudioManager->BuildSoundDataFromDescriptor(handle, v.sd);
@@ -350,7 +350,7 @@ namespace KMCCT {
 
             if (recordmap.contains(record)) {
                 auto v = recordmap[record];
-                LOG("PlaySE Player : trackid{} record{}", trackid, record);
+                KMC_LOG("PlaySE Player : trackid{} record{}", trackid, record);
                 RE::BSSoundHandle handle;
                 AudioManager->BuildSoundDataFromDescriptor(handle, v.sd);
                 handle.SetVolume(volume);

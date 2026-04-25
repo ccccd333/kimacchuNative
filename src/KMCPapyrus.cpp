@@ -19,11 +19,11 @@ namespace KMCCT {
                     auto form =
                         RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll(sp.at(0), NULL, 16), sp.at(1));
                     if (form == nullptr) {
-                        LOG("KMCGetForms not found formid or plugin name {}", value);
+                        KMC_LOG("KMCGetForms not found formid or plugin name {}", value);
                     }
                     form_list.push_back(form);
                 } catch (std::exception &e) {
-                    ERROR("KMCGetForms fatal {}", e.what());
+                    KMC_ERROR("KMCGetForms fatal {}", e.what());
                     form_list.push_back(nullptr);
                 }
             }
@@ -75,7 +75,7 @@ namespace KMCCT {
                     int index = RE::TESDataHandler::GetSingleton()->GetLoadedModIndex(value).value_or(255);
                     ModNames.push_back(index);
                 } catch (std::bad_optional_access &e) {
-                    ERROR("KMCCacheModNames fatal {}", e.what());
+                    KMC_ERROR("KMCCacheModNames fatal {}", e.what());
                     ModNames.push_back(255);
                 }
             }

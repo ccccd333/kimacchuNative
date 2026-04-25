@@ -51,7 +51,7 @@ namespace KMCCT {
     void KMCWaitTask::KMCPushWaitTask(KMCWaitType id, KMCWaitConfigs config) {
         {
             std::lock_guard<std::mutex> lock(aaaakmc_waittask_mtx_);
-            LOG("KMCPushWaitTask : id {}", (int)id);
+            KMC_LOG("KMCPushWaitTask : id {}", (int)id);
             aaaaKmcPushTasks[(size_t)id] = config;
         }
     }
@@ -130,7 +130,7 @@ namespace KMCCT {
                 }
             }
 
-            LOG("KMCCheckWaitTask : suspensionRequest {}", suspensionRequest);
+            KMC_LOG("KMCCheckWaitTask : suspensionRequest {}", suspensionRequest);
 
             return suspensionRequest;
         }

@@ -18,7 +18,7 @@ namespace KMCCT {
 
     bool KMCFormula::GetComp1Global(std::vector<std::string> &v, std::string a) {
         if (v.size() != 3) {
-            ERROR("ERROR The global value should have three elements. {}", a);
+            KMC_ERROR("ERROR The global value should have three elements. {}", a);
             return false;
         }
 
@@ -28,7 +28,7 @@ namespace KMCCT {
         boost::algorithm::trim(gv2);
         glob_1 = (RE::TESGlobal *)RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll(gv1, NULL, 16), gv2);
         if (glob_1 == nullptr) {
-            ERROR("ERROR The formula definition is incorrect {}", a);
+            KMC_ERROR("ERROR The formula definition is incorrect {}", a);
             return false;
         }
 
@@ -44,7 +44,7 @@ namespace KMCCT {
 
     bool KMCFormula::GetComp2Global(std::vector<std::string> &v, std::string a) {
         if (v.size() != 3) {
-            ERROR("ERROR The global value should have three elements. {}", a);
+            KMC_ERROR("ERROR The global value should have three elements. {}", a);
             return false;
         }
 
@@ -54,7 +54,7 @@ namespace KMCCT {
         boost::algorithm::trim(gv2);
         glob_2 = (RE::TESGlobal *)RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll(gv1, NULL, 16), gv2);
         if (glob_2 == nullptr) {
-            ERROR("ERROR The formula definition is incorrect {}", a);
+            KMC_ERROR("ERROR The formula definition is incorrect {}", a);
             return false;
         }
 
@@ -70,7 +70,7 @@ namespace KMCCT {
 
     bool KMCFormula::GetComp1Armo(std::vector<std::string> &v, std::string a) {
         if (v.size() != 3) {
-            ERROR("ERROR The armo value should have three elements. {}", a);
+            KMC_ERROR("ERROR The armo value should have three elements. {}", a);
             return false;
         }
 
@@ -80,7 +80,7 @@ namespace KMCCT {
         boost::algorithm::trim(av2);
         p_armo_1 = (RE::TESObjectARMO *)RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll(av1, NULL, 16), av2);
         if (p_armo_1 == nullptr) {
-            ERROR("ERROR The formula definition is incorrect {}", a);
+            KMC_ERROR("ERROR The formula definition is incorrect {}", a);
             return false;
         }
 
@@ -97,7 +97,7 @@ namespace KMCCT {
     }
     bool KMCFormula::GetComp2Armo(std::vector<std::string> &v, std::string a) {
         if (v.size() != 3) {
-            ERROR("ERROR The armo value should have three elements. {}", a);
+            KMC_ERROR("ERROR The armo value should have three elements. {}", a);
             return false;
         }
 
@@ -108,7 +108,7 @@ namespace KMCCT {
         p_armo_2 =
             (RE::TESObjectARMO *)RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll(av1, NULL, 16), av2);
         if (p_armo_2 == nullptr) {
-            ERROR("ERROR The formula definition is incorrect {}", a);
+            KMC_ERROR("ERROR The formula definition is incorrect {}", a);
             return false;
         }
 
@@ -126,7 +126,7 @@ namespace KMCCT {
 
     bool KMCFormula::GetComp1Value(std::vector<std::string> &v, std::string a) {
         if (v.size() != 1) {
-            ERROR("ERROR The value should have one elements. {}", a);
+            KMC_ERROR("ERROR The value should have one elements. {}", a);
             return false;
         }
 
@@ -138,7 +138,7 @@ namespace KMCCT {
                 return this->comp_v_1;
             };
         } catch (std::exception &e) {
-            ERROR("ERROR ===> {}, wt = {}", a, e.what());
+            KMC_ERROR("ERROR ===> {}, wt = {}", a, e.what());
             return false;
         }
 
@@ -146,7 +146,7 @@ namespace KMCCT {
     }
     bool KMCFormula::GetComp2Value(std::vector<std::string> &v, std::string a) {
         if (v.size() != 1) {
-            ERROR("ERROR The value should have one elements. {}", a);
+            KMC_ERROR("ERROR The value should have one elements. {}", a);
             return false;
         }
 
@@ -156,7 +156,7 @@ namespace KMCCT {
             comp_v_2 = std::stof(v1);
             comp2 = [this]() { return this->comp_v_2; };
         } catch (std::exception &e) {
-            ERROR("ERROR ===> {}, wt = {}", a, e.what());
+            KMC_ERROR("ERROR ===> {}, wt = {}", a, e.what());
             return false;
         }
 
@@ -187,15 +187,15 @@ namespace KMCCT {
         comp_type1 = GetType(cv1s, cv1b);
         if (comp_type1 == KMCFormula::KMCCompType::glob) {
             if (!GetComp1Global(cv1b, cv1s)) return false;
-            LOG("[KMCFormula] Apply gv 1 {}", cv1s);
+            KMC_LOG("[KMCFormula] Apply gv 1 {}", cv1s);
         } else if (comp_type1 == KMCFormula::KMCCompType::value) {
             if (!GetComp1Value(cv1b, cv1s)) return false;
-            LOG("[KMCFormula] Apply v 1 {}", cv1s);
+            KMC_LOG("[KMCFormula] Apply v 1 {}", cv1s);
         } else if (comp_type1 == KMCFormula::KMCCompType::armo) {
             if (!GetComp1Armo(cv1b, cv1s)) return false;
-            LOG("[KMCFormula] Apply v 1 {}", cv1s);
+            KMC_LOG("[KMCFormula] Apply v 1 {}", cv1s);
         } else {
-            ERROR("[KMCFormula] v 1 {}", cv1s);
+            KMC_ERROR("[KMCFormula] v 1 {}", cv1s);
             return false;
         }
 
@@ -203,15 +203,15 @@ namespace KMCCT {
         comp_type2 = GetType(cv2s, cv2b);
         if (comp_type2 == KMCFormula::KMCCompType::glob) {
             if (!GetComp2Global(cv2b, cv2s)) return false;
-            LOG("[KMCFormula] Apply gv 2 {}", cv2s);
+            KMC_LOG("[KMCFormula] Apply gv 2 {}", cv2s);
         } else if (comp_type2 == KMCFormula::KMCCompType::value) {
             if (!GetComp2Value(cv2b, cv2s)) return false;
-            LOG("[KMCFormula] Apply v 2 {}", cv2s);
+            KMC_LOG("[KMCFormula] Apply v 2 {}", cv2s);
         } else if (comp_type2 == KMCFormula::KMCCompType::armo) {
             if (!GetComp2Armo(cv2b, cv2s)) return false;
-            LOG("[KMCFormula] Apply v 2 {}", cv2s);
+            KMC_LOG("[KMCFormula] Apply v 2 {}", cv2s);
         } else {
-            ERROR("[KMCFormula] v 2 {}", cv2s);
+            KMC_ERROR("[KMCFormula] v 2 {}", cv2s);
             return false;
         }
 
@@ -246,7 +246,7 @@ namespace KMCCT {
                         }
                     }
                 } else {
-                    ERROR("The right and left sides of the formula armo must be armo and value");
+                    KMC_ERROR("The right and left sides of the formula armo must be armo and value");
                 }
             };
 
@@ -262,7 +262,7 @@ namespace KMCCT {
         for (int formi = 0; formi < source.formula.size(); formi++) {
             auto fm = &source.formula.at(formi);
             if (!fm->Build()) {
-                ERROR("The formula definition is incorrect. Please review it.");
+                KMC_ERROR("The formula definition is incorrect. Please review it.");
                 return false;
             }
 
@@ -272,10 +272,10 @@ namespace KMCCT {
 
             source.cond_formula[andor_c].emplace_back(fm);
             if (fm->and_or == AndOr::isOr) {
-                LOG("[FROMULA OR] {} EntryNo ==> {}", fm->cond, andor_c);
+                KMC_LOG("[FROMULA OR] {} EntryNo ==> {}", fm->cond, andor_c);
                 ++andor_c;
             } else {
-                LOG("[FROMULA AND] {} EntryNo ==> {}", fm->cond, andor_c);
+                KMC_LOG("[FROMULA AND] {} EntryNo ==> {}", fm->cond, andor_c);
             }
         }
 

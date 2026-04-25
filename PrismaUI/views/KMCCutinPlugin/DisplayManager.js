@@ -120,14 +120,13 @@ window.KMCDefineCutin = async (json) => {
 
     if (cache_mode === 0) {
         // 全画像を事前にプリロード(32GB/64GB向け)
-        console.log(`[CacheMode 0] Full Preload for ID: ${id}`);
+        console.log(`[CacheMode 0] Bulk Preload Start`);
         const all_groups = Object.keys(json.entries).map(key => Number(key.trim()));
-        // ここも Promise.all で並列実行
-        await Promise.all(all_groups.map(group_id => display.preloadGroup(group_id)));
+        await display.bulkPreloadGroups(all_groups);
     } else if (cache_mode === 1 && json.first_values) {
         // 最初のカットイン候補だけプリロード(RAM16GB向け)
-        console.log(`[CacheMode 1] Partial Preload`, json.first_values);
-        await Promise.all(json.first_values.map(group_id => display.preloadGroup(group_id)));
+        console.log(`[CacheMode 1] Partial Bulk Preload`, json.first_values);
+        await display.bulkPreloadGroups(json.first_values);
     }
 
     return "KMCAddCutinPaths loaded id " + id;

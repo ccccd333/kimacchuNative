@@ -32,29 +32,29 @@ namespace KMCCT {
                 int str = std::stoi(sp[1]);
                 if (type == MFG_TYPE::modifier) {
                     if (exp < 0 || exp > 13) {
-                        ERROR("modifier must be between 0 and 13");
+                        KMC_ERROR("modifier must be between 0 and 13");
                         return false;
                     }
                     if (str < 0 || str > 100) {
-                        ERROR("modifier strength must be between 0 and 100");
+                        KMC_ERROR("modifier strength must be between 0 and 100");
                         return false;
                     }
                 } else if (type == MFG_TYPE::phoneme) {
                     if (exp < 0 || exp > 15) {
-                        ERROR("phoneme must be between 0 and 15");
+                        KMC_ERROR("phoneme must be between 0 and 15");
                         return false;
                     }
                     if (str < 0 || str > 100) {
-                        ERROR("phoneme strength must be between 0 and 100");
+                        KMC_ERROR("phoneme strength must be between 0 and 100");
                         return false;
                     }
                 } else {
                     if (exp < 0 || exp > 16) {
-                        ERROR("expression must be between 0 and 16");
+                        KMC_ERROR("expression must be between 0 and 16");
                         return false;
                     }
                     if (str < 0 || str > 100) {
-                        ERROR("expression strength must be between 0 and 100");
+                        KMC_ERROR("expression strength must be between 0 and 100");
                         return false;
                     }
                 }
@@ -63,7 +63,7 @@ namespace KMCCT {
                 pair.exp.emplace_back(exp);
                 pair.str.emplace_back(str);
             } else {
-                ERROR("Fewer definitions.");
+                KMC_ERROR("Fewer definitions.");
                 return false;
             }
 
@@ -153,7 +153,7 @@ namespace KMCCT {
                     return -1;
                 }
 
-                LOG("KMCExpression::OnStandby Wait");
+                KMC_LOG("KMCExpression::OnStandby Wait");
                 {
                     std::lock_guard<std::mutex> lock(mtx);
                     eln = exp_loop_now;
@@ -188,7 +188,7 @@ namespace KMCCT {
 
     void KMCExpression::PushExpFunc(int rand, int frand, bool force, float ex_exp_time) {
         if (rand == -1) {
-            ERROR("KMCExpression::PushExpFunc rand == -1");
+            KMC_ERROR("KMCExpression::PushExpFunc rand == -1");
         }
 
         if (frand == -1) {
@@ -210,7 +210,7 @@ namespace KMCCT {
                 }
 
                 if (end) {
-                    LOG("KMCExpression Player == Follower(Player) Conflict");
+                    KMC_LOG("KMCExpression Player == Follower(Player) Conflict");
 
                     int loop_count = 1;
                     while (end) {
@@ -226,7 +226,7 @@ namespace KMCCT {
                             return;
                         }
 
-                        LOG("KMCExpression Player == Follower(Player) Conflict. Loop{}", loop_count);
+                        KMC_LOG("KMCExpression Player == Follower(Player) Conflict. Loop{}", loop_count);
 
                         {
                             std::lock_guard<std::mutex> lock(f_mtx);
@@ -236,7 +236,7 @@ namespace KMCCT {
                         std::this_thread::sleep_for(std::chrono::milliseconds(EXP_NOT_END_LOOP));
                         loop_count++;
                     }
-                    LOG("KMCExpression Player == Follower(Player) Conflict. End");
+                    KMC_LOG("KMCExpression Player == Follower(Player) Conflict. End");
                 }
             }
         }
@@ -297,7 +297,7 @@ namespace KMCCT {
             exp_loop_now = false;
         }
 
-        LOG("KMCExpression Player End");
+        KMC_LOG("KMCExpression Player End");
     }
 
     void KMCExpression::TryKMCFLExp(STMFGPair* mfg) {
@@ -312,7 +312,7 @@ namespace KMCCT {
                 }
 
                 if (end) {
-                    LOG("KMCExpression Follower(Player) == Player Conflict");
+                    KMC_LOG("KMCExpression Follower(Player) == Player Conflict");
                     int loop_count = 1;
                     while (end) {
                         if (GetWaitFlag()) {
@@ -327,7 +327,7 @@ namespace KMCCT {
                             return;
                         }
 
-                        LOG("KMCExpression Follower(Player) == Player Conflict. Loop{}", loop_count);
+                        KMC_LOG("KMCExpression Follower(Player) == Player Conflict. Loop{}", loop_count);
 
                         {
                             std::lock_guard<std::mutex> lock(mtx);
@@ -338,7 +338,7 @@ namespace KMCCT {
                         loop_count++;
                     }
 
-                    LOG("KMCExpression Follower(Player) == Player Conflict. End");
+                    KMC_LOG("KMCExpression Follower(Player) == Player Conflict. End");
                 }
             }
         }
@@ -399,11 +399,11 @@ namespace KMCCT {
             f_exp_loop_now = false;
         }
 
-        LOG("KMCExpression Follower End");
+        KMC_LOG("KMCExpression Follower End");
     }
 
     void KMCExpression::SetEndPapurusExp() {
-        LOG("KMCExpression Player Papyrus End");
+        KMC_LOG("KMCExpression Player Papyrus End");
 
         {
             std::lock_guard<std::mutex> lock(mtx);
@@ -412,7 +412,7 @@ namespace KMCCT {
     }
 
     void KMCExpression::SetFLEndPapurusExp() {
-        LOG("KMCExpression Follower Papyrus End");
+        KMC_LOG("KMCExpression Follower Papyrus End");
         {
             std::lock_guard<std::mutex> lock(f_mtx);
             f_papyrus_end_exp = true;
@@ -434,7 +434,7 @@ namespace KMCCT {
         long long dur = 0;
         // sleep
         if (force_cool_time != 0.0f) {
-            LOG("KMCExpression::ForceExp cool time now {} {} {}", exp_id, cool_time, exp_time);
+            KMC_LOG("KMCExpression::ForceExp cool time now {} {} {}", exp_id, cool_time, exp_time);
             end = Clock::now();
             
             milliseconds diff = duration_cast<milliseconds>(end - force_exp_st_time);

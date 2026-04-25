@@ -25,31 +25,31 @@ namespace KMCCT {
         }
 
         if (sub_task_source.adrm == AdRm::both) {
-            LOG("[TEMP_KEYWORD_CHECK] add remove both");
+            KMC_LOG("[TEMP_KEYWORD_CHECK] add remove both");
             int adm = KMCCT::KMCTempKeywordManager::GetSingleton()->HasTempKeyword(sub_task_source.ad);
             int rmm = KMCCT::KMCTempKeywordManager::GetSingleton()->HasTempKeyword(sub_task_source.rm);
             if ((adm == 1 || adm == 3) || (rmm == 1 || rmm == 2)) {
-                LOG("[TEMP_KEYWORD_CHECK] add remove both true");
+                KMC_LOG("[TEMP_KEYWORD_CHECK] add remove both true");
                 return true;
             }
 
-            LOG("[TEMP_KEYWORD_CHECK] add remove both false ADM ==> {} RMM ==> {}", adm, rmm);
+            KMC_LOG("[TEMP_KEYWORD_CHECK] add remove both false ADM ==> {} RMM ==> {}", adm, rmm);
         } else if (sub_task_source.adrm == AdRm::add) {
-            LOG("[TEMP_KEYWORD_CHECK] add");
+            KMC_LOG("[TEMP_KEYWORD_CHECK] add");
             int adm = KMCCT::KMCTempKeywordManager::GetSingleton()->HasTempKeyword(sub_task_source.ad);
             if ((adm == 1 || adm == 3)) {
-                LOG("[TEMP_KEYWORD_CHECK] add true");
+                KMC_LOG("[TEMP_KEYWORD_CHECK] add true");
                 return true;
             }
-            LOG("[TEMP_KEYWORD_CHECK] add false ADM ==> {}", adm);
+            KMC_LOG("[TEMP_KEYWORD_CHECK] add false ADM ==> {}", adm);
         } else if (sub_task_source.adrm == AdRm::remove) {
-            LOG("[TEMP_KEYWORD_CHECK] remove");
+            KMC_LOG("[TEMP_KEYWORD_CHECK] remove");
             int rmm = KMCCT::KMCTempKeywordManager::GetSingleton()->HasTempKeyword(sub_task_source.rm);
             if ((rmm == 1 || rmm == 2)) {
-                LOG("[TEMP_KEYWORD_CHECK] remove true");
+                KMC_LOG("[TEMP_KEYWORD_CHECK] remove true");
                 return true;
             }
-            LOG("[TEMP_KEYWORD_CHECK] remove false RMM ==> {}", rmm);
+            KMC_LOG("[TEMP_KEYWORD_CHECK] remove false RMM ==> {}", rmm);
         }
         return false;
 

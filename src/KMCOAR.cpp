@@ -24,16 +24,16 @@ namespace KMCCT {
                             oar_components.push_back(std::make_pair(key, OARCompDetail(global, value.anim_duration)));
 
                         } else {
-                            ERROR("[DisplayAddons.json] [OAR] [Player] GlobalForm not found. Key: {}", key);
+                            KMC_ERROR("[DisplayAddons.json] [OAR] [Player] GlobalForm not found. Key: {}", key);
                         }
                     } else {
-                        ERROR(
+                        KMC_ERROR(
                             "[DisplayAddons.json] [OAR] [Player] Invalid oar_ref format (expected FormID,Plugin). Key: "
                             "{}, Value: {}",
                             key, value.oar_ref);
                     }
                 } catch (...) {
-                    ERROR("[DisplayAddons.json] [OAR] [Player] Unknown fatal error.  Key: {}", key);
+                    KMC_ERROR("[DisplayAddons.json] [OAR] [Player] Unknown fatal error.  Key: {}", key);
                 }
             }
         }
@@ -60,11 +60,11 @@ namespace KMCCT {
                             oarc.push_back(std::make_pair(key, OARCompDetail(global, value.anim_duration)));
 
                         } else {
-                            ERROR("[DisplayAddons.json] [OAR] [Follower{}] GlobalForm not found. Key: {}", f_index,
+                            KMC_ERROR("[DisplayAddons.json] [OAR] [Follower{}] GlobalForm not found. Key: {}", f_index,
                                   key);
                         }
                     } else {
-                        ERROR("[DisplayAddons.json] [OAR] [Follower{}] Invalid oar_ref format. Key: {}, Value: {}", fins.index, key,
+                        KMC_ERROR("[DisplayAddons.json] [OAR] [Follower{}] Invalid oar_ref format. Key: {}, Value: {}", fins.index, key,
                               value.oar_ref);
                     }
                 }
@@ -72,7 +72,7 @@ namespace KMCCT {
                 f_oar_components.push_back(std::make_pair(fins.index, FOARCompDetail(oarc)));
                 fplays.push_back(FPlayNowOARCompDetail(OARCompDetail(), fins.index));
             } catch (...) {
-                ERROR("[DisplayAddons.json] [OAR] [Follower{}] Unknown fatal error.", fins.index);
+                KMC_ERROR("[DisplayAddons.json] [OAR] [Follower{}] Unknown fatal error.", fins.index);
             }
         }
 

@@ -19,7 +19,7 @@ namespace KMCCT {
     void ProfilePeriodicCall();
     void PapyrusPeriodicCall();
 #pragma region init function
-    void InitMain(std::vector<float> *floatArray);
+   // void InitMain(std::vector<float> *floatArray);
 #pragma endregion
 
 #pragma region interrupt event

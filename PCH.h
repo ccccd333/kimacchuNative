@@ -23,25 +23,27 @@ using namespace std::literals;
 
 #if(LOGGING != 0)
     #include <spdlog/sinks/basic_file_sink.h>
-    #define LOG(...)                                       \
+    #define KMC_LOG(...)                                       \
         {                                                  \
             if (g_enableLog) SKSE::log::info(__VA_ARGS__); \
         }
-    #define WARN(...)                                      \
+    #define KMC_WARN(...)                                      \
         {                                                  \
             if (g_enableLog) SKSE::log::warn(__VA_ARGS__); \
         }
-    #define ERROR(...)                     \
+    #define KMC_ERROR(...)                     \
         {                                  \
             SKSE::log::error(__VA_ARGS__); \
         }
-    #define DEBUG(...)                                      \
+    #define KMC_DEBUG(...)                                      \
         {                                                   \
             if (g_enableLog) SKSE::log::debug(__VA_ARGS__); \
         }
 #else
     #define LOG(...)  {}
-    #define ERROR(...){}
+    #define WARN(...) \
+        {             \
+        }
     #define ERROR(...){}
     #define DEBUG(...){}
 #endif

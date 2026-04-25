@@ -1,5 +1,4 @@
 #include "KMCProfile.h"
-
 #include "KMCConfig.h"
 #include "KMCEventThread.h"
 #include "KMCSound.h"
@@ -75,7 +74,7 @@ namespace KMCCT {
                 json js = json::object();
                 std::unordered_map<std::string, std::map<std::string, std::string>> formated_map;
                 if (profil_ex_data.format_id_num != mod_container->size()) {
-                    ERROR(
+                    KMC_ERROR(
                         "UpdateModifiedContainer: Data count mismatch. Expected (format_id_num): {}, Actual "
                         "(mod_container size): {}",
                         profil_ex_data.format_id_num, mod_container->size());
@@ -101,7 +100,7 @@ namespace KMCCT {
                     KMCPrismaUIBridge::GetSingleton()->KMCUpdateProfileText(js);
                 }
             } catch (std::exception &e) {
-                ERROR("UpdateModifiedContainer Error {}", e.what());
+                KMC_ERROR("UpdateModifiedContainer Error {}", e.what());
             }
         }
 
@@ -158,12 +157,12 @@ namespace KMCCT {
                 }
 
                 if (!u_p && fpu && !sh_p) {
-                    LOG("Show Profile {} {} {}", u_p, fpu, sh_p);
+                    KMC_LOG("Show Profile {} {} {}", u_p, fpu, sh_p);
                     ShowProfile(!switch_disp_profile_flag);
                     switch_disp_profile_flag = !switch_disp_profile_flag;
                     break;
                 } else {
-                    WARN("Profile Stack !!!! {} {} {}", u_p, fpu, sh_p);
+                    KMC_WARN("Profile Stack !!!! {} {} {}", u_p, fpu, sh_p);
                 }
                 // sleep
                 while (true) {
@@ -363,12 +362,25 @@ namespace KMCCT {
                         current_row++;
                     }
                 } else if (profile.contains("bg_path") && profile["bg_path"].is_string()) {
-                    profil_ex_data.bg_map.emplace(key, profile.value("bg_path", ""));
+                    std::string bg_path = profile.value("bg_path", "");
+                    if (!fs::exists(PRISMA_UI_HTML_PATH + bg_path)) {
+                        KMC_ERROR("Missing back ground file: {}", PRISMA_UI_HTML_PATH + bg_path);
+                        is_missing_file = true;
+                    }
+
+                    profil_ex_data.bg_map.emplace(key, bg_path);
                 }
             } else if (type == 'D') {
                 KMCProfileDrawingData data;
 
-                data.base_path = profile.value("bg_path", "");
+                std::string bg_path = profile.value("bg_path", "");
+                if (!fs::exists(PRISMA_UI_HTML_PATH + bg_path)) {
+                    KMC_ERROR("Missing back ground file: {}", PRISMA_UI_HTML_PATH + bg_path);
+                    is_missing_file = true;
+                }
+                profil_ex_data.bg_map.emplace(key, bg_path);
+
+                data.base_path =  profile.value("base_path", "");
 
                 if (profile.contains("texture_range") && profile["texture_range"].is_object()) {
                     data.start = profile["texture_range"].value("start", 1);
@@ -378,21 +390,21 @@ namespace KMCCT {
                     data.end = 1;
                 }
 
-                profil_ex_data.drawing_data[key] = data;
-
                 for (int i = data.start; i <= data.end; i++) {
                     std::string file_path = data.base_path + key + "/" + std::to_string(i) + ".png";
-                    if (!fs::exists(file_path)) {
-                        ERROR("Missing file: {}", file_path);
+                    if (!fs::exists(PRISMA_UI_HTML_PATH + file_path)) {
+                        KMC_ERROR("Missing file: {}", PRISMA_UI_HTML_PATH + file_path);
                         is_missing_file = true;
                     }
                 }
+
+                profil_ex_data.drawing_data[key] = data;
             }
         }
 
         if (is_missing_file) {
             // 1‚Â‚Å‚àpng‚ª–³‚¯‚ê‚ÎNGAJS‘¤‚ÅƒGƒ‰[‚É‚È‚é
-            ERROR("[Error]Some image files could not be loaded. Therefore, the profile function will be disabled.");
+            KMC_ERROR("[Error]Some image files could not be loaded. Therefore, the profile function will be disabled.");
             return false;
         }
 

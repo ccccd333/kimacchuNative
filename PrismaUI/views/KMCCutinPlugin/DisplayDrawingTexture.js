@@ -153,6 +153,45 @@ export class DisplayDrawingTexture {
         }
     }
 
+    async bulkPreloadGroups(group_ids) {
+        if (!this.cache) this.cache = new Map();
+
+        const allTasks = [];
+
+        for (const raw_id of group_ids) {
+            const group = Number(raw_id);
+            if (this.cache.has(group)) continue;
+
+            const cutin = this.cutin_map.get(group);
+            if (!cutin) continue;
+
+            const paths = cutin.layers.get("CUTIN") || [];
+            if (paths.length === 0) continue;
+
+            const loadPromises = paths.map(async (path) => {
+                try {
+                    const res = await fetch(path);
+                    const blob = await res.blob();
+                    return await createImageBitmap(blob);
+                } catch (e) {
+                    console.error(`[Bulk] Load failed: ${path}`, e);
+                    return null;
+                }
+            });
+
+            const groupPromise = Promise.all(loadPromises);
+            
+            this.cache.set(group, groupPromise);
+            allTasks.push(groupPromise);
+        }
+
+        console.info(`[Bulk Preload] Simultaneous launch for ${allTasks.length} groups.`);
+        
+        await Promise.all(allTasks);
+        
+        console.info(`[Bulk Preload] All images are now in memory.`);
+    }
+
     async preloadGroup(group) {
         if (!this.cache) this.cache = new Map();
 
@@ -166,6 +205,9 @@ export class DisplayDrawingTexture {
 
             // CUTINレイヤーの画像のみをプリロード対象
             const paths = cutin.layers.get("CUTIN") || [];
+
+console.info(`[Preload Start] Group: ${group}, Total paths: ${paths.length}`);
+
             const frames = new Array(paths.length);
 
             const concurrency = 4;

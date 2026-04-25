@@ -32,28 +32,31 @@ namespace KMCCT {
                 break;
             case SKSE::MessagingInterface::kDataLoaded:
 
+                KMCCT::KMCConfig::GetSingleton()->Init();
+                KMCPrismaUIBridge::GetSingleton()->Init();
+
                 KMCCT::KMCStateManager::GetSingleton()->Register();
 
-                KMCCT::KMCConfig::GetSingleton()->Init();
+                
                 KMCCT::KMCOAR::GetSingleton()->Init();
                 KMCCT::KMCSound::GetSingleton()->Init();
                 KMCCT::KMCStateManager::GetSingleton()->Init();
                 KMCCT::KMCEventThread::GetSingleton()->Init();
-                KMCCT::KMCProfile::GetSingleton()->Init();
+                
                 KMCCT::KMCCutinCondition::GetSingleton()->Init();
 
                 StorageUtilTracker::Init();
 
-                KMCPrismaUIBridge::GetSingleton()->Init();
+                
                 
 
                 KMCCT::KMCGameEventListener::GetSingleton()->Init();
-                KMCCT::KMCExpression::GetSingleton()->Init();
+                
 
                 break;
             case SKSE::MessagingInterface::kPreLoadGame:  // set reload flag, so we can prevent in papyrus calls of
                                                           // native function untill view get reset by invoking _reset
-                LOG("kPreLoadGame")
+                KMC_LOG("kPreLoadGame")
                 KMCCT::KMCEventThread::GetSingleton()->forceendanim = true;
                 // Wait for animation process to finish.
                 //KMCLoadedWidget();
@@ -66,7 +69,7 @@ namespace KMCCT {
                 break;
             case SKSE::MessagingInterface::kPostLoadGame:  // for loading existing game
             case SKSE::MessagingInterface::kSaveGame:
-                LOG("kPostLoadGame | kSaveGame")
+                KMC_LOG("kPostLoadGame | kSaveGame")
                                 
                 break;
         }

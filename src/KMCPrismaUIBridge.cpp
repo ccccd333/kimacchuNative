@@ -3,6 +3,8 @@
 #include "KMCDisplayWordAndTexture.h"
 #include "KMCCutin.h"
 #include "KMCUtility.h"
+#include "KMCProfile.h"
+#include "KMCExpression.h"
 
 //static void OnReceiveKMCDefineCutin(const char* data) { SKSE::log::info("KMCDefineCutin Result ==> {}", data); }
 //
@@ -23,23 +25,24 @@
 SINGLETONBODY(KMCCT::KMCPrismaUIBridge)
 namespace KMCCT {
 
-    PRISMA_UI_API::IVPrismaUI1* prisma_ui;
+    PRISMA_UI_API::IVPrismaUI2* prisma_ui;
     PrismaView cutin_view;
 
     void KMCPrismaUIBridge::Init() {
-        prisma_ui = static_cast<PRISMA_UI_API::IVPrismaUI1*>(
-            PRISMA_UI_API::RequestPluginAPI(PRISMA_UI_API::InterfaceVersion::V1));
+        prisma_ui = static_cast<PRISMA_UI_API::IVPrismaUI2*>(
+            PRISMA_UI_API::RequestPluginAPI(PRISMA_UI_API::InterfaceVersion::V2));
 
         if (!prisma_ui) {
-            ERROR("Failed to initialize PrismaUI API");
+            SKSE::log::error("Failed to initialize PrismaUI API");
             return;
         }
 
         cutin_view = prisma_ui->CreateView("KMCCutinPlugin/index.html", [](PrismaView view) -> void {
             SKSE::log::info("View DOM is ready {}", view);
-
+            KMCCT::KMCProfile::GetSingleton()->Init();
             KMCDisplayWordAndTexture::GetSingleton()->Init();
-
+            KMCCT::KMCExpression::GetSingleton()->Init();
+            
             // KMCPrismaUIBridge::GetSingleton()->KMCPlayPlayerCutin(1);
 
             // prisma_ui->Focus(cutin_view);
@@ -53,6 +56,26 @@ namespace KMCCT {
         prisma_ui->RegisterJSListener(cutin_view, "KMCOnCutinStartReady", [](const char* data) -> void {
             SKSE::log::info("Cutin start for display : {}", data);
             KMCCutin::GetSingleton()->SetCutinStartReady(true);
+        });
+
+        prisma_ui->RegisterConsoleCallback(cutin_view, [](PrismaView view, PRISMA_UI_API::ConsoleMessageLevel level, const char* message) {
+            switch (level) {
+                    case PRISMA_UI_API::ConsoleMessageLevel::Log:
+                    SKSE::log::info("[JS] {}", message);
+                    break;
+                    case PRISMA_UI_API::ConsoleMessageLevel::Warning:
+                    SKSE::log::warn("[JS] {}", message);
+                    break;
+                    case PRISMA_UI_API::ConsoleMessageLevel::Error:
+                    SKSE::log::error("[JS] {}", message);
+                    break;
+                    case PRISMA_UI_API::ConsoleMessageLevel::Debug:
+                    SKSE::log::debug("[JS] {}", message);
+                    break;
+                    case PRISMA_UI_API::ConsoleMessageLevel::Info:
+                    SKSE::log::info("[JS] {}", message);
+                    break;
+            }
         });
 
         SKSE::log::info("PrismaUI API initialized successfully");

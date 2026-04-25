@@ -107,10 +107,6 @@ namespace KMCCT {
         // Player only(It's too much trouble to modify the program...)        
                 
         RE::PlayerCharacter* GetPlayer() { return player; }
-        // Player Profile
-        std::vector<std::pair<std::string, std::string>>* getIWidgetSetting() { return &IWidgetSetting; }
-        std::vector<std::pair<std::string, std::string>>* getITextSetting() { return &ITextSetting; }
-        std::vector<std::string>* getIProfileText() { return &IProfileText; }
 
         // Follower         
         std::vector<KMCFollower>* GetFollowers() { return &IFollower; }
@@ -126,10 +122,6 @@ namespace KMCCT {
                                   std::string rootKeyName);
         std::string ISetup(std::string target, 
                            std::vector<std::pair<std::string, std::string>>* cond);
-
-        void ProfilSetup(std::string target, std::vector<std::pair<std::string, std::string>> *pws,
-                         std::vector<std::pair<std::string, std::string>>* ts, std::vector<std::string>* pt);
-
 
     private:
 
@@ -150,11 +142,6 @@ namespace KMCCT {
 
         // Player
         std::vector<std::pair<std::string, std::string>> IConditions;
-
-        // Player profil
-        std::vector<std::pair<std::string, std::string>> IWidgetSetting;
-        std::vector<std::pair<std::string, std::string>> ITextSetting;
-        std::vector<std::string> IProfileText;
 
         RE::PlayerCharacter* player;
         

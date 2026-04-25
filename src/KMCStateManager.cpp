@@ -92,7 +92,7 @@ namespace KMCCT {
             for (auto const& ae : *activeEffects) {
                 const auto mgef = ae ? ae->GetBaseObject() : nullptr;
                 if (mgef != nullptr) {
-                    LOG("Active Effect Name {} search target {}", mgef->GetName(), st.keyword->GetFormEditorID());
+                    KMC_LOG("Active Effect Name {} search target {}", mgef->GetName(), st.keyword->GetFormEditorID());
                     if (mgef->HasKeyword(st.keyword)) {
                         return st.cutinName;
                     }
@@ -468,7 +468,7 @@ namespace KMCCT {
             !event->flags.any(RE::TESHitEvent::Flag::kHitBlocked)) {
             RE::TESForm* root = RE::TESForm::LookupByID(event->source);
             if (root != nullptr) {
-                LOG("TESHitEvent item {} source {} ", root->GetName(), event->source);
+                KMC_LOG("TESHitEvent item {} source {} ", root->GetName(), event->source);
                 std::string power_attack = "0";
                 if (event->flags.any(RE::TESHitEvent::Flag::kPowerAttack)) {
                     power_attack = "1";
@@ -484,7 +484,7 @@ namespace KMCCT {
             }
         } else if (event->target != nullptr && event->target->formID == 0x14 &&
                    event->flags.any(RE::TESHitEvent::Flag::kHitBlocked)) {
-            LOG("TESHitEvent Blocked source {} ", event->source);
+            KMC_LOG("TESHitEvent Blocked source {} ", event->source);
             std::string power_attack = "0";
             if (event->flags.any(RE::TESHitEvent::Flag::kPowerAttack)) {
                 power_attack = "1";
@@ -505,11 +505,11 @@ namespace KMCCT {
             std::string menu_name = event->menuName.c_str();
             if (stopping_state.contains(menu_name) && event->opening) {
                 current_state.insert(menu_name);
-                LOG("KMCStateManager::MenuOpenCloseEvent true ==> {}", menu_name);
+                KMC_LOG("KMCStateManager::MenuOpenCloseEvent true ==> {}", menu_name);
                 isStoppingState = true;
             } else if (stopping_state.contains(menu_name) && !event->opening) {
                 current_state.erase(menu_name);
-                LOG("KMCStateManager::MenuOpenCloseEvent false ==> {}", menu_name);
+                KMC_LOG("KMCStateManager::MenuOpenCloseEvent false ==> {}", menu_name);
                 if (current_state.empty()) {
                     isStoppingState = false;
                 }
@@ -552,7 +552,7 @@ namespace KMCCT {
                             if (act) {
                                 auto charc = act->As<RE::Character>();
                                 if (charc && KMCCT::IsTalking(charc)) {
-                                    LOG("[CURRENT SCENE] name {} range {}", b_ref.GetName(), isinsceneDetectRange);
+                                    KMC_LOG("[CURRENT SCENE] name {} range {}", b_ref.GetName(), isinsceneDetectRange);
 
                                     KMCCT::KMCWaitTask::GetSingleton()->KMCPushWaitTask(
                                         KMCWaitType::in_scene,
@@ -745,7 +745,7 @@ namespace KMCCT {
                 if (found) {
                     int priority = std::stoi(spvalue.at(3));
                     if (states.contains(priority)) {
-                        ERROR("{}", messages.at(0));
+                        KMC_ERROR("{}", messages.at(0));
                     } else {
                         KMCCT::State state =
                             KMCCT::State(actor, spvalue.at(2), std::stoi(spvalue.at(4)), keyword, faction, global);
@@ -765,16 +765,16 @@ namespace KMCCT {
                                 }                   
                             }
                         } catch (...) {
-                            ERROR("{}", messages.at(3));
+                            KMC_ERROR("{}", messages.at(3));
                         }
 
                         states.insert(std::make_pair(priority, StateControll(f, state)));
                     }
                 } else {
-                    ERROR("{}", messages.at(1));
+                    KMC_ERROR("{}", messages.at(1));
                 }
             } catch (...) {
-                ERROR("ERROR {} key: {} value : {}", messages.at(2), key, value);
+                KMC_ERROR("ERROR {} key: {} value : {}", messages.at(2), key, value);
             }
         }
     }

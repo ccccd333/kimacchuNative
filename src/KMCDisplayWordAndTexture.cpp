@@ -33,7 +33,7 @@ namespace KMCCT {
             }
         } catch (std::runtime_error ex) {
             loaded = false;
-            ERROR("ERROR LOADING {}", ex.what());
+            KMC_ERROR("ERROR LOADING {}", ex.what());
         }
 	}
 
@@ -57,19 +57,19 @@ namespace KMCCT {
 
         std::string full_base_path = PRISMA_UI_HTML_PATH + base_path;
         if (!fs::exists(full_base_path) || !fs::is_directory(full_base_path)) {
-            ERROR("DisplayWordAndTexture.json, Base path not found: {}", full_base_path);
+            KMC_ERROR("DisplayWordAndTexture.json, Base path not found: {}", full_base_path);
             return false;
         }
 
         std::string bg_path = j.value("bg_path", "");
         std::string full_bg_path = PRISMA_UI_HTML_PATH + base_path;
         if (!fs::exists(full_bg_path)) {
-            ERROR("DisplayWordAndTexture.json, Background path not found: {}", full_bg_path);
+            KMC_ERROR("DisplayWordAndTexture.json, Background path not found: {}", full_bg_path);
             return false;
         }
 
         if (!j.contains("entries") || !j["entries"].is_object()) {
-            ERROR("DisplayWordAndTexture.json, define base_path and entries in the root field.");
+            KMC_ERROR("DisplayWordAndTexture.json, define base_path and entries in the root field.");
             return false;
         }
         bool is_missing_file = false;
@@ -108,7 +108,7 @@ namespace KMCCT {
             for (int i = data.range_start; i <= data.range_end; i++) {
                 std::string file_path = full_base_path + key + "/" + std::to_string(i) + ".png";
                 if (!fs::exists(file_path)) {
-                    ERROR("Missing file: {}", file_path);
+                    KMC_ERROR("Missing file: {}", file_path);
                     is_missing_file = true;
                 }
             }
@@ -116,7 +116,7 @@ namespace KMCCT {
 
         if (is_missing_file) {
             // 1つでもpngが無ければNG、JS側でエラーになる
-            ERROR("[Error]Some image files could not be loaded. Therefore, the cut-in function will be disabled.");
+            KMC_ERROR("[Error]Some image files could not be loaded. Therefore, the cut-in function will be disabled.");
             return false;
         }
 
@@ -124,7 +124,7 @@ namespace KMCCT {
             KMCCutin::GetSingleton()->CategoryRandomizer();
             auto &first_values = KMCCutin::GetSingleton()->GetCategoryFirstValues();
             if (first_values.empty()) {
-                ERROR("[Error]In DisplayWordAndTexture.json, there are no category definitions on the player side. Therefore, the cut-in function will be disabled.");
+                KMC_ERROR("[Error]In DisplayWordAndTexture.json, there are no category definitions on the player side. Therefore, the cut-in function will be disabled.");
                 return false;
             }
             j["first_values"] = first_values;
@@ -142,7 +142,7 @@ namespace KMCCT {
                 j["first_values"] = filtered;
             } else {
                 // カテゴリが空、設定できないようにする
-                ERROR(
+                KMC_ERROR(
                     "[Error]Follower DisplayWordAndTexture.json, there are no category definitions on the player side. "
                     "Therefore, the cut-in function will be disabled.");
                 return false;

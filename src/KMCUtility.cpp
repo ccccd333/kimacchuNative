@@ -101,7 +101,7 @@ namespace KMCCT {
             std::string f = it->second;
             return it->second;
         } else {
-            ERROR("{}", e_message);
+            KMC_ERROR("{}", e_message);
         }
 
         return "";
@@ -144,7 +144,7 @@ namespace KMCCT {
             if (f != nullptr) {
                 bool checkOK = false;
                 float dist = f->GetPosition().GetDistance(ppos);
-                LOG("FPos PPos dist = {}", dist);
+                KMC_LOG("FPos PPos dist = {}", dist);
                 if (effectiveDistance > dist) {
                     checkOK = true;
                 }
@@ -336,7 +336,7 @@ namespace KMCCT {
             try {
                 v = source->at(i + source_index);
             } catch (...) {
-                ERROR("BuildMultTypeValues out of range");
+                KMC_ERROR("BuildMultTypeValues out of range");
                 return false;
             }
             auto value_type = results_value_type->at(i);
@@ -344,7 +344,7 @@ namespace KMCCT {
 
             if (v == "") {
                 if (value_type != KMCValueType::KM_STRING) {
-                    WARN("BuildMultTypeValues another type");
+                    KMC_WARN("BuildMultTypeValues another type");
                 }
 
                 continue;

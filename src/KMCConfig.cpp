@@ -29,53 +29,51 @@ namespace KMCCT {
         }
 
         // ‚±‚±‚©‚ç LOG ƒ}ƒNƒ‚ª—LŒø‚É‚È‚é
-        LOG("KMCConfig: Setup started. Logging is {}", g_enableLog ? "enabled" : "disabled");
+        KMC_LOG("KMCConfig: Setup started. Logging is {}", g_enableLog ? "enabled" : "disabled");
 
 
         player = RE::PlayerCharacter::GetSingleton();
 
 
         if (!SetupJsonSimpleNodes(&ISetting, SETTING_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            ERROR("setting.json json description error.");
+            KMC_ERROR("setting.json json description error.");
         }
 
         if (!SetupJsonSimpleNodes(&IDetectionKeyword, DETECTION_KEYWORD_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            ERROR("DetectionKeyword.json json description error.");
+            KMC_ERROR("DetectionKeyword.json json description error.");
         }
 
         if (!SetupJsonSimpleNodes(&IDetectionFaction, DETECTION_FACTION_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            ERROR("DetectionFaction.json json description error.");
+            KMC_ERROR("DetectionFaction.json json description error.");
         }
 
         if (!SetupJsonSimpleNodes(&IDetectionMagicEffectKeyword, DETECTION_MAGIC_EFFECT_KEYWORD_FILE_NAME,
                                   JSON_ROOT_KEY_STRING)) {
-            ERROR("DetectionMagicEffectKeyword.json json description error.");
+            KMC_ERROR("DetectionMagicEffectKeyword.json json description error.");
         }
 
         if (!SetupJsonSimpleNodes(&IDetectionGlobal, DETECTION_GLOBAL_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            ERROR("DetectionGlobal.json json description error.");
+            KMC_ERROR("DetectionGlobal.json json description error.");
         }
 
         if (!SetupJsonSimpleNodes(&IDetectionStorageUtil, DETECTION_STORAGE_UTIL_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            ERROR("DetectionStorageUtil.json json description error.");
+            KMC_ERROR("DetectionStorageUtil.json json description error.");
         }
 
         if (!SetupJsonSimpleNodes(&IInvisibleTimingSetting, PROFILE_PATH + "/" + INVISIBLE_TIMING_SETTING_FILE_NAME,
                                   JSON_ROOT_KEY_STRING)) {
-            ERROR("Profile InvisibleTimingSetting.json json description error.");
+            KMC_ERROR("Profile InvisibleTimingSetting.json json description error.");
         }
 
         if (!SetupJsonSimpleNodes(&IProfileSoundEffect, PROFILE_PATH + "/" + PROFILE_SOUND_EFFECT_FILE_NAME,
                                   JSON_ROOT_KEY_STRING)) {
-            ERROR("Profile SoundEffect.json json description error.");
+            KMC_ERROR("Profile SoundEffect.json json description error.");
         }
 
         ISetup(PLAYER_WORD_PATH, &IConditions);
 
-        ProfilSetup(PLAYER_WORD_PATH, &IWidgetSetting, &ITextSetting, &IProfileText);
-
         if (!SetupJsonSimpleNodes(&IManagedFollower, MANAGED_FOLLOWER_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            ERROR("ManagedFollower.json json description error.");
+            KMC_ERROR("ManagedFollower.json json description error.");
         } else {
             int i = 0;
             for (auto [key, value] : IManagedFollower) {
@@ -90,12 +88,12 @@ namespace KMCCT {
                     if (!SetupJsonSimpleNodes(&(target->ISpeachTiming),
                                               FOLLOWER_WORD_PATH + fkey + "/" + SPEACH_TIMING_FILE_NAME,
                                               JSON_ROOT_KEY_STRING)) {
-                        ERROR("SpeachTiming.json json description error.");
+                        KMC_ERROR("SpeachTiming.json json description error.");
                     }
 
                     ++i;
                 } catch (...) {
-                    ERROR("ERROR Setup Follower AutoWordWFConfig etc. The number of elements in the value is wrong.");
+                    KMC_ERROR("ERROR Setup Follower AutoWordWFConfig etc. The number of elements in the value is wrong.");
                 }
             }
         }
@@ -104,30 +102,10 @@ namespace KMCCT {
     std::string KMCConfig::ISetup(std::string target,std::vector<std::pair<std::string, std::string>> *cond) {
 
         if (!SetupJsonSimpleNodes(cond, target + "/" + CONDITIONS_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            ERROR("{} ConditionsAndKeywords.json ERROR.", target);
+            KMC_ERROR("{} ConditionsAndKeywords.json ERROR.", target);
         }
 
         return target;
-    }
-
-    void KMCConfig::ProfilSetup(std::string target, std::vector<std::pair<std::string, std::string>> *pws,
-                                std::vector<std::pair<std::string, std::string>> *ts, std::vector<std::string> *pt) {
-        // WidgetSetting.json
-        if (!SetupJsonSimpleNodes(pws, PROFILE_PATH + "/" + target + "/" + WIDGET_SETTING_FILE_NAME,
-                                  JSON_ROOT_KEY_STRING)) {
-            ERROR("{} WidgetSetting.json ERROR.", target);
-        }
-
-        // TextSetting.json
-        if (!SetupJsonSimpleNodes(ts, PROFILE_PATH + "/" + target + "/" + TEXT_SETTING_FILE_NAME,
-                                  JSON_ROOT_KEY_STRING)) {
-            ERROR("{} TextSetting.json ERROR.", target);
-        }
-
-        if (!SetupJsonSimpleArray(pt, PROFILE_PATH + "/" + target + "/" + PROFILE_TEXT_FILE_NAME,
-                                  JSON_ROOT_KEY_STRING)) {
-            ERROR("{} ProfileText.json ERROR.", target);
-        }
     }
 
     void KMCConfig::Init() {
@@ -151,12 +129,12 @@ namespace KMCCT {
                     long long formid = std::stoll(fcond.at(0), NULL, 16);
                     std::string pluginname = fcond.at(1);
 
-                    LOG("formid {} pluginname {}", formid, pluginname);
+                    KMC_LOG("formid {} pluginname {}", formid, pluginname);
 
                     IFollower[i].IKeywords.push_back(std::make_pair(
                         ckey, (RE::BGSKeyword *)RE::TESDataHandler::GetSingleton()->LookupForm(formid, pluginname)));
                 } catch (...) {
-                    ERROR("ERROR Setup ConditionsAndKeywords.json. The number of elements in the value is wrong.");
+                    KMC_ERROR("ERROR Setup ConditionsAndKeywords.json. The number of elements in the value is wrong.");
                 }
             }
         }
@@ -170,7 +148,7 @@ namespace KMCCT {
         ptree pt;
         try {
             read_json(COMMON_PATH + jsonFileName, pt);
-            LOG("JsonFileName = {}", jsonFileName);
+            KMC_LOG("JsonFileName = {}", jsonFileName);
             for (auto &&child : pt.get_child(rootKeyName)) {
                 const std::string key = child.first;
                 std::string keylower = key;
@@ -183,27 +161,27 @@ namespace KMCCT {
                         std::string value = name.get();
 
                         configs->push_back(std::make_pair(keylower, value));
-                        LOG(" key = {} value = {}", keylower, value);
+                        KMC_LOG(" key = {} value = {}", keylower, value);
                     } else {
-                        ERROR(" Bad key or value.");
+                        KMC_ERROR(" Bad key or value.");
                         return false;
                     }
                 } else if (rootKeyName.compare(JSON_ROOT_KEY_INT) == 0) {
                     if (boost::optional<int> name = info.get_value_optional<int>()) {
                         std::string value = std::to_string(name.get());
                         configs->push_back(std::make_pair(keylower, value));
-                        LOG(" key = {} value = {}", keylower, value);
+                        KMC_LOG(" key = {} value = {}", keylower, value);
                     } else {
-                        ERROR(" Bad key or value.");
+                        KMC_ERROR(" Bad key or value.");
                         return false;
                     }
                 } else {
-                    ERROR(" Bad root key.");
+                    KMC_ERROR(" Bad root key.");
                     return false;
                 }
             }
         } catch (...) {
-            ERROR("ERROR LOADING");
+            KMC_ERROR("ERROR LOADING");
             return false;
         }
 
@@ -218,15 +196,15 @@ namespace KMCCT {
             read_json(COMMON_PATH + jsonFileName, pt);
 
             ptree pt_array = pt.get_child(rootKeyName);
-            LOG("JsonFileName = {}", jsonFileName);
+            KMC_LOG("JsonFileName = {}", jsonFileName);
             for (auto it = pt_array.begin(); it != pt_array.end(); ++it) {
                 const std::string text = it->second.data();
                 configs->push_back(text);
-                LOG(" row = {} text = {}", row, text);
+                KMC_LOG(" row = {} text = {}", row, text);
                 ++row;
             }
         } catch (...) {
-            ERROR("ERROR LOADING");
+            KMC_ERROR("ERROR LOADING");
             return false;
         }
 
@@ -240,12 +218,12 @@ namespace KMCCT {
         // ptree npt;
         try {
             read_json(COMMON_PATH + jsonFileName, pt);
-            LOG("JsonFileName = {}", jsonFileName);
+            KMC_LOG("JsonFileName = {}", jsonFileName);
             for (auto &&child : pt.get_child(rootKeyName)) {
                 const std::string key = child.first;
 
                 if (child.second.empty()) {
-                    ERROR("nested node empty.");
+                    KMC_ERROR("nested node empty.");
                     continue;
                 }
 
@@ -256,9 +234,9 @@ namespace KMCCT {
                     if (boost::optional<std::string> name = info.get_value_optional<std::string>()) {
                         std::string value = name.get();
                         mp.insert(std::make_pair(childn.first, value));
-                        LOG("key = {} nkey = {} value = {}", key, childn.first, value);
+                        KMC_LOG("key = {} nkey = {} value = {}", key, childn.first, value);
                     } else {
-                        ERROR(" Bad key or value.");
+                        KMC_ERROR(" Bad key or value.");
                         return false;
                     }
 
@@ -268,7 +246,7 @@ namespace KMCCT {
                 }
             }
         } catch (...) {
-            ERROR("ERROR LOADING");
+            KMC_ERROR("ERROR LOADING");
             return false;
         }
 

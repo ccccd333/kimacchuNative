@@ -51,7 +51,7 @@ namespace KMCCT {
         SINGLETONHEADER(KMCCutin)
     public:
         ~KMCCutin();
-        void InitCutin(std::string skyroot, std::vector<float> *floatArray);
+        void InitCutin();
 
         void InterruptCutInEventManager(KMCInterruptPushCutInData data);
 

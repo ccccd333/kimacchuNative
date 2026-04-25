@@ -88,7 +88,7 @@ namespace KMCCT {
                     auto sp_keyword_plugin_name = KMCSplit(source.keyword_plugin_name, ',');
                     if (sp_keyword_formid.size() != sp_keyword_plugin_name.size()) {
                         mnger->disable = true;
-                        ERROR(
+                        KMC_ERROR(
                             "Keyword is specified, but the number of definitions of keyword_plugin_name and "
                             "keyword_formid "
                             "do not match. [{}]",
@@ -101,7 +101,7 @@ namespace KMCCT {
                                 std::stoll(sp_keyword_formid.at(i), NULL, 16), sp_keyword_plugin_name.at(i));
                             if (keyword_tmp == nullptr) {
                                 mnger->disable = true;
-                                ERROR(
+                                KMC_ERROR(
                                     "keyword is specified, but formid could not be obtained with the combination of "
                                     "keyword_plugin_name and keyword_formid [{}]",
                                     pname);
@@ -117,7 +117,7 @@ namespace KMCCT {
                             source.sub1_category == KMCCCSubCategory::MAGIC_EFFECT_KEYWORD) {
                             if (!mnger->source.KeywordHasNHasBuild(source.sub2_category)) {
                                 mnger->disable = true;
-                                ERROR(
+                                KMC_ERROR(
                                     "The number of (sub_category2) definitions for has and nhas does not match the "
                                     "number "
                                     "of definitions for keyword");
@@ -132,13 +132,13 @@ namespace KMCCT {
                     } else if (source.main_category == KMCCCMainCategory::FORMULA) {
                         if (!mnger->source.BuildFormula(mnger->source)) {
                             mnger->disable = true;
-                            ERROR("An error has occurred in formula");
+                            KMC_ERROR("An error has occurred in formula");
                         }
 
                     } else if (source.main_category == KMCCCMainCategory::TEMP_KEYWORD) {
                         if (!mnger->source.TempKeywordHasNHasBuild(source.sub1_category)) {
                             mnger->disable = true;
-                            ERROR(
+                            KMC_ERROR(
                                 "The number of (sub_category1) definitions for has and nhas does not match the "
                                 "number "
                                 "of definitions for keyword");
@@ -156,7 +156,7 @@ namespace KMCCT {
                             if (node->sub_task_hub && node->push_type == PushType::keyword) {
                                 if (!node->sub_task_hub->sub_task_source.keyword_adrm_build()) {
                                     node->disable = true;
-                                    ERROR(
+                                    KMC_ERROR(
                                         "The number of definitions of the keyword_name and "
                                         "category of type_temp_keywords must match [{}]",
                                         pname);
@@ -165,7 +165,7 @@ namespace KMCCT {
 
                             if (!node->task_hub->PreProcessing()) {
                                 node->disable = true;
-                                ERROR("Task preprocessing failed. [{}]", pname);
+                                KMC_ERROR("Task preprocessing failed. [{}]", pname);
                             }
                         }
 
@@ -197,10 +197,10 @@ namespace KMCCT {
 
         // removed manager and nodes
         for (auto &manager : custom_cond.managers) {
-            WARN("[Enable] Path : {}", manager.get()->cond_custom_pro_name);
+            KMC_WARN("[Enable] Path : {}", manager.get()->cond_custom_pro_name);
 
             for (auto &node : manager.get()->nodes) {
-                WARN("[Enable] Path : {}", node.get()->project_name);
+                KMC_WARN("[Enable] Path : {}", node.get()->project_name);
             }
         }
 
@@ -248,7 +248,7 @@ namespace KMCCT {
 
                                             std::string tell = pndkey + "." + pndvecvalue;
                                             if (it2 != end2) {
-                                                LOG("[NODE_RELATIONS] CutinCondition.json [NODE [{}]] ===> Found {} "
+                                                KMC_LOG("[NODE_RELATIONS] CutinCondition.json [NODE [{}]] ===> Found {} "
                                                     "===> "
                                                     "{}",
                                                     project_name, s.target_name, tell);
@@ -264,12 +264,12 @@ namespace KMCCT {
                                         }
                                     }
                                 } catch (std::exception ex) {
-                                    ERROR("[NODE_RELATIONS] CutinCondition.json [{}] : wt : {}", project_name,
+                                    KMC_ERROR("[NODE_RELATIONS] CutinCondition.json [{}] : wt : {}", project_name,
                                           ex.what());
                                 }
                             }
                         } else {
-                            ERROR(
+                            KMC_ERROR(
                                 "[NODE_RELATIONS] CutinCondition.json [{}] : node_relations should be defined by root "
                                 "name "
                                 "and node name.",
@@ -331,13 +331,13 @@ namespace KMCCT {
         if (node) {
             std::string push_key = node->push_key;
             if (custom_cond.TryPopOut(push_key)) {
-                LOG("[KMCCutinCondition::Completed] end of work {}", push_key);
+                KMC_LOG("[KMCCutinCondition::Completed] end of work {}", push_key);
             } else {
-                ERROR("[KMCCutinCondition::Completed] not found push_key {}", push_key);
+                KMC_ERROR("[KMCCutinCondition::Completed] not found push_key {}", push_key);
             }
 
         } else {
-            ERROR("[KMCCutinCondition::Completed] Fatal : wtf");
+            KMC_ERROR("[KMCCutinCondition::Completed] Fatal : wtf");
         }
     }
 
@@ -412,10 +412,10 @@ namespace KMCCT {
                     elem.kd_path = e;
                     element[ac_key].emplace_back(elem);
                 } else {
-                    ERROR("KMCCutinCondition::GetPathNumber NG {}", ac_key);
+                    KMC_ERROR("KMCCutinCondition::GetPathNumber NG {}", ac_key);
                 }
             } else {
-                ERROR("KMCCutinCondition::GetPathNumber NG {}", ac_key);
+                KMC_ERROR("KMCCutinCondition::GetPathNumber NG {}", ac_key);
             }
         }
 
@@ -428,7 +428,7 @@ namespace KMCCT {
             ac_key += "." + work_name;
         }
 
-        LOG("KMCCutinCondition::SetIDContainer: option[{}] : index[{}] : key[{}]", option, index, ac_key);
+        KMC_LOG("KMCCutinCondition::SetIDContainer: option[{}] : index[{}] : key[{}]", option, index, ac_key);
         ids[ac_key].emplace_back(KMCKDOption(option, index));
     }
 
@@ -484,13 +484,13 @@ namespace KMCCT {
                 oparray.emplace_back(paths.range_max);
                 oparray.emplace_back(paths.interval);
                 oparray.emplace_back(paths.origin_value);
-                LOG("KMCCutinCondition::SearchID: option[{}] : name[{}]", option, paths.name);
+                KMC_LOG("KMCCutinCondition::SearchID: option[{}] : name[{}]", option, paths.name);
                 return oparray;
             }
         }
         //}
 
-        LOG("KMCCutinCondition::SearchID NG: option[{}]", option);
+        KMC_LOG("KMCCutinCondition::SearchID NG: option[{}]", option);
 
         return oparray;
     }
@@ -549,16 +549,16 @@ namespace KMCCT {
                         result_array.erase(paths.path);
                     }
                 } else {
-                    ERROR("KMCCKeyDetail Build unkown type");
+                    KMC_ERROR("KMCCKeyDetail Build unkown type");
                     return -2;
                 }
 
-                LOG("KMCCutinCondition::SetResultMCM: option[{}] : name[{}]", option, paths.name);
+                KMC_LOG("KMCCutinCondition::SetResultMCM: option[{}] : name[{}]", option, paths.name);
                 return 0;
             }
         }
         //}
-        LOG("KMCCutinCondition::SetResultMCM NG: option[{}] : result_value[{}]", option, result_value);
+        KMC_LOG("KMCCutinCondition::SetResultMCM NG: option[{}] : result_value[{}]", option, result_value);
         return -1;
 
     }
@@ -578,7 +578,7 @@ namespace KMCCT {
             json j = json::parse(stream);
 
             for (auto &[key, value] : result_array) {
-                LOG("[SAVE] key:[{}]", key);
+                KMC_LOG("[SAVE] key:[{}]", key);
                 std::vector<std::string> sp;
                 if (key.contains('@')) {
                     sp = KMCSplit(key, '@');
@@ -598,14 +598,14 @@ namespace KMCCT {
                     upd_value = std::to_string(value.ivalue);
                     upd = true;
                     // pt.put(key, value.ivalue);
-                    LOG("[SAVE] key:[{}] value:[{}]", key, value.ivalue);
+                    KMC_LOG("[SAVE] key:[{}] value:[{}]", key, value.ivalue);
                 } else if (value.type == "f") {
                     // float res = round_n(value.fvalue, 2.0);
                     (*n)[value.end_name] = value.dvalue;
                     upd_value = std::to_string(value.dvalue);
                     upd = true;
                     // pt.put(key, value.fvalue);
-                    LOG("[SAVE] key:[{}] value:[{}]", key, value.dvalue);
+                    KMC_LOG("[SAVE] key:[{}] value:[{}]", key, value.dvalue);
                 } else if (value.type == "s") {
                     if (value.kd_path.is_push) {
                         (*n)[value.end_name].push_back(value.value);
@@ -617,15 +617,15 @@ namespace KMCCT {
 
                     upd = true;
                     // pt.put(key, value.value);
-                    LOG("[SAVE] key:[{}] value:[{}]", key, value.value);
+                    KMC_LOG("[SAVE] key:[{}] value:[{}]", key, value.value);
                 } else if (value.type == "l") {
                     (*n)[value.end_name] = value.dvalue;
                     upd_value = std::to_string(value.dvalue);
                     upd = true;
                     // pt.put(key, value.dvalue);
-                    LOG("[SAVE] key:[{}] value:[{}]", key, value.dvalue);
+                    KMC_LOG("[SAVE] key:[{}] value:[{}]", key, value.dvalue);
                 } else {
-                    ERROR("[SAVE ERROR] not found type : key[{}]", key);
+                    KMC_ERROR("[SAVE ERROR] not found type : key[{}]", key);
                 }
 
                 if (upd && value.ac_key != "" && value.index != -1) {
@@ -647,7 +647,7 @@ namespace KMCCT {
 
             result_array.clear();
         } catch (std::exception ex) {
-            ERROR("[SAVE ERROR] wt:{}", ex.what());
+            KMC_ERROR("[SAVE ERROR] wt:{}", ex.what());
             return ex.what();
         }
 
@@ -700,7 +700,7 @@ namespace KMCCT {
                         work_managers.at(ac_key)->Update(mcm);
                     }
                 } catch (std::exception ex) {
-                    ERROR("KMCCutinCondition::Update MCM key:[{}] wt{}", ac_key, ex.what());
+                    KMC_ERROR("KMCCutinCondition::Update MCM key:[{}] wt{}", ac_key, ex.what());
                 }
             }
 
@@ -754,7 +754,7 @@ namespace KMCCT {
         float correction = 0.0f;
         if (dur > DELAY_THRESHHOLD) {
             correction = round_n(dur, ROUND_N);
-            LOG("[CORRECTION] [CORRECTION][{}] [DUR][{}]", correction, dur);
+            KMC_LOG("[CORRECTION] [CORRECTION][{}] [DUR][{}]", correction, dur);
         }
 
         auto *thread = KMCCT::KMCEventThread::GetSingleton();
@@ -766,7 +766,7 @@ namespace KMCCT {
 
             auto node = m_node.second;
             // 補正
-            LOG("[CORRECTION] TARGET_NODE ===> [{}] * [CORRECTION][{}] [DURATION][{}] ", m_node.first, correction, dur);
+            KMC_LOG("[CORRECTION] TARGET_NODE ===> [{}] * [CORRECTION][{}] [DURATION][{}] ", m_node.first, correction, dur);
             node->task_hub->Correction(correction);
 
             for (auto &sbt : node->node_relations) {
@@ -777,7 +777,7 @@ namespace KMCCT {
                 if (sbt.relations.timing == 1) {
                     // timing = 1は状態が続く限り 関係するノードの処理を行う
                     if (!sbt.rnode->task_hub->Completed()) {
-                        LOG("[{}] CALC ==> [{}]", m_node.first, sbt.rnode->project_name);
+                        KMC_LOG("[{}] CALC ==> [{}]", m_node.first, sbt.rnode->project_name);
                         if (sbt.relations.calc) {
                             sbt.rnode->task_hub->Add(sbt.relations.add_value, correction);
                             sbt.rnode->task_hub->Subtract(sbt.relations.subtract_value, correction);
@@ -808,7 +808,7 @@ namespace KMCCT {
 
             if (node->task_hub->IsEpsilon()) continue;
 
-            LOG("[COMMIT1] [{}]", node->post_commit_push_key);
+            KMC_LOG("[COMMIT1] [{}]", node->post_commit_push_key);
             node->task_hub->Commit();
 
             if (node->task_hub->CompPercent() > percent) {
@@ -850,7 +850,7 @@ namespace KMCCT {
         float correction = 0.0f;
         if (dur > DELAY_THRESHHOLD) {
             correction = round_n(dur, ROUND_N);
-            LOG("[correction] correction {} dur {}", correction, dur);
+            KMC_LOG("[correction] correction {} dur {}", correction, dur);
         }
 
         for (auto &m_node : pre_completed_nodes) {
@@ -869,7 +869,7 @@ namespace KMCCT {
                 if (sbt.relations.timing == 0 && node->task_hub->Completed()) {
                     // timing = 0はタスク完了時1回目に限り 関係するノードの処理を行う
                     if (!sbt.rnode->task_hub->Completed()) {
-                        LOG("[{}] CALC ==> [{}]", mpushed_key, sbt.rnode->project_name);
+                        KMC_LOG("[{}] CALC ==> [{}]", mpushed_key, sbt.rnode->project_name);
                         if (sbt.relations.calc) {
                             sbt.rnode->task_hub->Add(sbt.relations.add_value, correction);
                             sbt.rnode->task_hub->Subtract(sbt.relations.subtract_value, correction);
@@ -895,7 +895,7 @@ namespace KMCCT {
             auto node = m_node.second;
 
             // commit
-            LOG("[COMMIT2] [{}]", node->post_commit_push_key);
+            KMC_LOG("[COMMIT2] [{}]", node->post_commit_push_key);
             node->task_hub->Commit();
 
             if (!node->push_end && node->task_hub->Completed()) {
@@ -921,7 +921,7 @@ namespace KMCCT {
                 node->polling.timer = Clock::now();
                 node->Stop();
             } else {
-                ERROR("[FATAL] main->TryPush Duplicate Key {} ", node->push_key);
+                KMC_ERROR("[FATAL] main->TryPush Duplicate Key {} ", node->push_key);
             }
         }
     }
@@ -944,7 +944,7 @@ namespace KMCCT {
 
     template <>
     bool KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>::Check(KMCCCheckSource m_source) {
-        LOG("KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>::Check {}", this->push_key);
+        KMC_LOG("KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>::Check {}", this->push_key);
 
         if (push_type == PushType::cutin) {
             return this->check_hub->Check(m_source);
@@ -952,7 +952,7 @@ namespace KMCCT {
             return this->check_hub->Check(m_source) && sub_task_hub->Check();
         }
 
-        ERROR(
+        KMC_ERROR(
             "----------unknown error---------- "
             "KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>::Check {}",
             this->push_key);
@@ -963,23 +963,23 @@ namespace KMCCT {
     template <>
     bool KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>::PushTask() {
         if (not_cutin) {
-            LOG("[PUSH] [NOT CUTIN] [{}], [NPUSH_KEY]===>[{}]", post_commit_push_key, push_key);
+            KMC_LOG("[PUSH] [NOT CUTIN] [{}], [NPUSH_KEY]===>[{}]", post_commit_push_key, push_key);
             if (sub_task_hub && push_type == PushType::keyword) {
-                LOG("[PUSH TEMP_KEYWORD] [{}]", post_commit_push_key);
+                KMC_LOG("[PUSH TEMP_KEYWORD] [{}]", post_commit_push_key);
                 return sub_task_hub->PushTask();
             }
             return true;
         }
 
         if (push_type == PushType::cutin) {
-            LOG("[PUSH] [{}], [PUSH_KEY]===>[{}]", post_commit_push_key, push_key);
+            KMC_LOG("[PUSH] [{}], [PUSH_KEY]===>[{}]", post_commit_push_key, push_key);
             return manager->main->TryPush(this->push_key, this);
         } else if (sub_task_hub && push_type == PushType::keyword) {
-            LOG("[PUSH TEMP_KEYWORD] [{}]", post_commit_push_key);
+            KMC_LOG("[PUSH TEMP_KEYWORD] [{}]", post_commit_push_key);
             return sub_task_hub->PushTask();
         }
 
-        ERROR(
+        KMC_ERROR(
             "----------unknown error---------- "
             "KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>::PushTask {}",
             this->push_key);
@@ -1007,14 +1007,14 @@ namespace KMCCT {
                     this->Reset();
                     return 1;
                 } else {
-                    LOG("[{}]", push_key);
+                    KMC_LOG("[{}]", push_key);
                     if (this->polling.stay_time > 0.0f) {
                         time_point<Clock> now = Clock::now();
                         float st_t = this->polling.stay_time;
                         milliseconds diff = duration_cast<milliseconds>(now - this->polling.timer);
                         long long dur = diff.count();
                         if (dur >= st_t * KMCCT::TIME_SCALE_MS) {
-                            LOG("[{}] REMOVE dur : {}, stay_time_ms : {}, stay_time(base) : {}", push_key, dur,
+                            KMC_LOG("[{}] REMOVE dur : {}, stay_time_ms : {}, stay_time(base) : {}", push_key, dur,
                                 st_t * KMCCT::TIME_SCALE_MS, st_t);
                             this->manager->main->TryPopOut(push_key);
 
@@ -1042,13 +1042,13 @@ namespace KMCCT {
                     this->once_and_pop_out_end = true;
                     return -1;
                 } else if (this->once == false && this->polling.stay_time > 0.0f) {
-                    LOG("[{}]", push_key);
+                    KMC_LOG("[{}]", push_key);
                     time_point<Clock> now = Clock::now();
                     float st_t = this->polling.stay_time;
                     milliseconds diff = duration_cast<milliseconds>(now - this->polling.timer);
                     long long dur = diff.count();
                     if (dur >= st_t * KMCCT::TIME_SCALE_MS) {
-                        LOG("[{}] dur : {}, stay_time_ms : {}, stay_time(base) : {}", push_key, dur,
+                        KMC_LOG("[{}] dur : {}, stay_time_ms : {}, stay_time(base) : {}", push_key, dur,
                             st_t * KMCCT::TIME_SCALE_MS, st_t);
 
                         if (!this->once) {
@@ -1064,7 +1064,7 @@ namespace KMCCT {
                     return 1;
                 }
             } else {
-                ERROR(
+                KMC_ERROR(
                     "----------unknown error---------- "
                     "KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>::Polling {}",
                     this->push_key);
@@ -1209,7 +1209,7 @@ namespace KMCCT {
     void KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>>::Tuning(KMCCutinValues &target) {
         if (!force_cutin && force_cutin_name != "") {
             if (!KMCCT::KMCStateManager::GetSingleton()->GetWhetherThereNoState()) {
-                WARN(
+                KMC_WARN(
                     "[Cutin] This is a cut-in name with no forced interrupt"
                     "setting. It is currently uninterruptible.");
             } else {
@@ -1255,7 +1255,7 @@ namespace KMCCT {
             std::string push_key = node->push_key;
 
             if (node->once_and_pop_out_end) {
-                LOG("[{}] ONCE POP OUT END LOOP", push_key);
+                KMC_LOG("[{}] ONCE POP OUT END LOOP", push_key);
                 continue;
             }
 
@@ -1266,7 +1266,7 @@ namespace KMCCT {
             if (node->Check(source)) {
                 // bool completed = node->task_hub->Completed();
                 // if (!completed) {
-                LOG("[{}]", node->project_name);
+                KMC_LOG("[{}]", node->project_name);
                 node->task_hub->ToMove();
                 //}
 
@@ -1356,7 +1356,7 @@ namespace KMCCT {
     KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>> *KMCCustomCondMain::Try2Get() {
         {
             std::lock_guard<std::mutex> lock(aaaakmc_main_pushed_pop_mtx_);
-            LOG("[Try2Get] Count {}", pushed_task.size());
+            KMC_LOG("[Try2Get] Count {}", pushed_task.size());
 
             if (pushed_task.size() > 0) {
                 return pushed_task.begin()->second;
@@ -1370,11 +1370,11 @@ namespace KMCCT {
         {
             std::lock_guard<std::mutex> lock(aaaakmc_main_pushed_pop_mtx_);
 
-            LOG("[TryPopOut] Count {}", pushed_task.size());
+            KMC_LOG("[TryPopOut] Count {}", pushed_task.size());
 
             if (pushed_task.contains(pop_key)) {
                 auto num = pushed_task.erase(pop_key);
-                LOG("[TryPopOut] erase {}", num);
+                KMC_LOG("[TryPopOut] erase {}", num);
                 // auto node = task.mapped();
                 // if (!node->once) {
                 //     node->Reset();
@@ -1400,7 +1400,7 @@ namespace KMCCT {
 
             this->pushed_task.insert(std::make_pair(push_key, node));
 
-            LOG("[TryPush] Count {}, Project {}, ", pushed_task.size(), node->project_name);
+            KMC_LOG("[TryPush] Count {}, Project {}, ", pushed_task.size(), node->project_name);
 
             return true;
         }
@@ -1410,28 +1410,28 @@ namespace KMCCT {
                                        KMCCustomCondWorkerNode<KMCCustomCondManager<KMCCustomCondMain>> *node) {
         pushed_exp_task.insert(std::make_pair(push_key, node));
 
-        LOG("[TryPushExp] Count {}, Project {}", pushed_exp_task.size(), node->project_name);
+        KMC_LOG("[TryPushExp] Count {}, Project {}", pushed_exp_task.size(), node->project_name);
 
         return true;
     }
 
     bool KMCCustomCondMain::TryReleaseExp() {
         pushed_exp_task.clear();
-        LOG("[TryReleaseExp]");
+        KMC_LOG("[TryReleaseExp]");
 
         return true;
     }
 
     void KMCCustomCondMain::PlayFcExp() {
-        LOG("[PlayFcExp] Count {}", pushed_exp_task.size());
+        KMC_LOG("[PlayFcExp] Count {}", pushed_exp_task.size());
         for (auto &[key, node] : pushed_exp_task) {
             int ret = KMCCT::KMCExpression::GetSingleton()->ForceExp(
                 node->force_exp_name, node->force_expression_cool_time, node->force_expression_time);
-            LOG("[PlayFcExp] ExpID {} Count {}, Project {}, ret {}", node->force_exp_name, pushed_exp_task.size(),
+            KMC_LOG("[PlayFcExp] ExpID {} Count {}, Project {}, ret {}", node->force_exp_name, pushed_exp_task.size(),
                 node->project_name, ret);
 
             if (ret != 1) {
-                LOG("[PlayFcExp] FC EXP =====> Project {}", pushed_exp_task.size(), node->project_name);
+                KMC_LOG("[PlayFcExp] FC EXP =====> Project {}", pushed_exp_task.size(), node->project_name);
                 break;
             }
         }
@@ -1442,7 +1442,7 @@ namespace KMCCT {
     bool KMCCustomCondMain::Contains(std::string find_key) {
         {
             std::lock_guard<std::mutex> lock(aaaakmc_main_pushed_pop_mtx_);
-            LOG("[Contains] Count {}, Project {}, ", pushed_task.size(), find_key);
+            KMC_LOG("[Contains] Count {}, Project {}, ", pushed_task.size(), find_key);
             if (this->pushed_task.size() > 0 && this->pushed_task.contains(find_key)) {
                 return true;
             } else {
@@ -1455,14 +1455,14 @@ namespace KMCCT {
         ptree pt;
         try {
             read_json(COMMON_PATH + jsonFileName, pt);
-            LOG("JsonFileName = {}", jsonFileName);
+            KMC_LOG("JsonFileName = {}", jsonFileName);
             for (auto &elements : pt) {
                 std::string cond_main_key = elements.first;
                 auto cond_main_value = elements.second;
                 now_json_node = cond_main_key;
                 int level = 1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (auto nested = cond_main_value.get_child_optional(""); nested && !nested.get().empty()) {
                     // if (boost::optional<int> disable = nested.get().get_optional<int>(KMCCCJsonTags::DISABLE)) {
@@ -1495,21 +1495,21 @@ namespace KMCCT {
                         if (Validate_node(node.get()) == false || manager->disable) {
                             // validate がerrorの場合はそのnode自体にdisableフラグを立てる
                             node.get()->disable = true;
-                            ERROR("Level {} key {} Validate check error(worker node). force disable", level,
+                            KMC_ERROR("Level {} key {} Validate check error(worker node). force disable", level,
                                   now_json_node + "..." + node.get()->cond_custom_node_name);
                         }
                     }
 
                     if (manager->disable) {
-                        ERROR("Level {} key {} Validate check error. force disable", level, now_json_node);
+                        KMC_ERROR("Level {} key {} Validate check error. force disable", level, now_json_node);
                     } else {
                     }
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, cond_main_key);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, cond_main_key);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("ERROR LOADING {}", ex.what());
+            KMC_ERROR("ERROR LOADING {}", ex.what());
         }
     }
 
@@ -1528,20 +1528,20 @@ namespace KMCCT {
                 std::string k1 = child.first;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::OPTION) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesOption(nested.get(), level, manager, nullptr);
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else if (k1 == KMCCCJsonTags::MAIN) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesMain(nested.get(), level, manager);
 
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else if (k1 == KMCCCJsonTags::CONDITION) {
                     // condition配下をループする関数をコールする。
@@ -1549,14 +1549,14 @@ namespace KMCCT {
                         SetupJsonNodesLevel2(nested.get(), level, manager);
 
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -1579,21 +1579,21 @@ namespace KMCCT {
                 now_json_node = now_json_node + "." + k1;
                 escape = escape + "@" + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::CATEGORY) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesCategory(nested.get(), level, manager);
 
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else if (k1 == KMCCCJsonTags::BODY_SLOT) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesBodySlot(nested.get(), level, manager);
 
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
 
                 } else if (k1 == KMCCCJsonTags::KEYWORD) {
@@ -1601,7 +1601,7 @@ namespace KMCCT {
                         SetupJsonNodesKeyword(nested.get(), level, manager);
 
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else if (k1 == KMCCCJsonTags::CROSS_HAIR_REF_NAME) {
                     // header
@@ -1613,10 +1613,10 @@ namespace KMCCT {
                         for (auto it = nested.get().begin(); it != nested.get().end(); ++it) {
                             const std::string text = it->second.data();
                             manager->source.cross_hair_ref_name.emplace_back(text);
-                            LOG(" cross_hair_ref_name = {}", text);
+                            KMC_LOG(" cross_hair_ref_name = {}", text);
                         }
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else if (k1 == KMCCCJsonTags::FORMULAS) {
                     // header
@@ -1639,14 +1639,14 @@ namespace KMCCT {
                             // }
                         }
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -1665,7 +1665,7 @@ namespace KMCCT {
                 std::string k1 = child.first;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::MAIN_CATEGORY) {
                     std::string re = NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
@@ -1692,11 +1692,11 @@ namespace KMCCT {
                     std::transform(re.begin(), re.end(), re.begin(), ::tolower);
                     manager->source.sub5_category = re;
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -1715,7 +1715,7 @@ namespace KMCCT {
                 std::string k1 = child.first;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::IS_MATCH) {
                     manager->source.body_slot.match =
@@ -1817,11 +1817,11 @@ namespace KMCCT {
                     manager->source.body_slot.Set(
                         k1, NodeTreesGetValue<int>(child.second, level, now_json_node, project_name));
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -1841,7 +1841,7 @@ namespace KMCCT {
                 std::string k1 = child.first;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::KEYWORD_FORMID) {
                     manager->source.keyword_formid =
@@ -1853,11 +1853,11 @@ namespace KMCCT {
                     manager->source.temp_keyword_name =
                         NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -1878,20 +1878,20 @@ namespace KMCCT {
                 std::string k1 = child.first;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::FORMULAS_NOT_EQUAL) {
                     formula.not_equal = NodeTreesGetValue<int>(child.second, level) == 1;
                 } else if (k1 == KMCCCJsonTags::FORMULAS_COND) {
                     formula.cond = NodeTreesGetValue<std::string>(child.second, level);
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
 
             manager->source.formula.emplace_back(formula);
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -1912,7 +1912,7 @@ namespace KMCCT {
                 auto second = child.second;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
                 if (auto nested = second.get_child_optional(""); nested && !nested.get().empty()) {
                     // condition detail配下をループする関数をコールする。
                     // if (boost::optional<int> disable = nested.get().get_optional<int>(KMCCCJsonTags::DISABLE)) {
@@ -1933,7 +1933,7 @@ namespace KMCCT {
                     // チェックの処理方針を決定する
                     if (GetCheckTaskDetail(manager->source, &node->check_hub) == false) {
                         auto source = manager->source;
-                        ERROR(
+                        KMC_ERROR(
                             "Level {} key {} Check processing cannot be performed. Incorrect combination. "
                             "main_category {} sub1 {} sub2 {} sub3 {} sub4 {} sub5 {}",
                             level, now_json_node, source.main_category, source.sub1_category, source.sub2_category,
@@ -1944,7 +1944,7 @@ namespace KMCCT {
 
                     if (!node->check_hub->Init()) {
                         auto source = manager->source;
-                        ERROR(
+                        KMC_ERROR(
                             "Level {} key {} Check process cannot continue. Initialization failure. "
                             "main_category {} sub1 {} sub2 {} sub3 {} sub4 {} sub5 {}",
                             level, now_json_node, source.main_category, source.sub1_category, source.sub2_category,
@@ -1974,7 +1974,7 @@ namespace KMCCT {
                             node->cutin_cond_type = CutinCondType::dummy;
 
                             if (GetWorkDetail(node->cutin_cond_type, &node->task_hub) == false) {
-                                ERROR(
+                                KMC_ERROR(
                                     "Level {} key {} dummy work not found. wt?"
                                     "cond_type {} ",
                                     level, now_json_node, static_cast<int>(node->cutin_cond_type));
@@ -1983,7 +1983,7 @@ namespace KMCCT {
                             }
                         } else {
                             // 定義なしの場合はエラー
-                            ERROR(
+                            KMC_ERROR(
                                 "Level {} key {} For no task node, define not_cutin as 1 and force_exp_timing as 2"
                                 "cond_type {} ",
                                 level, now_json_node, static_cast<int>(node->cutin_cond_type));
@@ -1993,7 +1993,7 @@ namespace KMCCT {
                     }
                     if (!node->disable) {
                         if (!node->task_hub->Init(node->check_hub.get(), &manager->source)) {
-                            ERROR(
+                            KMC_ERROR(
                                 "Level {} key {} Node initialization failed. "
                                 "cond_type {} ",
                                 level, now_json_node, static_cast<int>(node->cutin_cond_type));
@@ -2004,11 +2004,11 @@ namespace KMCCT {
                     node->post_commit_push_key = std::to_string(node->priority) + "." + node->project_name;
 
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -2029,19 +2029,19 @@ namespace KMCCT {
                 std::string k1 = child.first;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::OPTION) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesOption(nested.get(), level, manager, node);
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else if (k1 == KMCCCJsonTags::OPERATION) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesOperation(nested.get(), level, manager, node);
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else if (k1 == KMCCCJsonTags::TYPE_ADD || k1 == KMCCCJsonTags::TYPE_TIME ||
                            k1 == KMCCCJsonTags::TYPE_AMOUNT) {
@@ -2056,7 +2056,7 @@ namespace KMCCT {
 
                         // チェック後の計算処理方針を決定する
                         if (GetWorkDetail(node->cutin_cond_type, &node->task_hub) == false) {
-                            ERROR(
+                            KMC_ERROR(
                                 "Level {} key {} Work processing cannot be performed. Incorrect combination. "
                                 "cond_type {} ",
                                 level, now_json_node, static_cast<int>(node->cutin_cond_type));
@@ -2066,33 +2066,33 @@ namespace KMCCT {
 
                         SetupJsonNodesTask(nested.get(), level, &node->task_hub, project_name);
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else if (k1 == KMCCCJsonTags::NODE_RELATIONS) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesRelations(nested.get(), level, manager, node);
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
 
                 } else if (k1 == KMCCCJsonTags::POLLING) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesPolling(nested.get(), level, manager, node);
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else if (k1 == KMCCCJsonTags::CUTIN_SETTING) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesCutinSetting(nested.get(), level, manager, node);
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -2113,33 +2113,33 @@ namespace KMCCT {
                 std::string k1 = child.first;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::OPERATION_DETAIL) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesOPDetail(nested.get(), level, manager, node);
 
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else if (k1 == KMCCCJsonTags::CYCLE) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesCycle(nested.get(), level, manager, node);
 
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else if (k1 == KMCCCJsonTags::FORCE_CT) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesForceCT(nested.get(), level, manager, node);
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else if (k1 == KMCCCJsonTags::FORCE_EXPRESSION) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
                         SetupJsonNodesForceEXP(nested.get(), level, manager, node);
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else if (k1 == KMCCCJsonTags::PUSH_TEMP_KEYWORDS) {
                     if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
@@ -2149,7 +2149,7 @@ namespace KMCCT {
 
                         // チェック後のsub taskを決定する
                         if (GetCheckSubTaskDetail(node->cutin_cond_type_sub, &node->sub_task_hub) == false) {
-                            ERROR(
+                            KMC_ERROR(
                                 "Level {} key {} Work(sub) processing cannot be performed. Incorrect combination. "
                                 "cond_type {} ",
                                 level, now_json_node, static_cast<int>(node->cutin_cond_type_sub));
@@ -2160,14 +2160,14 @@ namespace KMCCT {
                         SetupJsonNodesKeyword(nested.get(), level, &node->sub_task_hub, project_name);
 
                     } else {
-                        ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                        KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                     }
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -2188,16 +2188,16 @@ namespace KMCCT {
                 std::string k1 = child.first;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::OP_NOT_CUTIN) {
                     node->not_cutin = NodeTreesGetValue<int>(child.second, level, now_json_node, project_name) == 1;
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -2218,16 +2218,16 @@ namespace KMCCT {
                 std::string k1 = child.first;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::ONCE) {
                     node->once = NodeTreesGetValue<int>(child.second, level, now_json_node, project_name) == 1;
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -2247,7 +2247,7 @@ namespace KMCCT {
                 std::string k1 = child.first;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::FORCE_CUTIN) {
                     node->force_cutin = NodeTreesGetValue<int>(child.second, level, now_json_node, project_name) == 1;
@@ -2255,11 +2255,11 @@ namespace KMCCT {
                     node->force_cutin_name =
                         NodeTreesGetValue<std::string>(child.second, level, now_json_node, project_name);
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -2280,7 +2280,7 @@ namespace KMCCT {
                 std::string k1 = child.first;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::EXP_ID) {
                     node->force_exp_name =
@@ -2296,11 +2296,11 @@ namespace KMCCT {
                 } else if (k1 == KMCCCJsonTags::STOP_PERCENTAGE) {
                     node->stop_percentage = NodeTreesGetValue<float>(child.second, level, now_json_node, project_name);
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -2319,7 +2319,7 @@ namespace KMCCT {
                 std::string k1 = child.first;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::ADD_VALUE) {
                     (*task)->add_value = NodeTreesGetValue<float>(child.second, level, now_json_node, proj_name);
@@ -2351,11 +2351,11 @@ namespace KMCCT {
                 } else if (k1 == KMCCCJsonTags::STACK_COOL_TIME) {
                     (*task)->cool_time = NodeTreesGetValue<float>(child.second, level, now_json_node, proj_name);
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -2375,7 +2375,7 @@ namespace KMCCT {
                 std::string k1 = child.first;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::PUSH_TEMP_KEYWORD_NAME) {
                     (*sub_task)->sub_task_source.keyword_name =
@@ -2387,11 +2387,11 @@ namespace KMCCT {
                     (*sub_task)->sub_task_source.disable_keyword_check =
                         NodeTreesGetValue<int>(child.second, level, now_json_node, proj_name) == 1;
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -2414,7 +2414,7 @@ namespace KMCCT {
                 std::replace(escape.begin(), escape.end(), '.', '@');
                 now_json_node = now_json_node + "." + k1;
                 escape = escape + "@" + k1;
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
                 STNodeRelations subt;
                 std::string nbef_now_json_node = now_json_node;
                 if (auto nested = child.second.get_child_optional(""); nested && !nested.get().empty()) {
@@ -2464,11 +2464,11 @@ namespace KMCCT {
                                             calc_detail.second, ncdlevel, escape3, project_name, true, '@', k1);
                                         subt.calc = true;
                                     } else {
-                                        ERROR("Level {} key {} It's not in the format.", ncdlevel, now_json_node);
+                                        KMC_ERROR("Level {} key {} It's not in the format.", ncdlevel, now_json_node);
                                     }
                                 }
                             } else {
-                                ERROR("Level {} key {} It's not in the format.", nlevel, now_json_node);
+                                KMC_ERROR("Level {} key {} It's not in the format.", nlevel, now_json_node);
                             }
                         } else if (k2 == KMCCCJsonTags::TARGET_NODE) {
                             std::string tnode_name = NodeTreesGetValue<std::string>(elements.second, nlevel, escape2,
@@ -2480,17 +2480,17 @@ namespace KMCCT {
                             subt.timing =
                                 NodeTreesGetValue<int>(elements.second, nlevel, escape2, project_name, true, '@', k1);
                         } else {
-                            ERROR("Level {} key {} It's not in the format.", nlevel, now_json_node);
+                            KMC_ERROR("Level {} key {} It's not in the format.", nlevel, now_json_node);
                         }
                     }
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
 
                 node->relations.emplace_back(subt);
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -2512,7 +2512,7 @@ namespace KMCCT {
                 std::string k1 = child.first;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::STAY_TIME) {
                     node->polling.stay_time =
@@ -2521,11 +2521,11 @@ namespace KMCCT {
                      node->polling.put_on_hold = NodeTreesGetValue<float>(child.second, level, false);
                  }*/
                 else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -2547,7 +2547,7 @@ namespace KMCCT {
                 std::string k1 = child.first;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::TIME) {
                     node->cutin_setting.time =
@@ -2568,11 +2568,11 @@ namespace KMCCT {
                     node->cutin_setting.override_setting =
                         NodeTreesGetValue<int>(child.second, level, now_json_node, project_name) == 1;
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -2600,7 +2600,7 @@ namespace KMCCT {
                 std::string k1 = child.first;
                 now_json_node = now_json_node + "." + k1;
 
-                LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
+                KMC_LOG("Level {} key {} <-----[IN PROCESS]", level, now_json_node);
 
                 if (k1 == KMCCCJsonTags::DISABLE) {
                     if (node) {
@@ -2617,11 +2617,11 @@ namespace KMCCT {
                         manager->priority = NodeTreesGetValue<int>(child.second, level, now_json_node, project_name);
                     }
                 } else {
-                    ERROR("Level {} key {} It's not in the format.", level, now_json_node);
+                    KMC_ERROR("Level {} key {} It's not in the format.", level, now_json_node);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
+            KMC_ERROR("Level {} key {} --------------LoadError.-------------- wt{}", level, now_json_node, ex.what());
         }
 
         now_json_node = bef_now_json_node;
@@ -2636,7 +2636,7 @@ namespace KMCCT {
             path_mapping[name].emplace_back(
                 KMCKEPath(key_detail.Build(level, path, checked_value, escape, escp_c), escp_p, escp_c, level));
 
-            LOG("Level {} Key {} target value {} type {}.", level, now_json_node, checked_value, typeid(T1).name());
+            KMC_LOG("Level {} Key {} target value {} type {}.", level, now_json_node, checked_value, typeid(T1).name());
             return checked_value;
             // boost::any any = checked_value;
             // bool check_result = false;
@@ -2680,7 +2680,7 @@ namespace KMCCT {
             //     }
             // }
         } else {
-            ERROR("Level {} Key {} It's not in the format.", level, now_json_node);
+            KMC_ERROR("Level {} Key {} It's not in the format.", level, now_json_node);
             throw std::exception();
         }
     }
@@ -2690,10 +2690,10 @@ namespace KMCCT {
         if (boost::optional<T1> value = pt.get_value_optional<T1>()) {
             T1 checked_value = value.get();
 
-            LOG("Level {} Key {} target value {} type {}.", level, now_json_node, checked_value, typeid(T1).name());
+            KMC_LOG("Level {} Key {} target value {} type {}.", level, now_json_node, checked_value, typeid(T1).name());
             return checked_value;
         } else {
-            ERROR("Level {} Key {} It's not in the format.", level, now_json_node);
+            KMC_ERROR("Level {} Key {} It's not in the format.", level, now_json_node);
             throw std::exception();
         }
     }
@@ -2707,7 +2707,7 @@ namespace KMCCT {
         std::string message;
         if (!v.validator(KMCCCJsonTags::MAIN_CATEGORY, validate_value_category, true, message)) {
             // main categoryとの組み合わせがおかしい
-            ERROR(" --------------Validate Error.-------------- wt : [MAIN_CATEGORY] {}", message);
+            KMC_ERROR(" --------------Validate Error.-------------- wt : [MAIN_CATEGORY] {}", message);
             return false;
         }
 
@@ -2724,12 +2724,12 @@ namespace KMCCT {
                                         std::to_string(node->stop_percentage);
             if (!v.validator(KMCCCJsonTags::FORCE_EXPRESSION, validate_fexp, true, message)) {
                 // FORCE_EXPRESSIONの組み合わせがおかしい
-                ERROR(" --------------Validate Error.-------------- wt : [FORCE_EXPRESSION] {}", message);
+                KMC_ERROR(" --------------Validate Error.-------------- wt : [FORCE_EXPRESSION] {}", message);
                 return false;
             }
 
             if (message != "") {
-                WARN(" --------------Validate WARN.-------------- wt : [FORCE_EXPRESSION] {}", message);
+                KMC_WARN(" --------------Validate WARN.-------------- wt : [FORCE_EXPRESSION] {}", message);
             }
         }
 
@@ -2744,7 +2744,7 @@ namespace KMCCT {
                     std::to_string(node->task_hub->lower_value) + "/" + std::to_string(node->task_hub->upper_value);
                 if (!v.validator(KMCCCJsonTags::TYPE_ADD, validate_value_add, true, message)) {
                     // type addの組み合わせがおかしい
-                    ERROR(" --------------Validate Error.-------------- wt : [TYPE_ADD] {}", message);
+                    KMC_ERROR(" --------------Validate Error.-------------- wt : [TYPE_ADD] {}", message);
                     return false;
                 }
             } else if (node->cutin_cond_type == CutinCondType::time) {
@@ -2752,7 +2752,7 @@ namespace KMCCT {
                     std::to_string(node->task_hub->end_time) + "/" + std::to_string(node->task_hub->start_time);
                 if (!v.validator(KMCCCJsonTags::TYPE_TIME, validate_value_time, true, message)) {
                     // type addの組み合わせがおかしい
-                    ERROR(" --------------Validate Error.-------------- wt : [TYPE_TIME] {}", message);
+                    KMC_ERROR(" --------------Validate Error.-------------- wt : [TYPE_TIME] {}", message);
                     return false;
                 }
             } else if (node->cutin_cond_type == CutinCondType::amount) {
@@ -2762,19 +2762,19 @@ namespace KMCCT {
                                                     std::to_string(node->task_hub->cool_time);
                 if (!v.validator(KMCCCJsonTags::TYPE_AMOUNT, validate_value_amount, true, message)) {
                     // type addの組み合わせがおかしい
-                    ERROR(" --------------Validate Error.-------------- wt : [TYPE_AMOUNT] {}", message);
+                    KMC_ERROR(" --------------Validate Error.-------------- wt : [TYPE_AMOUNT] {}", message);
                     return false;
                 }
             } else {
-                ERROR(" --------------Validate Error.-------------- wt : The type of type_? is unknown");
+                KMC_ERROR(" --------------Validate Error.-------------- wt : The type of type_? is unknown");
                 return false;
             }
 
         } else if (node->cutin_cond_type == CutinCondType::dummy) {
-            WARN("[Validate] This Node IsDummy {}", node->project_name);
+            KMC_WARN("[Validate] This Node IsDummy {}", node->project_name);
         } else {
             // 製作者側用
-            ERROR(" --------------Validate Error.-------------- wt : Unknown Error");
+            KMC_ERROR(" --------------Validate Error.-------------- wt : Unknown Error");
             return false;
         }
 
@@ -2785,15 +2785,15 @@ namespace KMCCT {
                     std::string validate_ky = ssource.keyword_name + "/" + ssource.category;
                     if (!v.validator(KMCCCJsonTags::PUSH_TEMP_KEYWORDS, validate_ky, true, message)) {
                         // type add keywordの組み合わせがおかしい
-                        ERROR(" --------------Validate Error.-------------- wt : [TYPE_TEMP_KEYWORD] {}", message);
+                        KMC_ERROR(" --------------Validate Error.-------------- wt : [TYPE_TEMP_KEYWORD] {}", message);
                         return false;
                     }
                 } else {
-                    ERROR(" --------------Validate Error.-------------- wt : unknown error");
+                    KMC_ERROR(" --------------Validate Error.-------------- wt : unknown error");
                     return false;
                 }
             } else {
-                ERROR(" --------------Validate Error.-------------- wt : The type of type_? is unknown");
+                KMC_ERROR(" --------------Validate Error.-------------- wt : The type of type_? is unknown");
                 return false;
             }
         }
@@ -2804,7 +2804,7 @@ namespace KMCCT {
                 std::string validate_value_subtract = std::to_string(sub_node.timing) + "/" + "";
                 if (!v.validator(KMCCCJsonTags::NODE_RELATIONS, validate_value_subtract, true, message)) {
                     // subtractのtimingが1 or 0ではない
-                    ERROR(" --------------Validate Error.-------------- wt : [SUBTRACT] {}", message);
+                    KMC_ERROR(" --------------Validate Error.-------------- wt : [SUBTRACT] {}", message);
                     return false;
                 }
             }
@@ -2816,7 +2816,7 @@ namespace KMCCT {
                 std::to_string(node->polling.stay_time) + "/" + "" /*std::to_string(node->polling.put_on_hold)*/;
             if (!v.validator(KMCCCJsonTags::POLLING, validate_value_polling, true, message)) {
                 // subtractのtimingが1 or 0ではない
-                ERROR(" --------------Validate Error.-------------- wt : [POLLING] {}", message);
+                KMC_ERROR(" --------------Validate Error.-------------- wt : [POLLING] {}", message);
                 return false;
             }
         }
@@ -2830,7 +2830,7 @@ namespace KMCCT {
                 std::to_string(cutin_setting.exp_time);
             if (!v.validator(KMCCCJsonTags::CUTIN_SETTING, validate_value_cutin_setting, true, message)) {
                 // subtractのtimingが1 or 0ではない
-                ERROR(" --------------Validate Error.-------------- wt : [CUTIN_SETTING] {}", message);
+                KMC_ERROR(" --------------Validate Error.-------------- wt : [CUTIN_SETTING] {}", message);
                 return false;
             }
         }

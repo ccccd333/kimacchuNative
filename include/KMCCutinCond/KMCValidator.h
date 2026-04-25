@@ -81,7 +81,7 @@ namespace KMCCT {
             //     return validate_start_time(v_value, must);
             // }
 
-            LOG("no validate [{}]", tag);
+            KMC_LOG("no validate [{}]", tag);
             return true;
         }
 
