@@ -1,4 +1,4 @@
-#include "KMCStorageUtilTracker.h"
+﻿#include "KMCStorageUtilTracker.h"
 
 #include <MinHook.h>
 #include <Windows.h>
