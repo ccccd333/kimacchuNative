@@ -1,4 +1,4 @@
-﻿#include "KMCStorageUtilTracker.h"
+#include "KMCStorageUtilTracker.h"
 
 #include <MinHook.h>
 #include <Windows.h>
@@ -195,7 +195,7 @@ namespace KMCCT {
 
     bool StorageUtilTracker::GetFloatValue(std::string key, VMObjectHandleInfo vm_handle_info,
                                           float& result) {
-        if (!_get_float) return false;
+        if (!_get_float || !_has_float) return false;
 
         bool is_available = true;
         void* form = ResolveForm(vm_handle_info, is_available);
@@ -212,10 +212,9 @@ namespace KMCCT {
     }
 
     bool StorageUtilTracker::GetStringValue(std::string key, VMObjectHandleInfo vm_handle_info, std::string& result) {
-        if (!_get_string) return false;
+        if (!_get_string || !_has_string) return false;
         bool is_available = true;
         std::string default_val = "<null>";
-        void* ret = nullptr; 
 
         void* form = ResolveForm(vm_handle_info, is_available);
         if (!is_available) {
@@ -223,7 +222,14 @@ namespace KMCCT {
         }
         auto key_cstr = key.c_str();
         if (_has_string(nullptr, form, key_cstr)) {
-            result = _get_string(ret, nullptr, form, key_cstr, default_val.c_str());
+            RE::BSFixedString ret_str;
+            _get_string(&ret_str, nullptr, form, key_cstr, default_val.c_str());
+
+            if (ret_str.c_str()) {
+                result = ret_str.c_str();
+            } else {
+                result = "";
+            }
 
             return true;
         }

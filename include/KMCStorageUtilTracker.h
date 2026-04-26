@@ -38,7 +38,7 @@ namespace KMCCT {
 
         using get_int_t = int (*)(void*, void*, const char*, int);
         using get_float_t = float (*)(void*, void*, const char*, float);
-        using get_string_t = const char* (*)(void* ret, void*, void*, const char*, const char*);
+        using get_string_t = RE::BSFixedString* (*)(RE::BSFixedString* ret, void*, void*, const char*, const char*);
 
         using has_value_t = bool (*)(void* ,void* , const char*);
 
