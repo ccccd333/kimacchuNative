@@ -9,6 +9,7 @@
 #include "KMCSound.h"
 #include "KMCStateManager.h"
 #include "KMCWaitTask.h"
+#include "KMCContextManager.h"
 
 SINGLETONBODY(KMCCT::KMCCutin)
 
@@ -168,7 +169,7 @@ namespace KMCCT {
         float c_exp_time = val.aaaakmcexp;
 
         if (aaaakmctype == "") {
-            aaaakmctype = KMCCT::KMCStateManager::GetSingleton()->GetPlayerState();
+            aaaakmctype = KMCContextManager::GetSingleton()->GetPlayerState();
 
             if (aaaakmctype == "") {
                 std::lock_guard<std::mutex> lock(animnow_mtx);
@@ -269,6 +270,7 @@ namespace KMCCT {
         }
 
         if (fSpeachFlag) {
+            auto *player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
             KMCAnimST st = KMCAnimST();
             st.t = player_cutin_entry;
             st.ft = follower_cutin_entry;
@@ -280,7 +282,7 @@ namespace KMCCT {
             st.f_netx_rand = f_next_rand_id;
             st.volum = c_volum;
             st.ISpeechTiming = speakTiming;
-            st.speakerp = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
+            st.speakerp = player;
             st.speakerf = follower;
             st.pcf = pcf;
             st.fcf = fcf;
@@ -291,16 +293,19 @@ namespace KMCCT {
             st.overri_oar_time = val.overri_oar_time;
             st.overri_exp_time = val.overri_exp_time;
             st.exp_rand = exp_rand;
+            st.player_name = player->GetName();
+            st.follower_name = follower->GetName();
 
             PlayDuoCutin(st);
         } else {
+            auto *player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
             KMCAnimST st = KMCAnimST();
             st.time = player_cutin_entry.display_time * KMCCT::TIME_SCALE_MS;
             st.rand = rand;
             st.frand = frand;
             st.p_next_rand = next_rand;
             st.volum = c_volum;
-            st.speakerp = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
+            st.speakerp = player;
             st.pcf = pcf;
             st.precord = precord;
             st.oar_time = c_oar_time;
@@ -308,6 +313,7 @@ namespace KMCCT {
             st.overri_oar_time = val.overri_oar_time;
             st.overri_exp_time = val.overri_exp_time;
             st.exp_rand = exp_rand;
+            st.player_name = player->GetName();
             PlaySoloCutin(st);
         }
 
@@ -753,15 +759,15 @@ namespace KMCCT {
         // プレイヤーのタイミングでプリロードすると重い
         if (is_player == 0) {
             if (st->frand == -1) {
-                KMCPrismaUIBridge::GetSingleton()->KMCPlayPlayerCutin(st->rand, st->p_next_rand);
+                KMCPrismaUIBridge::GetSingleton()->KMCPlayPlayerCutin(st->rand, st->p_next_rand, st->player_name);
             } else {
-                KMCPrismaUIBridge::GetSingleton()->KMCPlayPlayerCutin(st->rand, -1);
+                KMCPrismaUIBridge::GetSingleton()->KMCPlayPlayerCutin(st->rand, -1, st->player_name);
             }
 
             time = st->time;
         } else {
             id = st->frand + 1;
-            KMCPrismaUIBridge::GetSingleton()->KMCPlayFollowerCutin(st->frand + 1, st->rand, -1);
+            KMCPrismaUIBridge::GetSingleton()->KMCPlayFollowerCutin(st->frand + 1, st->rand, -1, st->follower_name);
             time = st->ftime;
         }
 

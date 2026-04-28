@@ -29,11 +29,11 @@ export class DisplayManager {
         this.displayMap.set(id, display);
     }
 
-    async play(id, group, next_group) {
+    async play(id, group, next_group, name) {
         const display = this.displayMap.get(id);
         if (!display) return;
 
-        await display.playCutin(group, next_group);
+        await display.playCutin(group, next_group, name);
     }
 
     get(id) {
@@ -186,17 +186,19 @@ window.KMCBatchPreloadGroups = async (json) => {
 window.KMCPlayPlayerCutin = (json) => {
     const group = json.group;
     const next_group = json.next_group;
-    window.KMCDisplayManager.play(0, group, next_group);
+    const actor_name = json.actor_name;
+    window.KMCDisplayManager.play(0, group, next_group, actor_name);
 };
 
 window.KMCPlayFollowerCutin = (json) => {
     const id = json.follower_id;
     const group = json.group;
     const next_group = json.next_group;
+    const actor_name = json.actor_name;
 
     if (id == null || group == null) return;
 
-    window.KMCDisplayManager.play(id, group, next_group);
+    window.KMCDisplayManager.play(id, group, next_group, actor_name);
 };
 
 function makeDraggable(target, handle = target) {

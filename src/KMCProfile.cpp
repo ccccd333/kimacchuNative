@@ -5,6 +5,7 @@
 #include "KMCStateManager.h"
 #include "KMCWaitTask.h"
 #include "KMCPrismaUIBridge.h"
+#include "KMCStorageUtilTracker.h"
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -24,7 +25,11 @@ namespace KMCCT {
         if (mod_start_index != mod_end_index) {
             for (const auto &fm : profil_ex_data.format_maps) {
                 for (const auto &index :fm.placeholder_indices) {
-                    modified_container.push_back(fm.format_strings.at(index));
+                    if (fm.live_map_keys.contains(index)) {
+                        modified_container.push_back(fm.live_map_keys.at(index));
+                    } else {
+                        modified_container.push_back(fm.format_strings.at(index));
+                    }
                 }
             }
         }
@@ -42,13 +47,13 @@ namespace KMCCT {
             if (update_prifile) return;
             update_prifile = true;
 
-            ResultModifiedContainer = std::move(container);
+            ResultModifiedContainer = container;
 
-            if (BefResultModifiedContainer.size() > 0 && BefResultModifiedContainer == ResultModifiedContainer) {
-                update_prifile = false;
-                return;
-            }
-            BefResultModifiedContainer = ResultModifiedContainer;
+            //if (BefResultModifiedContainer.size() > 0 && BefResultModifiedContainer == ResultModifiedContainer) {
+            //    update_prifile = false;
+            //    return;
+            //}
+            //BefResultModifiedContainer = ResultModifiedContainer;
         }
 
         KMCCT::wrap_UpdateModifiedContainer(ResultModifiedContainer, StrageUtilEndIndex, mod_start_index, mod_end_index,
@@ -63,7 +68,7 @@ namespace KMCCT {
                 {
                     std::lock_guard<std::mutex> lock(pr_mtx);
                     ResultModifiedContainer.clear();
-                    BefResultModifiedContainer.clear();
+                    //BefResultModifiedContainer.clear();
                     update_prifile = false;
                 }
 
@@ -79,14 +84,56 @@ namespace KMCCT {
                         "(mod_container size): {}",
                         profil_ex_data.format_id_num, mod_container->size());
                 } else {
+                    int fm_index = 0;
                     for (int i = 0; i < mod_container->size();) {
-                        const auto &cross_ref = profile->format_maps.at(i);
+                        const auto &cross_ref = profile->format_maps.at(fm_index);
 
                         int j = i;
                         std::string edited_sring = "";
                         for (int index = 0; index < cross_ref.format_strings.size(); index++) {
                             if (std::ranges::contains(cross_ref.placeholder_indices, index)) {
-                                edited_sring += mod_container->at(j);
+                                std::string tag_or_edited_string = mod_container->at(j);
+                                if (tag_or_edited_string.starts_with(LIVE_DATA_PREFIX)) {
+                                    // ライブデータの処理
+                                    const auto &live = profil_ex_data.live_data.at(cross_ref.live_map_keys.at(index));
+                                    MultiTypeValue sov_return_value;
+                                    const VMObjectHandleInfo *vmhandle = nullptr;
+                                    if (!live.sov_is_null) {
+                                        vmhandle = &live.sov.vm_object;
+                                    }
+                                    if (StorageUtilTracker::GetValue(live.default_value, live.access_key, vmhandle,
+                                                                     sov_return_value)) {
+                                        bool edited = false;
+                                        for (const auto &v : live.pod) {
+                                            if (v.sign == KMCInequalitySign::def) {
+                                                edited = true;
+                                            } else if (JudgeKMCInequalitySign(v.sign, sov_return_value, v.comp_value)) {
+                                                edited = true;
+                                            }
+
+                                            if (edited) {
+                                                if (v.result == ProfileSymbols::PLACEHOLDER_VALUE) {
+                                                    edited_sring += sov_return_value.ToStringMV();
+                                                } else {
+                                                    edited_sring += v.result;
+                                                }
+                                                break;
+                                            }
+                                        }
+
+                                        if (!edited) {
+                                            edited_sring += "<N/A>";
+                                        }
+                                    } else {
+                                        // StrageUtilから値が取れない場合
+                                        KMC_WARN(
+                                            "UpdateModifiedContainer: StorageUtil failed to fetch data. "
+                                            "Tag: [{}], AccessKey: [{}], VMHandle: {}. Using default value.",
+                                            live.tag, live.access_key, live.sov.vm_object.handle);
+                                    }
+                                } else {
+                                    edited_sring += mod_container->at(j);
+                                }
                                 ++j;
                             } else {
                                 edited_sring += cross_ref.format_strings.at(index);
@@ -95,6 +142,7 @@ namespace KMCCT {
                         formated_map[cross_ref.id][std::to_string(cross_ref.row)] = edited_sring;
 
                         i = j;
+                        ++fm_index;
                     }
                     js = formated_map;
                     KMCPrismaUIBridge::GetSingleton()->KMCUpdateProfileText(js);
@@ -114,7 +162,7 @@ namespace KMCCT {
     void KMCProfile::KMCResetProfileContainer() {
         {
             std::lock_guard<std::mutex> lock(pr_mtx);
-            BefResultModifiedContainer.clear();
+            //BefResultModifiedContainer.clear();
             ResultModifiedContainer.clear();
             first_profile_update = false;
             update_prifile = false;
@@ -360,9 +408,12 @@ namespace KMCCT {
 
                         profil_ex_data.format_id_num += static_cast<int>(rep_map.placeholder_indices.size());
                         profil_ex_data.format_maps.push_back(std::move(rep_map));
+
                         current_row++;
                     }
-                } else if (profile.contains("bg_path") && profile["bg_path"].is_string()) {
+                } 
+                
+                if (profile.contains("bg_path") && profile["bg_path"].is_string()) {
                     std::string bg_path = profile.value("bg_path", "");
                     if (!fs::exists(PRISMA_UI_HTML_PATH + bg_path)) {
                         std::string error_path = PRISMA_UI_HTML_PATH + bg_path;
@@ -403,6 +454,104 @@ namespace KMCCT {
                 }
 
                 profil_ex_data.drawing_data[key] = data;
+            }
+        }
+
+        if (j.contains("strage_util_tags") && j["strage_util_tags"].is_array()) {
+
+            for (auto &tag_item : j["strage_util_tags"]) {
+                KMCProfileStorageUtilLiveData live_item;
+                bool error = false;
+
+                std::string tag_name = tag_item.value("tag", "");
+                if (tag_name.empty()) continue;
+
+                live_item.tag = tag_name;
+                std::string live_key = LIVE_DATA_PREFIX + tag_name;
+
+                live_item.type = tag_item.value("type", "int");
+                std::string ref_formid = tag_item.value("ref", "");
+                auto spvalue = KMCSplit(ref_formid, ',');
+                if (spvalue.size() >= 1) {
+                    if (spvalue.at(0) != "null") {
+                        auto form = (RE::BGSKeyword *)RE::TESDataHandler::GetSingleton()->LookupForm(
+                            std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
+                        if (form) {
+                            live_item.sov.vm_object = StorageUtilTracker::BuildHandleFromStackPointer(form);
+                            live_item.sov_is_null = false;
+                        } else {
+                            error = true;
+                            KMC_ERROR(
+                                "strage_util_tags: Failed to LookupForm for tag [{}]. FormID: {}, Plugin: {}. Check if "
+                                "the "
+                                "plugin is loaded or FormID is correct.",
+                                tag_name, spvalue.at(0), spvalue.at(1));
+                        }
+                    } else {
+                        live_item.sov_is_null = true;
+                    }
+
+                    live_item.access_key = tag_item.value("access_key", "");
+
+                    live_item.default_value.SetValue(live_item.type, tag_item.value("default_value", "0"));
+
+                    if (tag_item.contains("rules") && tag_item["rules"].is_array()) {
+                        for (auto &rule_item : tag_item["rules"]) {
+                            KMCProfileOperatorData op_data;
+                            op_data.op = rule_item.value("op", "");
+                            op_data.sign = StringToKMCInequalitySign(op_data.op);
+                            if (op_data.sign != KMCInequalitySign::unk) {
+                                op_data.comp_value.SetValue(live_item.type, rule_item.value("value", ""));
+
+                                op_data.result = rule_item.value("result", "");
+
+                                live_item.pod.push_back(std::move(op_data));
+                            } else {
+                                KMC_ERROR(
+                                    "strage_util_tags: Invalid operator '{}' in tag [{}]. "
+                                    "Available operators: '==', '!=', '>', '<', '>=', '<=', 'default'",
+                                    op_data.op, tag_name);
+                                error = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        // ルール無しはだめ
+                        KMC_ERROR(
+                            "strage_util_tags: Invalid 'ref' format in tag [{}]. Expected 'FormID,PluginName' "
+                            "(e.g. '14,Skyrim.esm'), but got: '{}'",
+                            tag_name, ref_formid);
+                        error = true;
+                    }
+
+                    // T01とかのやつのformat用文字列変換クラスをポインタでもらっとく
+                    for (auto &prm : profil_ex_data.format_maps) {
+                        bool found = false;
+                        int post_index = 0;
+                        for (const auto &index : prm.placeholder_indices) {
+                            if (prm.format_strings.at(index) == tag_name) {
+                                found = true;
+                                post_index = index;
+                                break;
+                            }
+                        }
+
+                        if (found) {
+                            prm.live_map_keys[post_index] = live_key;
+                            break;
+                        }
+                    }
+                } else {
+                    error = true;
+                    KMC_ERROR(
+                        "strage_util_tags: Missing 'rules' array for tag [{}]. Logic requires at least one comparison "
+                        "rule or a 'default' result.",
+                        tag_name);
+                }
+
+                if (!error) {
+                    profil_ex_data.live_data[live_key] = std::move(live_item);
+                }
             }
         }
 

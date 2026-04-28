@@ -4,6 +4,7 @@
 
 #include "KMCConfig.h"
 #include "KMCCutinCondition.h"
+#include "KMCStorageUtilTracker.h"
 #include "KMCTempKeywordManager.h"
 
 namespace KMCCT {
@@ -247,10 +248,10 @@ namespace KMCCT {
                 return true;
             }
             KMC_LOG("[TEMP_KEYWORD_CHECK[BOTH]] no match");
-            //if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
-            //    for (auto& has : source.thas) {
-            //        LOG("[HAS] ==> {}", has);
-            //    }
+            // if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
+            //     for (auto& has : source.thas) {
+            //         LOG("[HAS] ==> {}", has);
+            //     }
 
             //    for (auto& nhas : source.tnhas) {
             //        LOG("[NHAS] ==> {}", nhas);
@@ -264,10 +265,10 @@ namespace KMCCT {
                 return true;
             }
             KMC_LOG("[TEMP_KEYWORD_CHECK[HAS]] no match");
-            //if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
-            //    for (auto& has : source.thas) {
-            //        LOG("[HAS] ==> {}", has);
-            //    }
+            // if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
+            //     for (auto& has : source.thas) {
+            //         LOG("[HAS] ==> {}", has);
+            //     }
 
             //    KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
             //}
@@ -278,10 +279,10 @@ namespace KMCCT {
             }
 
             KMC_LOG("[TEMP_KEYWORD_CHECK [NHAS]] no match");
-            //if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
-            //    for (auto& nhas : source.tnhas) {
-            //        LOG("[NHAS] ==> {}", nhas);
-            //    }
+            // if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
+            //     for (auto& nhas : source.tnhas) {
+            //         LOG("[NHAS] ==> {}", nhas);
+            //     }
 
             //    KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
             //}
@@ -506,9 +507,8 @@ namespace KMCCT {
             bool f = false;
             for (auto& formv : value) {
                 KMC_LOG("[Evaluate] EntryNo ==> {} Formula ==> {} comp1 ==> {} comp2 ==> {}", key, formv->cond,
-                    formv->comp1(), formv->comp2());
+                        formv->comp1(), formv->comp2());
                 if (formv->isCacheable) {
-                    
                     if (formv->cache_type == KMCCacheType::armo && main->cache_container.PreInitWornArmo()) {
                         auto worn_armo_r = main->cache_container.GetWornArmorResult();
                         if (worn_armo_r.size() == 0) return false;
@@ -537,6 +537,54 @@ namespace KMCCT {
                         f_v(formv->c_form_id, formv->c_index, formv->c_is_worn);
                     } else {
                         KMC_ERROR("This expression cannot be used because it is not initialized.");
+                    }
+                } else if (formv->lookup_mode == KMCFormula::KMCLookupMode::remote) {
+                    if (formv->remote_type == KMCFormula::KMCRemoteType::strage_util) {
+                        MultiTypeValue c1;
+                        MultiTypeValue c2;
+                        if (formv->comp_type1 == KMCFormula::KMCCompType::storage_util) {
+                            const auto& sov = formv->comp1_v_sov;
+                            const VMObjectHandleInfo* vmhandle = nullptr;
+                            
+                            if (!sov.sov_is_null) {
+                                vmhandle = &sov.vm_object;
+                            }
+
+                            if (!StorageUtilTracker::GetValue(sov.default_value, sov.access_key, vmhandle, c1)) {
+                                KMC_WARN(
+                                    "WARN: [StorageUtil] Failed to retrieve value for key: '{}'. Using default value "
+                                    "instead.",
+                                    sov.access_key);
+                            }
+                        } else if (formv->comp_type1 == KMCFormula::KMCCompType::storage_target_val) {
+                            c1 = formv->comp1_stuv;
+                        }
+
+                        if (formv->comp_type2 == KMCFormula::KMCCompType::storage_util) {
+                            const auto& sov = formv->comp2_v_sov;
+                            const VMObjectHandleInfo* vmhandle = nullptr;
+
+                            if (!sov.sov_is_null) {
+                                vmhandle = &sov.vm_object;
+                            }
+
+                            if (!StorageUtilTracker::GetValue(sov.default_value, sov.access_key, vmhandle, c2)) {
+                                KMC_WARN(
+                                    "WARN: [StorageUtil] Failed to retrieve value for key: '{}'. Using default value "
+                                    "instead.",
+                                    sov.access_key);
+                            }
+                        } else if (formv->comp_type2 == KMCFormula::KMCCompType::storage_target_val) {
+                            c2 = formv->comp2_stuv;
+                        }
+
+                        if (JudgeKMCInequalitySign(formv->isign, c1, c2)) {
+                            t = true;
+                        } else {
+                            f = true;
+                        }
+                    } else {
+                        KMC_ERROR("[KMCFormula::KMCLookupMode::remote]This expression cannot be used because it is not initialized.");
                     }
                 } else {
                     if (JudgeKMCInequalitySign(formv->isign, formv->comp1(), formv->comp2())) {

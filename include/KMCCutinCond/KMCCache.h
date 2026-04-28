@@ -16,7 +16,6 @@ namespace KMCCT {
             c_index++;
             return idx;
         }
-
         
         void PreCache();
         void CacheReset();
@@ -74,6 +73,7 @@ namespace KMCCT {
         std::unordered_map<int, bool> cache_worn_armor_result;
         bool pre_init_worn_armo = false;
         bool chec_pre_init_worn_armo = false;
+
         // cache index
         int c_index = 0;
     };

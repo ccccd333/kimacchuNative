@@ -301,7 +301,7 @@ export class DisplayDrawingTexture {
         return promise;
     }
 
-    async playCutin(group, next_group) {
+    async playCutin(group, next_group, actor_name) {
         if (this.animating) {
             console.warn(`Already animating. Ignore play request for group: ${group}`);
             return;
@@ -321,6 +321,7 @@ export class DisplayDrawingTexture {
         this.current_next_group = next_group;
         this.duration_sec = cutin?.display_time ?? 5.0;
         this.cutin_word = cutin?.word ?? "";
+        this.actor_name = actor_name;
 
 
         // CPUレンダリングなのでフェードとかスンナとのことなのでスライドアニメーション

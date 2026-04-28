@@ -2,31 +2,26 @@
 #include "KMCUtility.h"
 namespace KMCCT {
 
-    struct VMObjectHandleInfo {
-        RE::VMHandle handle;
-        RE::FormType form_type;
-        uint64_t strage_util_key_id;
-        RE::FormID form_id;
-    };
-
-    struct StorageObservedValue {
-        std::string strage_key_name;
-        MultiTypeValue compare_value;
-        VMObjectHandleInfo vm_object;
-        bool has_value = false;
-    };
-
     class StorageUtilTracker {
     public:
         static void Init();
 
         static void FetchAllValues(std::list<StorageObservedValue>& result);
 
-        static bool GetIntValue(std::string strage_key_name, VMObjectHandleInfo vm_handle_info, int& result);
+        static bool GetValue(MultiTypeValue default_value, std::string strage_key_name,
+                             const VMObjectHandleInfo* vm_handle_info,
+                             MultiTypeValue& result);
+        
+        static bool GetIntValue(std::string strage_key_name, int default_value,
+                                const VMObjectHandleInfo* vm_handle_info, int& result);
 
-        static bool GetFloatValue(std::string strage_key_name, VMObjectHandleInfo vm_handle_info, float& result);
+        static bool GetFloatValue(std::string strage_key_name, float default_value,
+                                  const VMObjectHandleInfo* vm_handle_info,
+                                  float& result);
 
-        static bool GetStringValue(std::string strage_key_name, VMObjectHandleInfo vm_handle_info, std::string& result);
+        static bool GetStringValue(std::string strage_key_name, std::string default_value,
+                                   const VMObjectHandleInfo* vm_handle_info,
+                                   std::string& result);
 
         static VMObjectHandleInfo BuildHandleFromStackPointer(RE::TESForm* tes_form);
 

@@ -183,6 +183,8 @@ namespace KMCCT {
             return KMCInequalitySign::less_than;
         } else if (target == "==") {
             return KMCInequalitySign::equal;
+        } else if (target == "default") {
+            return KMCInequalitySign::def;
         }
 
         return KMCInequalitySign::unk;

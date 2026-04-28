@@ -50,7 +50,6 @@ namespace KMCCT {
     const std::string STATE_MANAGER_CONFIG_KEY = "event_cool_time";
     const std::string PROFILE_DELAY_TIME_CONFIG_KEY = "profile_delay_time";
     const std::string PROFILE_POLLING_COUNT_CONFIG_KEY = "profile_polling_count";
-    const std::string OTHER_INITIALIZATION_WAITING_TIME = "other_initialization_waiting_time";
     const std::string PROFILE_SETTING_KEY_NAME_OTHER = "other";
     const std::string TEXT_FADE_IN_OUT_TIME_SETTING = "text_fade_in_out_time";
     const std::string WIDGET_FADE_IN_OUT_TIME_SETTING = "widget_fade_in_out_time";

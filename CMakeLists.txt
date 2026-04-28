@@ -43,6 +43,7 @@ add_commonlibsse_plugin(${PROJECT_NAME} SOURCES
     src/KMCPrismaUIBridge.cpp
     src/KMCDisplayWordAndTexture.cpp
     src/KMCDisplayAddon.cpp
+    src/KMCContextManager.cpp
     plugin.cpp
 )
 

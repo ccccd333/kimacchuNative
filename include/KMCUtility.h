@@ -79,6 +79,7 @@ namespace KMCCT {
         more_than,  // TESGlobal > base_value
         less_than,
         equal,  // TESGlobal == base_value
+        def,
         unk
     };
 
@@ -94,7 +95,11 @@ namespace KMCCT {
         int GetValue(int &o) { return iv; }
 
         bool SetValue(std::string type, std::string value) {
+            
             if (type == "float") {
+                if (value.empty()) {
+                    value = "0.0";
+                }
                 fv = std::stof(value);
                 value_type = KMCValueType::KM_FLOAT;
                 return true;
@@ -103,10 +108,17 @@ namespace KMCCT {
                 value_type = KMCValueType::KM_STRING;
                 return true;
             } else if (type == "long") {
+                if (value.empty()) {
+                    value = "0";
+                }
                 lv = std::stol(value);
                 value_type = KMCValueType::KM_LONG;
                 return true;
             } else if (type == "int") {
+                
+                if (value.empty()) {
+                    value = "0";
+                }
                 iv = std::stoi(value);
                 value_type = KMCValueType::KM_INT;
                 return true;
@@ -138,6 +150,35 @@ namespace KMCCT {
             }
 
             return result;
+        }
+
+        std::string ToStringMV() {
+            if (KMCValueType::UNK == value_type) {
+                return "";
+            }
+
+            std::string result = "";
+
+            switch (value_type) {
+                case KMCValueType::KM_INT:
+                    result = std::to_string(iv);
+                    break;
+                case KMCValueType::KM_FLOAT:
+                    result = std::to_string(fv);
+                    break;
+                case KMCValueType::KM_STRING:
+                    result = sv;
+                    break;
+                case KMCValueType::KM_LONG:
+                    result = std::to_string(lv);
+                    break;
+            }
+
+            return result;
+        }
+
+        bool Comp(MultiTypeValue t) { 
+            return value_type == t.value_type;
         }
 
         void SetIntValue(int value) {
@@ -377,31 +418,6 @@ namespace KMCCT {
         const std::vector<int> *category_indices;
     };
 
-    struct KMCNamePlate {
-    public:
-        KMCNamePlate(std::vector<std::string> conf) {
-            conf.at(0) == "disable" ? isActive = false : isActive = true;
-            font = conf.at(1);
-            fontsize = std::stoi(conf.at(2));
-            r = std::stoi(conf.at(3));
-            g = std::stoi(conf.at(4));
-            b = std::stoi(conf.at(5));
-
-            name_x = std::stoi(conf.at(6));
-            name_y = std::stoi(conf.at(7));
-
-            font_x = std::stoi(conf.at(8));
-            font_y = std::stoi(conf.at(9));
-        }
-
-        bool isActive;
-        std::string font;
-        int fontsize;
-        int r, g, b;
-        int name_x, name_y;
-        int font_x, font_y;
-    };
-
     struct KMCOutputContainer {
     public:
         KMCOutputContainer() {}
@@ -495,6 +511,29 @@ namespace KMCCT {
         int defaultWX = 0, defaultWY = 0;
     };
 
+    struct VMObjectHandleInfo {
+        RE::VMHandle handle;
+        RE::FormType form_type;
+        uint64_t strage_util_key_id;
+        RE::FormID form_id;
+    };
+
+    struct StorageObservedValue {
+        std::string strage_key_name;
+        MultiTypeValue compare_value;
+        VMObjectHandleInfo vm_object;
+        bool has_value = false;
+    };
+
+    struct KMCCutinCondStorageUtilData {
+    public:
+        std::string tag;
+        VMObjectHandleInfo vm_object;
+        bool sov_is_null = false;
+        MultiTypeValue default_value;
+        std::string access_key;
+    };
+
     struct KMCProfileReplaceMap {
     public:
         std::string id = "";
@@ -514,6 +553,8 @@ namespace KMCCT {
         [1]->3
         */
         std::vector<int> placeholder_indices;
+
+        std::unordered_map<int, std::string> live_map_keys;
     };
 
     struct KMCProfilFormatIdMap {
@@ -534,9 +575,30 @@ namespace KMCCT {
     };
 
     struct KMCProfileDrawingData {
+    public:
         std::string base_path;
         int start = 0;
         int end = 0;
+    };
+
+    struct KMCProfileOperatorData {
+    public:
+        std::string op;
+        KMCInequalitySign sign;
+        MultiTypeValue comp_value;
+        std::string result;
+    };
+
+    struct KMCProfileStorageUtilLiveData {
+    public:
+        std::string tag;
+        StorageObservedValue sov;
+        bool sov_is_null = false;
+        MultiTypeValue default_value;
+        std::string type;
+        std::string access_key;
+        std::vector<KMCProfileOperatorData> pod;
+        //KMCProfileReplaceMap *prm_pointer;
     };
 
     struct KMCProfil {
@@ -563,6 +625,14 @@ namespace KMCCT {
         std::vector<KMCProfileReplaceMap> format_maps;
 
         std::unordered_map<std::string, KMCProfileDrawingData> drawing_data;
+
+        /*
+        {
+            "{PlayerSLSValidFreedomLic}":KMCProfileStorageUtilLiveData,
+            ~~~etc~~~
+        }
+        */
+        std::unordered_map<std::string, KMCProfileStorageUtilLiveData> live_data;
     };
 
     struct STNodeRelations {
@@ -641,6 +711,8 @@ namespace KMCCT {
         KMCCompsFlag fcf;
         std::string precord = "";
         std::string frecord = "";
+        std::string player_name = "";
+        std::string follower_name = "";
     };
 
     struct KMCAnimData {

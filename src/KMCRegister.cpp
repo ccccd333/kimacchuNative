@@ -13,6 +13,7 @@
 #include "KMCPrismaUIBridge.h"
 #include "KMCDisplayWordAndTexture.h"
 #include "KMCDisplayAddon.h"
+#include "KMCContextManager.h"
 
 SINGLETONBODY(KMCCT::KMCRegister)
 
@@ -28,11 +29,18 @@ namespace KMCCT {
                 KMCCT::KMCCutinCondition::GetSingleton()->Setup();
                 
                 KMCCT::KMCExpression::GetSingleton()->Setup();
+
+                KMCCT::KMCContextManager::GetSingleton()->Setup();
                 
                 break;
             case SKSE::MessagingInterface::kDataLoaded:
                 KMCCT::KMCConfig::GetSingleton()->Init();
+
+                //KMCCT::KMCProfile::GetSingleton()->Init();
+
                 KMCPrismaUIBridge::GetSingleton()->Init();
+
+                KMCCT::KMCContextManager::GetSingleton()->Init();
 
                 KMCCT::KMCStateManager::GetSingleton()->Register();
 
@@ -41,14 +49,10 @@ namespace KMCCT {
                 KMCCT::KMCSound::GetSingleton()->Init();
                 KMCCT::KMCStateManager::GetSingleton()->Init();
                 
-                
+                StorageUtilTracker::Init();
                 KMCCT::KMCCutinCondition::GetSingleton()->Init();
 
-                StorageUtilTracker::Init();
-
                 
-                
-
                 KMCCT::KMCGameEventListener::GetSingleton()->Init();
                 KMCCT::KMCEventThread::GetSingleton()->Init();
 

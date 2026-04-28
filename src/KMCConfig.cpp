@@ -39,27 +39,6 @@ namespace KMCCT {
             KMC_ERROR("setting.json json description error.");
         }
 
-        if (!SetupJsonSimpleNodes(&IDetectionKeyword, DETECTION_KEYWORD_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            KMC_ERROR("DetectionKeyword.json json description error.");
-        }
-
-        if (!SetupJsonSimpleNodes(&IDetectionFaction, DETECTION_FACTION_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            KMC_ERROR("DetectionFaction.json json description error.");
-        }
-
-        if (!SetupJsonSimpleNodes(&IDetectionMagicEffectKeyword, DETECTION_MAGIC_EFFECT_KEYWORD_FILE_NAME,
-                                  JSON_ROOT_KEY_STRING)) {
-            KMC_ERROR("DetectionMagicEffectKeyword.json json description error.");
-        }
-
-        if (!SetupJsonSimpleNodes(&IDetectionGlobal, DETECTION_GLOBAL_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            KMC_ERROR("DetectionGlobal.json json description error.");
-        }
-
-        if (!SetupJsonSimpleNodes(&IDetectionStorageUtil, DETECTION_STORAGE_UTIL_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            KMC_ERROR("DetectionStorageUtil.json json description error.");
-        }
-
         if (!SetupJsonSimpleNodes(&IInvisibleTimingSetting, PROFILE_PATH + "/" + INVISIBLE_TIMING_SETTING_FILE_NAME,
                                   JSON_ROOT_KEY_STRING)) {
             KMC_ERROR("Profile InvisibleTimingSetting.json json description error.");
@@ -101,9 +80,9 @@ namespace KMCCT {
 
     std::string KMCConfig::ISetup(std::string target,std::vector<std::pair<std::string, std::string>> *cond) {
 
-        if (!SetupJsonSimpleNodes(cond, target + "/" + CONDITIONS_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-            KMC_ERROR("{} ConditionsAndKeywords.json ERROR.", target);
-        }
+        //if (!SetupJsonSimpleNodes(cond, target + "/" + CONDITIONS_FILE_NAME, JSON_ROOT_KEY_STRING)) {
+        //    KMC_ERROR("{} ConditionsAndKeywords.json ERROR.", target);
+        //}
 
         return target;
     }

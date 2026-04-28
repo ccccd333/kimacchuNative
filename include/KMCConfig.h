@@ -28,35 +28,14 @@ namespace KMCCT {
 
     // common
     const std::string SETTING_FILE_NAME = "setting.json";
-    const std::string AUTO_WORD_RANGE_FILE_NAME = "AutoWordRange.json";
-    const std::string AUTO_WORD_CATEG_FILE_NAME = "AutoWordCategories.json";
     const std::string MANAGED_FOLLOWER_FILE_NAME = "ManagedFollower.json";
-    const std::string NAME_PLATE_FILE_NAME = "NamePlate.json";
-    const std::string DETECTION_KEYWORD_FILE_NAME = "DetectionKeyword.json";
-    const std::string DETECTION_FACTION_FILE_NAME = "DetectionFaction.json";
-    const std::string DETECTION_MAGIC_EFFECT_KEYWORD_FILE_NAME = "DetectionMagicEffectKeyword.json";
-    const std::string DETECTION_GLOBAL_FILE_NAME = "DetectionGlobal.json";
-    const std::string DETECTION_STORAGE_UTIL_FILE_NAME = "DetectionStorageUtil.json";
+
     const std::string CUT_IN_COND_FILE_NAME = "Condition.json";
 
     const std::string INVISIBLE_TIMING_SETTING_FILE_NAME = "InvisibleTimingSetting.json";
     const std::string PROFILE_TEXT_FADE_FILE_NAME = "TextFade.json";
     const std::string PROFILE_SOUND_EFFECT_FILE_NAME = "SoundEffect.json";
 
-    // player and follower
-    const std::string AUTO_WORD_FILE_NAME = "AutoWord.json";
-    const std::string AUTO_WORD_WF_FILE_NAME = "AutoWordAndWidgetConfigs.json";
-    const std::string SOUND_DESC_FORMID_FILE_NAME = "VoiceSound.json";
-    const std::string ANIM_RANGE_FILE_NAME = "AnimationRange.json";
-    const std::string CONDITIONS_FILE_NAME = "ConditionsAndKeywords.json";
-    const std::string SOUND_DESC_SE_FORMID_FILE_NAME = "SoundEffect.json";
-    const std::string HIDE_COMPONENTS_FILE_NAME = "HideComponents.json";
-    const std::string CONNECT_OAR_FILE_NAME = "OARComps.json";
-
-    // player profil
-    const std::string PROFILE_TEXT_FILE_NAME = "ProfileText.json";
-    const std::string TEXT_SETTING_FILE_NAME = "TextSetting.json";
-    const std::string WIDGET_SETTING_FILE_NAME = "WidgetSetting.json";
 
     // follower
     const std::string SPEACH_TIMING_FILE_NAME = "SpeachTiming.json";
@@ -90,14 +69,7 @@ namespace KMCCT {
         
         // common settings
         std::vector<std::pair<std::string, std::string>>* getISetting() { return &ISetting; }
-        std::vector<std::pair<std::string, std::string>>* getIManagedFollower() { return &IManagedFollower; }
-        std::vector<std::pair<std::string, KMCNamePlate>>* getINamePlate() { return &INamePlate; }
-        KMCNamePlateAnimationSettings* getINamePlateAnimation(int type) { return &(INamePlateAnimation[type]); }
-        std::vector<std::pair<std::string, std::string>>* getIDetectionKeyword() { return &IDetectionKeyword; }
-        std::vector<std::pair<std::string, std::string>>* getIDetectionFaction() { return &IDetectionFaction; }
-        std::vector<std::pair<std::string, std::string>>* getIDetectionMagicEffectKeyword() { return &IDetectionMagicEffectKeyword; }
-        std::vector<std::pair<std::string, std::string>>* getIDetectionGlobal() { return &IDetectionGlobal; }
-        std::vector<std::pair<std::string, std::string>>* getIDetectionStorageUtil() { return &IDetectionStorageUtil; }     
+        std::vector<std::pair<std::string, std::string>>* getIManagedFollower() { return &IManagedFollower; }    
 
         std::vector<std::pair<std::string, std::string>>* getIInvisibleTimingSetting() { return &IInvisibleTimingSetting; } 
         std::vector<std::pair<std::string, std::string>>* getIProfileSoundEffect() { return &IProfileSoundEffect; } 
@@ -126,13 +98,6 @@ namespace KMCCT {
         // common
         std::vector<std::pair<std::string, std::string>> ISetting;
         std::vector<std::pair<std::string, std::string>> IManagedFollower;
-        std::vector<std::pair<std::string, KMCNamePlate>> INamePlate;
-        std::vector<KMCNamePlateAnimationSettings> INamePlateAnimation;
-        std::vector<std::pair<std::string, std::string>> IDetectionKeyword;
-        std::vector<std::pair<std::string, std::string>> IDetectionFaction;
-        std::vector<std::pair<std::string, std::string>> IDetectionMagicEffectKeyword;
-        std::vector<std::pair<std::string, std::string>> IDetectionGlobal;
-        std::vector<std::pair<std::string, std::string>> IDetectionStorageUtil;
 
         std::vector<std::pair<std::string, std::string>> IInvisibleTimingSetting;
         std::vector<std::pair<std::string, std::string>> IProfileSoundEffect;

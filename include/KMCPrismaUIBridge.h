@@ -22,9 +22,9 @@ namespace KMCCT {
 
         void KMCBatchPreloadGroups(int id, int next_group, int f_id, int f_next_group);
 
-        void KMCPlayPlayerCutin(int group, int next_group);
+        void KMCPlayPlayerCutin(int group, int next_group, std::string actor_name);
 
-        void KMCPlayFollowerCutin(int id, int group, int next_group);
+        void KMCPlayFollowerCutin(int id, int group, int next_group, std::string actor_name);
 
         // stop icon
         void KMCShowStopIcon();

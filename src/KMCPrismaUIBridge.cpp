@@ -119,9 +119,9 @@ namespace KMCCT {
         }
     }
 
-    void KMCPrismaUIBridge::KMCPlayPlayerCutin(int group, int next_group) {
+    void KMCPrismaUIBridge::KMCPlayPlayerCutin(int group, int next_group, std::string actor_name) {
         if (prisma_ui->IsValid(cutin_view)) {
-            json group_data_map = {{"group", group}, {"next_group", next_group}};
+            json group_data_map = {{"group", group}, {"next_group", next_group}, {"actor_name", actor_name}};
 
             std::string script = "KMCPlayPlayerCutin(" + group_data_map.dump() + ")";
             prisma_ui->Invoke(cutin_view, script.c_str());
@@ -130,9 +130,10 @@ namespace KMCCT {
         }
     }
 
-    void KMCPrismaUIBridge::KMCPlayFollowerCutin(int id, int group, int next_group) {
+    void KMCPrismaUIBridge::KMCPlayFollowerCutin(int id, int group, int next_group, std::string actor_name) {
         if (prisma_ui->IsValid(cutin_view)) {
-            json group_data_map = {{"id", id}, {"group", group}, {"next_group", next_group}};
+            json group_data_map = {
+                {"id", id}, {"group", group}, {"next_group", next_group}, {"actor_name", actor_name}};
 
             std::string script = "KMCPlayFollowerCutin(" + group_data_map.dump() + ")";
             prisma_ui->Invoke(cutin_view, script.c_str());

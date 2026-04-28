@@ -25,6 +25,8 @@ namespace KMCCT {
                               track_id, spvalue.at(0), spvalue.at(1));
                         continue;
                     }
+
+                    target->push_back(std::make_pair(key, sd));
                 }
             }
 

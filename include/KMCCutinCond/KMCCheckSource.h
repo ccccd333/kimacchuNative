@@ -124,8 +124,19 @@ namespace KMCCT {
             value,
             glob,
             armo,
+            storage_util, 
+            storage_target_val,
             none
         };
+
+        enum class KMCLookupMode { 
+            none = 0, 
+            Lambda = 1,
+            remote = 2
+        };
+
+        enum class KMCRemoteType { none = 0, strage_util = 1 };
+
 
         KMCCompType GetType(std::string v, std::vector<std::string> &r);
         bool GetComp1Global(std::vector<std::string> &v, std::string a);
@@ -133,6 +144,12 @@ namespace KMCCT {
 
         bool GetComp1Armo(std::vector<std::string> &v, std::string a);
         bool GetComp2Armo(std::vector<std::string> &v, std::string a);
+
+        bool GetComp1StrageUtil(std::vector<std::string> &v, std::string a);
+        bool GetComp2StrageUtil(std::vector<std::string> &v, std::string a);
+
+        bool GetComp1StorageTargetVal(std::vector<std::string> &v, std::string a);
+        bool GetComp2StorageTargetVal(std::vector<std::string> &v, std::string a);
 
         bool GetComp1Value(std::vector<std::string> &v, std::string a);
         bool GetComp2Value(std::vector<std::string> &v, std::string a);
@@ -161,7 +178,16 @@ namespace KMCCT {
             }
         }
 
-        void EndProc();
+        void UpdateLookupMode(KMCLookupMode new_mode) {
+            if (new_mode > lookup_mode) {
+                lookup_mode = new_mode;
+            }
+        }
+
+        bool EndProc();
+
+        KMCLookupMode lookup_mode = KMCLookupMode::none;
+        KMCRemoteType remote_type = KMCRemoteType::none;
 
         KMCCompType comp_type1 = KMCCompType::none;
         KMCCompType comp_type2 = KMCCompType::none;
@@ -185,6 +211,11 @@ namespace KMCCT {
         KMCInequalitySign isign = KMCInequalitySign::equal;
         AndOr and_or = AndOr::none;
 
+        KMCCutinCondStorageUtilData comp1_v_sov;
+        KMCCutinCondStorageUtilData comp2_v_sov;
+        MultiTypeValue comp1_stuv;
+        MultiTypeValue comp2_stuv;
+
         // chace
         bool isCacheable = false;
         KMCCacheType cache_type = KMCCacheType::none;
@@ -193,6 +224,10 @@ namespace KMCCT {
         RE::FormID c_form_id = 0;
         int c_index = -1;
         bool c_is_worn = false;
+
+        // strage_util
+        
+        int c_su_index = -1;
     };
 
     class KMCCCheckSource {

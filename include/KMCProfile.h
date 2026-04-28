@@ -3,13 +3,19 @@
 
 namespace KMCCT {
 
-
-    
+    namespace ProfileSymbols {
+        
+        // 内部置換用
+        static constexpr std::string_view PLACEHOLDER_VALUE = "[{value}]";
+        static constexpr std::string_view PLACEHOLDER_DEFAULT = "default";
+    }
 
     class KMCProfile {
         SINGLETONHEADER(KMCProfile)
     public:
         const std::string DISPLAY_PROFILE_PATH = "DisplayProfile.json";
+        const std::string LIVE_DATA_PREFIX = "CppLiveData:";
+        const size_t LIVE_DATA_PREFIX_LEN = LIVE_DATA_PREFIX.length();
 
         void Init();
         void Reset() {

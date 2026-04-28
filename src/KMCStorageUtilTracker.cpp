@@ -16,91 +16,78 @@ namespace KMCCT {
 
     void StorageUtilTracker::Init() {
         if (InstallStorageUtilHooks()) {
-            auto stu = *KMCCT::KMCConfig::GetSingleton()->getIDetectionStorageUtil();
-            for (int i = 0; i < stu.size(); i++) {
-                std::string k = stu[i].first;
-                std::string v = stu[i].second;
+            //auto stu = *KMCCT::KMCConfig::GetSingleton()->getIDetectionStorageUtil();
+            //for (int i = 0; i < stu.size(); i++) {
+            //    std::string k = stu[i].first;
+            //    std::string v = stu[i].second;
 
-                auto spvalue = KMCSplit(v, ',');
-                const auto& key = spvalue.at(0);
+            //    auto spvalue = KMCSplit(v, ',');
+            //    const auto& key = spvalue.at(0);
 
-                StorageObservedValue target{};
-                //-------------------------debug 用の一時的な設定---------------
-                // 本来はCondition.jsonの内容から読み取ること
-                auto form_id = RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll("20", NULL, 16), "Skyrim.esm");
-                if (form_id) {
+            //    StorageObservedValue target{};
+            //    //-------------------------debug 用の一時的な設定---------------
+            //    // 本来はCondition.jsonの内容から読み取ること
+            //    auto form_id = RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll("20", NULL, 16), "Skyrim.esm");
+            //    if (form_id) {
 
-                    auto handle = BuildHandleFromStackPointer(form_id);
+            //        auto handle = BuildHandleFromStackPointer(form_id);
 
-                    //auto strage_util_id = StorageUtilCalcID(form_id);
-                    //target.strage_util_key_id = strage_util_id;
-                    target.strage_key_name = key;
-                    target.compare_value.SetValue("int", "1");
-                    target.vm_object = handle;
-                    
-                    //key_to_handles.emplace(key, std::map<uint64_t, VMObjectHandleInfo>{});
-                    watch_targets.push_back(target);
-                    //watched_keys.insert(key);
-                    //watch_strage_util_key_ids.insert(strage_util_id);
-                    //-------------------------debug 用の一時的な設定---------------
-                } else {
-                    SKSE::log::info("StorageUtil RE::TESDataHandler::GetSingleton()->LookupForm not found. ");
-                }
-            }
+            //        //auto strage_util_id = StorageUtilCalcID(form_id);
+            //        //target.strage_util_key_id = strage_util_id;
+            //        target.strage_key_name = key;
+            //        target.compare_value.SetValue("int", "1");
+            //        target.vm_object = handle;
+            //        
+            //        //key_to_handles.emplace(key, std::map<uint64_t, VMObjectHandleInfo>{});
+            //        watch_targets.push_back(target);
+            //        //watched_keys.insert(key);
+            //        //watch_strage_util_key_ids.insert(strage_util_id);
+            //        //-------------------------debug 用の一時的な設定---------------
+            //    } else {
+            //        SKSE::log::info("StorageUtil RE::TESDataHandler::GetSingleton()->LookupForm not found. ");
+            //    }
+            //}
+        } else {
+            SKSE::log::error("StorageUtil not found SE? or AE?");
         }
     }
 
     void StorageUtilTracker::FetchAllValues(std::list<StorageObservedValue>& result) {
-        //std::unordered_map<std::string, std::map<uint64_t, VMObjectHandleInfo>> calc_base_map{};
-        //for (auto k : watched_keys) {
-        //    auto vm_handle_map = CopyKeyHandleMap(k);
-        //    if (!vm_handle_map.empty()) {
-        //        calc_base_map.emplace(k, vm_handle_map);
-        //    }
+
+
+        //for (auto k : watch_targets) {
+        //    StorageObservedValue monitor{.strage_key_name = k.strage_key_name, .vm_object = k.vm_object, .has_value = false};
+        //            
+        //            switch (k.compare_value.value_type) {
+        //                case KMCValueType::KM_INT: {
+        //                    int result_int = 0;
+        //                    if (GetIntValue(k.strage_key_name, k.vm_object, result_int)) {
+        //                        monitor.compare_value.SetIntValue(result_int);
+        //                        monitor.has_value = true;
+        //                        result.push_back(monitor);
+        //                    }
+        //                    break;
+        //                }
+        //                case KMCValueType::KM_FLOAT: {
+        //                    float result_float = 0;
+        //                    if (GetFloatValue(k.strage_key_name, k.vm_object, result_float)) {
+        //                        monitor.compare_value.SetFloatValue(result_float);
+        //                        monitor.has_value = true;
+        //                        result.push_back(monitor);
+        //                    }
+        //                    break;
+        //                }
+        //                case KMCValueType::KM_STRING: {
+        //                    std::string result_string = "";
+        //                    if (GetStringValue(k.strage_key_name, k.vm_object, result_string)) {
+        //                        monitor.compare_value.SetStringValue(result_string);
+        //                        monitor.has_value = true;
+        //                        result.push_back(monitor);
+        //                    }
+        //                    break;
+        //                }
+        //            }
         //}
-
-        for (auto k : watch_targets) {
-            //if (calc_base_map.contains(k.strage_key_name)) {
-            StorageObservedValue monitor{.strage_key_name = k.strage_key_name, .vm_object = k.vm_object, .has_value = false};
-                //const auto& handle_map = calc_base_map.at(k.strage_key_name);
-
-                //if (handle_map.contains(k.strage_util_key_id)) {
-                //    auto& handle = handle_map.at(k.strage_util_key_id);
-                    
-                    switch (k.compare_value.value_type) {
-                        case KMCValueType::KM_INT: {
-                            int result_int = 0;
-                            if (GetIntValue(k.strage_key_name, k.vm_object, result_int)) {
-                                monitor.compare_value.SetIntValue(result_int);
-                                monitor.has_value = true;
-                                result.push_back(monitor);
-                            }
-                            break;
-                        }
-                        case KMCValueType::KM_FLOAT: {
-                            float result_float = 0;
-                            if (GetFloatValue(k.strage_key_name, k.vm_object, result_float)) {
-                                monitor.compare_value.SetFloatValue(result_float);
-                                monitor.has_value = true;
-                                result.push_back(monitor);
-                            }
-                            break;
-                        }
-                        case KMCValueType::KM_STRING: {
-                            std::string result_string = "";
-                            if (GetStringValue(k.strage_key_name, k.vm_object, result_string)) {
-                                monitor.compare_value.SetStringValue(result_string);
-                                monitor.has_value = true;
-                                result.push_back(monitor);
-                            }
-                            break;
-                        }
-                    }
-                    
-               // }
-            
-            //}
-        }
     }
 
     bool StorageUtilTracker::InstallStorageUtilHooks() {
@@ -175,48 +162,86 @@ namespace KMCCT {
         return true;
     }
 
-    bool StorageUtilTracker::GetIntValue(std::string key, VMObjectHandleInfo vm_handle_info,
+    bool StorageUtilTracker::GetValue(MultiTypeValue default_value, std::string strage_key_name,
+                                      const VMObjectHandleInfo* vm_handle_info, MultiTypeValue& result) {
+        if (default_value.value_type == KMCValueType::KM_INT || default_value.value_type == KMCValueType::KM_LONG) {
+            int get_value = 0;
+            if (GetIntValue(strage_key_name, default_value.iv, vm_handle_info, get_value)) {
+                result.SetIntValue(get_value);
+                return true;
+            }
+        } else if (default_value.value_type == KMCValueType::KM_FLOAT) {
+            float get_value = 0.0;
+            if (GetFloatValue(strage_key_name, default_value.fv, vm_handle_info, get_value)) {
+                result.SetFloatValue(get_value);
+                return true;
+            }
+        } else {
+            std::string get_value = "";
+            if (GetStringValue(strage_key_name, default_value.sv, vm_handle_info, get_value)) {
+                result.SetStringValue(get_value);
+                return true;
+            }
+        }
+
+        result = default_value;
+        return false;
+    }
+
+    bool StorageUtilTracker::GetIntValue(std::string key, int default_value, const VMObjectHandleInfo* vm_handle_info,
                                         int& result) {
         if (!_get_int || !_has_int) return false;
 
         bool is_available = true;
-        void* form = ResolveForm(vm_handle_info, is_available);
+        void* form = nullptr;
+        if (vm_handle_info) {
+            form = ResolveForm(*vm_handle_info, is_available);
+        }
+
         if (!is_available) {
             return false;
         }
         auto key_cstr = key.c_str();
 
         if (_has_int(nullptr, form, key_cstr)) {
-            result = _get_int(nullptr, form, key.c_str(), 0);
+            result = _get_int(nullptr, form, key.c_str(), default_value);
             return true;
         }
         return false;
     }
 
-    bool StorageUtilTracker::GetFloatValue(std::string key, VMObjectHandleInfo vm_handle_info,
+    bool StorageUtilTracker::GetFloatValue(std::string key, float default_value,
+                                           const VMObjectHandleInfo* vm_handle_info,
                                           float& result) {
         if (!_get_float || !_has_float) return false;
 
         bool is_available = true;
-        void* form = ResolveForm(vm_handle_info, is_available);
+        void* form = nullptr; 
+        if (vm_handle_info) {
+            form = ResolveForm(*vm_handle_info, is_available);
+        }
         if (!is_available) {
             return false;
         }
         auto key_cstr = key.c_str();
         if (_has_float(nullptr, form, key_cstr)) {
-            result = _get_float(nullptr, form, key_cstr, 0.0);
+            result = _get_float(nullptr, form, key_cstr, default_value);
 
             return true;
         }
         return false;
     }
 
-    bool StorageUtilTracker::GetStringValue(std::string key, VMObjectHandleInfo vm_handle_info, std::string& result) {
+    bool StorageUtilTracker::GetStringValue(std::string key, std::string default_value,
+                                            const VMObjectHandleInfo* vm_handle_info,
+                                            std::string& result) {
         if (!_get_string || !_has_string) return false;
         bool is_available = true;
-        std::string default_val = "<null>";
-
-        void* form = ResolveForm(vm_handle_info, is_available);
+        std::string default_val = default_value;
+        void* form = nullptr; 
+        if (vm_handle_info) {
+            form = ResolveForm(*vm_handle_info, is_available);
+        }
         if (!is_available) {
             return false;
         }
