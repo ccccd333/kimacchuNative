@@ -286,6 +286,7 @@ namespace KMCCT {
     }
 
     int KMCCutinCondition::ToMove(const KMCCCStartArg &args) {
+
         int result = 0;
         s_args = args;
         auto *thread = KMCCT::KMCEventThread::GetSingleton();

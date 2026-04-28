@@ -48,8 +48,6 @@ export class DisplayManager {
         if (this.stopIcon) {
             this.stopIcon.hide();
         }
-
-        this.profile.hide();
     }
 }
 

@@ -505,9 +505,9 @@ namespace KMCCT {
         for (auto& [key, value] : source.cond_formula) {
             bool t = false;
             bool f = false;
+
             for (auto& formv : value) {
-                KMC_LOG("[Evaluate] EntryNo ==> {} Formula ==> {} comp1 ==> {} comp2 ==> {}", key, formv->cond,
-                        formv->comp1(), formv->comp2());
+
                 if (formv->isCacheable) {
                     if (formv->cache_type == KMCCacheType::armo && main->cache_container.PreInitWornArmo()) {
                         auto worn_armo_r = main->cache_container.GetWornArmorResult();
@@ -540,6 +540,8 @@ namespace KMCCT {
                     }
                 } else if (formv->lookup_mode == KMCFormula::KMCLookupMode::remote) {
                     if (formv->remote_type == KMCFormula::KMCRemoteType::strage_util) {
+                        KMC_LOG("[Evaluate] EntryNo ==> {} Formula ==> {} ", key, formv->cond);
+
                         MultiTypeValue c1;
                         MultiTypeValue c2;
                         if (formv->comp_type1 == KMCFormula::KMCCompType::storage_util) {
@@ -587,6 +589,8 @@ namespace KMCCT {
                         KMC_ERROR("[KMCFormula::KMCLookupMode::remote]This expression cannot be used because it is not initialized.");
                     }
                 } else {
+                    KMC_LOG("[Evaluate] EntryNo ==> {} Formula ==> {} comp1 ==> {} comp2 ==> {}", key, formv->cond,
+                            formv->comp1(), formv->comp2());
                     if (JudgeKMCInequalitySign(formv->isign, formv->comp1(), formv->comp2())) {
                         t = true;
                     } else {

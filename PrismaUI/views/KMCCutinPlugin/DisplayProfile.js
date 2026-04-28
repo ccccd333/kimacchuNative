@@ -7,7 +7,7 @@ export class DisplayProfile {
         this.animating = false;
         this.frame = 0;
         this.animate = this.animate.bind(this);
-        this.FPS = 24;
+        this.FPS = 20;
         this.last_time = 0;
         this.interval = 1000 / this.FPS;
 

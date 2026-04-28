@@ -27,7 +27,7 @@ export class DisplayDrawingTexture {
         this.bitmaps = [];
         this.frame = 0;
         this.last_time = 0;
-        this.FPS = 24;
+        this.FPS = 20;
         this.interval = 1000 / this.FPS;
         this.animating = false;
         this.animate = this.animate.bind(this);

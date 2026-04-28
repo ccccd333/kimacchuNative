@@ -131,14 +131,8 @@ void KMCCT::CutInPeriodicCall() {
 
         int current_state = KMCCT::KMCWaitTask::GetSingleton()->GetIsinSceneState();
 
-        // タイトル画面(-3)に入ったときだけJSのStopAllを呼ぶ
-        if (current_state == -3 && last_state != -3) {
+        if (last_state == -3) {
             last_state = current_state;
-            KMC_LOG("Title screen detected. Sending StopAll to JS.");
-            KMCCT::KMCPrismaUIBridge::GetSingleton()->KMCStopAndHideCutinAndIcon();
-        }
-
-        if (KMCCT::KMCWaitTask::GetSingleton()->KMCCheckWait()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::WHILE_WAIT_TIME));
             continue;
         }
@@ -174,7 +168,7 @@ void KMCCT::CutInPeriodicCall() {
 }
 
 void KMCCT::CutInConditionPeriodicCall() {
-    int last_state = -3;
+    int last_state = 0;
     auto *thread = KMCCT::KMCEventThread::GetSingleton();
     while (true) {
         if (thread->IsShuttingDown()) {
@@ -183,6 +177,21 @@ void KMCCT::CutInConditionPeriodicCall() {
 
         // 現在の状態を取得
         int current_state = KMCCT::KMCWaitTask::GetSingleton()->GetIsinSceneState();
+
+        if (current_state == -3 && last_state != -3) {
+            last_state = current_state;
+            KMC_LOG("Title screen detected. Sending StopAll to JS.");
+            KMCCT::KMCPrismaUIBridge::GetSingleton()->KMCStopAndHideCutinAndIcon();
+            KMCCT::KMCEventThread::GetSingleton()->SetForceEndAnim(true);
+            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CUT_IN_COND_WHILE_WAIT_TIME));
+            continue;
+        }
+
+        if (KMCCT::KMCWaitTask::GetSingleton()->KMCCheckWait()) {
+            last_state = current_state;
+            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::WHILE_WAIT_TIME));
+            continue;
+        }
 
         if (!thread->GetForceEndAnim()) {
             if (last_state == -3) {
@@ -221,13 +230,16 @@ void KMCCT::ProfilePeriodicCall() {
         int current_state = KMCCT::KMCWaitTask::GetSingleton()->GetIsinSceneState();
         
         if (!thread->GetForceEndAnim()) {
+            auto *profile = KMCCT::KMCProfile::GetSingleton();
             if (last_state == -3) {
                 last_state = current_state;
+                profile->ShowProfile(false);
+                profile->Set_switch_disp_profile_flag(false);
                 std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CUT_IN_COND_WHILE_WAIT_TIME));
                 continue;
             }
 
-            auto *profile = KMCCT::KMCProfile::GetSingleton();
+            
             if (!profile->GetUpdateProfile() && profile->GetShowProfile() && !profile->GetShowingProfile() &&
                 KMCCT::KMCStateManager::GetSingleton()->GetProfileInvisibleState(
                     KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag())) {

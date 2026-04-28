@@ -130,9 +130,9 @@
     pointer-events: auto;
 }
 
-.image-frame.d01 { top: 50px;  left: 50px;  width: 400px; height: 500px; }
-.image-frame.d02 { top: 50px;  left: 500px; width: 500px; height: 600px; }
-.image-frame.d03 { top: 600px; left: 50px;  width: 200px; height: 200px; }
+.image-frame.d01 { top: 20px;  left: 40px;  width: 400px; height: 500px; }
+.image-frame.d02 { top: 140px;  left: 550px; width: 500px; height: 600px; }
+.image-frame.d03 { top: 570px; left: 40px;  width: 200px; height: 200px; }
 
 .text-box {
     position: absolute;
@@ -143,12 +143,12 @@
     pointer-events: auto;
 }
 
-#T01 { top: 50px;  left: 1050px; width: 750px; height: 1000px; }
-#T02 { top: 700px; left: 500px;  width: 200px; height: 110px; }
-#T03 { top: 700px; left: 720px;  width: 200px; height: 110px; }
-#T04 { top: 820px; left: 500px;  width: 200px; height: 110px; }
-#T05 { top: 820px; left: 720px;  width: 200px; height: 110px; }
-#T06 { top: 700px; left: 1050px; width: 250px; height: 230px; }
+#T01 { top: 20px;  left: 1200px; width: 650px; height: 1000px; }
+#T02 { top: 40px; left: 450px;  width: 200px; height: 110px; }
+#T03 { top: 40px; left: 970px;  width: 200px; height: 110px; }
+#T04 { top: 700px; left: 450px;  width: 200px; height: 110px; }
+#T05 { top: 700px; left: 970px;  width: 200px; height: 110px; }
+#T06 { top: 780px; left: 680px; width: 250px; height: 230px; }
 
 .text-box .title {
     border-bottom: 1px solid #555;

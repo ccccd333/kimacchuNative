@@ -36,8 +36,6 @@ namespace KMCCT {
             case SKSE::MessagingInterface::kDataLoaded:
                 KMCCT::KMCConfig::GetSingleton()->Init();
 
-                //KMCCT::KMCProfile::GetSingleton()->Init();
-
                 KMCPrismaUIBridge::GetSingleton()->Init();
 
                 KMCCT::KMCContextManager::GetSingleton()->Init();

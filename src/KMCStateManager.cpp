@@ -21,52 +21,15 @@ SINGLETONBODY(KMCCT::KMCStateManager)
 
 namespace KMCCT {
 
-
-    bool isAddItem;
-    bool isStoppingState = false;
+    bool is_stopping_state = false;
     long long limit = 0;
     long long inSceneMS = 5000;
-    float isinsceneDetectRangeExterior = 2000.0f;
-    float isinsceneDetectRangeInterior = 1000.0f;
+    float is_inscene_detect_range_exterior = 2000.0f;
+    float is_inscene_detect_range_interior = 1000.0f;
     float fhuVag = 0.0f;
     float fhuAnal = 0.0f;
     float fhuOral = 0.0f;
     
-
-    //int cutin_chance_fhu = 100;
-    int cutin_chance_fasttravel = 100;
-    int cutin_chance_injury = 100;
-    int cutin_chance_combat = 100;
-    int cutin_chance_sneak = 100;
-    int cutin_chance_mount = 100;
-    int cutin_chance_idle = 100;
-    int cutin_chance_isindungeon = 100;
-
-    //int cutin_priority_fhu = 10;
-    int cutin_priority_fasttravel = 20;
-    int cutin_priority_injury = 30;
-    int cutin_priority_combat = 40;
-    int cutin_priority_sneak = 50;
-    int cutin_priority_mount = 60;
-    int cutin_priority_isindungeon = 65;
-    int cutin_priority_idle = 70;
-    
-    std::atomic<bool> StrageUtilReady(false);
-
-    // void PushEventAddItem() {
-
-    //    static time_point<Clock> start = Clock::now();
-    //    end = Clock::now();
-    //    milliseconds diff = duration_cast<milliseconds>(end - start);
-    //    dur = diff.count();
-    //    if (dur >= limit) {
-    //        ::KMCCT::KMCEventThread::GetSingleton()->CutInCreate({"AddItem"});
-    //        start = Clock::now();
-    //        //isAddItem = false;
-    //    }
-    //}
-
-
     void KMCStateManager::Register() {
 
         //auto lambda_function = [this]() { this->Register(); };
@@ -75,8 +38,8 @@ namespace KMCCT {
 
         limit = KMCFindVector(setting, STATE_MANAGER_CONFIG_KEY, (long long)1) * KMCCT::TIME_SCALE_MS;
         inSceneMS = KMCFindVector(setting, IN_SCENE_CONFIG_KEY, (long long)10) * KMCCT::TIME_SCALE_MS;
-        isinsceneDetectRangeExterior = KMCFindVector(setting, ISINSCENE_NPC_DETECT_RANGE_EXTERIOR, 2000.0f);
-        isinsceneDetectRangeInterior = KMCFindVector(setting, ISINSCENE_NPC_DETECT_RANGE_INTERIOR, 1000.0f);
+        is_inscene_detect_range_exterior = KMCFindVector(setting, ISINSCENE_NPC_DETECT_RANGE_EXTERIOR, 2000.0f);
+        is_inscene_detect_range_interior = KMCFindVector(setting, ISINSCENE_NPC_DETECT_RANGE_INTERIOR, 1000.0f);
 
 
 
@@ -108,12 +71,12 @@ namespace KMCCT {
             if (stopping_state.contains(menu_name) && event->opening) {
                 current_state.insert(menu_name);
                 KMC_LOG("KMCStateManager::MenuOpenCloseEvent true ==> {}", menu_name);
-                isStoppingState = true;
+                is_stopping_state = true;
             } else if (stopping_state.contains(menu_name) && !event->opening) {
                 current_state.erase(menu_name);
                 KMC_LOG("KMCStateManager::MenuOpenCloseEvent false ==> {}", menu_name);
                 if (current_state.empty()) {
-                    isStoppingState = false;
+                    is_stopping_state = false;
                 }
             }
         }
@@ -130,10 +93,10 @@ namespace KMCCT {
             if (player->HasKeywordInArray(scene_exclusion_keywords, false)) return 1;
         }
 
-        float isinsceneDetectRange = isinsceneDetectRangeExterior;
+        float isinsceneDetectRange = is_inscene_detect_range_exterior;
         auto cell = player->GetParentCell();
         if (cell != nullptr && cell->IsInteriorCell()) {
-            isinsceneDetectRange = isinsceneDetectRangeInterior;
+            isinsceneDetectRange = is_inscene_detect_range_interior;
         }
 
         auto pcell = player->GetParentCell();
@@ -176,6 +139,10 @@ namespace KMCCT {
 
         if (player == nullptr) return false;
 
+        if (is_stopping_state) {
+            return true;
+        }
+
         if (profile_invisible_status.combat) {
             if (player->IsInCombat()) {
                 return true;
@@ -204,7 +171,7 @@ namespace KMCCT {
     }
 
     bool KMCStateManager::GetStoppingState() { 
-        return isStoppingState;
+        return is_stopping_state;
     }
 
     bool KMCStateManager::GetWhetherThereNoState() {
