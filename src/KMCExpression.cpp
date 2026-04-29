@@ -70,7 +70,7 @@ namespace KMCCT {
         return true;
     }
 
-    void InitLoop(int actor_id, STMFG& result) {
+    void KMCExpression::InitLoop(int actor_id, STMFG& result) {
         const auto* addons = KMCDisplayAddon::GetSingleton()->GetActorAddons(actor_id);
 
         // アドオンが存在しない場合は何もしない
@@ -95,7 +95,14 @@ namespace KMCCT {
 
                 pair.time = exp.time;
 
-                result.mfg[static_cast<uint64_t>(cutin_no)] = pair;
+                if (exp.is_force_exp && actor_id == (int) KMCDisplayType::PLAYER) {
+                    // フォロワーまで入れるとDisplayAddons.jsonにプレイヤーとフォロワーで別々の
+                    // force_exp_categoryを入れてしまうとおかしくなってしまうので
+                    // プレイヤーのみ
+                    kmc_fe_category_index_map[exp.force_exp_category].insert(cutin_no);
+                }
+
+                result.mfg[cutin_no] = pair;
             }
         } catch (const std::exception& e) {
             SKSE::log::error("InitLoop error: actor_id={}, what={}", actor_id, e.what());
@@ -114,6 +121,11 @@ namespace KMCCT {
             follower_mfg.emplace(fs.index, st_mfg);
         }
 
+        for (const auto& [category, indices] : kmc_fe_category_index_map) {
+            kmc_fe_category_range_map[category] = static_cast<int>(indices.size());
+            kmc_fe_category_index_final_map[category] = std::vector<int>(indices.begin(), indices.end());
+        }
+
         papyrus_end_exp = false;
         exp_loop_now = false;
         f_papyrus_end_exp = false;
@@ -126,6 +138,7 @@ namespace KMCCT {
     void KMCExpression::Init() { 
         form = RE::TESDataHandler::GetSingleton()->LookupForm(0x806, "KimachuuCutIn.esp"); 
         CategoryRandomizer();
+        FECategoryRandomizer();
     }
 
     int KMCExpression::OnStandby() {
@@ -554,8 +567,8 @@ namespace KMCCT {
 
     int KMCExpression::GetCutInID(std::string aaaakmctype) {
         int rand = -1;
-        auto findit = kmc_category_rand_map.find(aaaakmctype);
-        if (findit != kmc_category_rand_map.end()) {
+        auto findit = kmc_fe_category_rand_map.find(aaaakmctype);
+        if (findit != kmc_fe_category_rand_map.end()) {
             auto* randData = &(findit->second);
             int of = randData->offset;
             auto r = randData->rand_values;
@@ -606,6 +619,35 @@ namespace KMCCT {
             kmc_category_rand_map.emplace(
                 key, KMCRandomData(0, h - l, std::move(final_values), h, l, size, &category_indices));
             kmc_category_first_values.push_back(fv);
+        }
+    }
+
+    void KMCExpression::FECategoryRandomizer() {
+        kmc_fe_category_rand_map.clear();
+
+        const auto& target_map = kmc_fe_category_range_map;
+        const auto& index_map = kmc_fe_category_index_final_map;
+
+        for (auto [key, value] : target_map) {
+            int l = 0;
+            int h = value - 1;
+            size_t size = (h - l) + 1;
+            auto& category_indices = index_map.at(key);
+            if (l == h) {
+                kmc_fe_category_rand_map.emplace(key, KMCRandomData(0, 0, {category_indices.at(0)}, h, l, 1, nullptr));
+                continue;
+            }
+
+            std::vector<int> random_value = MakeRandArraySelect(size, l, h);
+
+            std::vector<int> final_values;
+            final_values.reserve(random_value.size());
+
+            for (int idx : random_value) {
+                final_values.push_back(category_indices.at(idx));
+            }
+            kmc_fe_category_rand_map.emplace(
+                key, KMCRandomData(0, h - l, std::move(final_values), h, l, size, &category_indices));
         }
     }
 

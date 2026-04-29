@@ -18,20 +18,31 @@ namespace KMCCT {
         StrageUtilStartIndex = 0;
         StrageUtilEndIndex = 0;
 
-        Parse(COMMON_PATH + PROFILE_PATH + "/" + DISPLAY_PROFILE_PATH);
-        
-        mod_end_index = mod_start_index + profil_ex_data.format_id_num;
+        try {
+            if (!Parse(COMMON_PATH + PROFILE_PATH + "/" + DISPLAY_PROFILE_PATH)) {
+                loaded = false;
+            }
 
-        if (mod_start_index != mod_end_index) {
-            for (const auto &fm : profil_ex_data.format_maps) {
-                for (const auto &index :fm.placeholder_indices) {
-                    if (fm.live_map_keys.contains(index)) {
-                        modified_container.push_back(fm.live_map_keys.at(index));
-                    } else {
-                        modified_container.push_back(fm.format_strings.at(index));
+            if (loaded) {
+                mod_end_index = mod_start_index + profil_ex_data.format_id_num;
+
+                if (mod_start_index != mod_end_index) {
+                    for (const auto &fm : profil_ex_data.format_maps) {
+                        for (const auto &index : fm.placeholder_indices) {
+                            if (fm.live_map_keys.contains(index)) {
+                                modified_container.push_back(fm.live_map_keys.at(index));
+                            } else {
+                                modified_container.push_back(fm.format_strings.at(index));
+                            }
+                        }
                     }
                 }
+            } else {
+                KMC_ERROR("[Error] Failed to parse profile configuration JSON. The profile function will be disabled.");
             }
+        } catch (std::runtime_error ex) {
+            loaded = false;
+            KMC_ERROR("ERROR LOADING {}", ex.what());
         }
     }
 
@@ -256,7 +267,7 @@ namespace KMCCT {
             showing_profile = true;
         }
         // player only
-        if (is_missing_file) return;
+        if (!loaded) return;
         auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player == nullptr) return;
 
@@ -456,7 +467,7 @@ namespace KMCCT {
                 profil_ex_data.drawing_data[key] = data;
             }
         }
-
+        bool is_error_strage_util = false;
         if (j.contains("strage_util_tags") && j["strage_util_tags"].is_array()) {
 
             for (auto &tag_item : j["strage_util_tags"]) {
@@ -480,6 +491,7 @@ namespace KMCCT {
                             live_item.sov.vm_object = StorageUtilTracker::BuildHandleFromStackPointer(form);
                             live_item.sov_is_null = false;
                         } else {
+                            is_error_strage_util = true;
                             error = true;
                             KMC_ERROR(
                                 "strage_util_tags: Failed to LookupForm for tag [{}]. FormID: {}, Plugin: {}. Check if "
@@ -512,6 +524,7 @@ namespace KMCCT {
                                     "Available operators: '==', '!=', '>', '<', '>=', '<=', 'default'",
                                     op_data.op, tag_name);
                                 error = true;
+                                is_error_strage_util = true;
                                 break;
                             }
                         }
@@ -522,6 +535,7 @@ namespace KMCCT {
                             "(e.g. '14,Skyrim.esm'), but got: '{}'",
                             tag_name, ref_formid);
                         error = true;
+                        is_error_strage_util = true;
                     }
 
                     // T01とかのやつのformat用文字列変換クラスをポインタでもらっとく
@@ -543,6 +557,7 @@ namespace KMCCT {
                     }
                 } else {
                     error = true;
+                    is_error_strage_util = true;
                     KMC_ERROR(
                         "strage_util_tags: Missing 'rules' array for tag [{}]. Logic requires at least one comparison "
                         "rule or a 'default' result.",
@@ -558,6 +573,13 @@ namespace KMCCT {
         if (is_missing_file) {
             // 1つでもpngが無ければNG、JS側でエラーになる
             KMC_ERROR("[Error]Some image files could not be loaded. Therefore, the profile function will be disabled.");
+            return false;
+        }
+
+        if (is_error_strage_util) {
+            KMC_ERROR(
+                "[StorageUtil] Profile loading failed due to invalid 'strage_util_tags' configuration. Check previous "
+                "error logs for specific tag failures.");
             return false;
         }
 

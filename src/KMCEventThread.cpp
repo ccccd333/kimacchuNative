@@ -17,6 +17,10 @@
 #include "KMCStorageUtilTracker.h"
 #include "KMCPrismaUIBridge.h"
 
+#include "KMCDisplayWordAndTexture.h"
+#include "KMCDisplayAddon.h"
+#include "KMCContextManager.h"
+
 SINGLETONBODY(KMCCT::KMCEventThread)
 
 // thread poolの管理場所、他のモジュールはスレッドを起動する際にwrapメソッドでアクセスする
@@ -411,16 +415,23 @@ namespace KMCCT {
         //executor.submit(InitMain, &papyrus_floatArray).wait_for(std::chrono::seconds(0));
 
         if (enable_cutin) {
-            executor.submit(CutInPeriodicCall).wait_for(std::chrono::seconds(0));
-            executor.submit(CutInConditionPeriodicCall).wait_for(std::chrono::seconds(0));
+            if (KMCDisplayWordAndTexture::GetSingleton()->IsReady() && KMCDisplayAddon::GetSingleton()->IsReady() &&
+                KMCContextManager::GetSingleton()->IsReady()) {
+                executor.submit(CutInPeriodicCall).wait_for(std::chrono::seconds(0));
+                executor.submit(CutInConditionPeriodicCall).wait_for(std::chrono::seconds(0));
+            } else {
+                KMC_ERROR("Failed to start Cut-in threads: Service not ready.");
+            }
         }
 
         if (enable_profile) {
-            executor.submit(ProfilePeriodicCall).wait_for(std::chrono::seconds(0));
+            if (KMCProfile::GetSingleton()->IsReady()) {
+                executor.submit(ProfilePeriodicCall).wait_for(std::chrono::seconds(0));
+                executor.submit(PapyrusPeriodicCall).wait_for(std::chrono::seconds(0));
+            } else {
+                KMC_ERROR("Failed to start Profile threads: Service not ready.");
+            }
         }
-
-        executor.submit(PapyrusPeriodicCall).wait_for(std::chrono::seconds(0));
-
     }
 
     void KMCEventThread::MCMSettingChange(std::vector<float> floatArray) {

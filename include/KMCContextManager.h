@@ -109,6 +109,8 @@ namespace KMCCT {
         void OnHitEvent(const RE::TESHitEvent* event);
         void FastTravelEndEvent(const RE::TESFastTravelEndEvent* event);
 
+        bool IsReady() const { return loaded; }
+
     private:
         std::string GetHighestPriorityPlayer();
         void InitDetectionItems(std::vector<std::pair<int, std::string>>* dconfig, RE::Actor* actor,
@@ -117,7 +119,7 @@ namespace KMCCT {
         bool Parse(std::string path);
 
         std::map<int, StateControll> states;
-        bool loaded = false;
+        bool loaded = true;
 
         std::vector<ActionStateEntry> action_states;
         std::unordered_map<std::string, std::vector<std::pair<int, std::string>>> extended_context_data;

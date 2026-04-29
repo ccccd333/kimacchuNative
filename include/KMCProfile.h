@@ -49,6 +49,8 @@ namespace KMCCT {
         void Set_interrupt_show_profile(bool set) { interrupt_show_profile = set; }
         bool Get_switch_disp_profile_flag() { return switch_disp_profile_flag; }
         void Set_switch_disp_profile_flag(bool set) { switch_disp_profile_flag = set; }
+
+        bool IsReady() const { return loaded; }
     private:
         // レガシー
         /*void ProfileInit(KMCProfil &profil, std::string target, std::vector<std::pair<std::string, std::string>> *ws,
@@ -80,6 +82,6 @@ namespace KMCCT {
         bool switch_disp_profile_flag = false;
 
         bool is_missing_file = false;
-
+        bool loaded = true;
     };
 }

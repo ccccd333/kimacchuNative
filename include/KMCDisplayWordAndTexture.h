@@ -10,7 +10,7 @@ namespace KMCCT {
 
         void Init();
 
-        bool IsLoaded() const { return loaded; }
+        bool IsReady() const { return loaded; }
 
         const std::unordered_map<int, std::string>& GetCategoryMap(int type) const {
             return category_map.at(type);
@@ -68,7 +68,7 @@ namespace KMCCT {
         // cutin用にentryの中身を取っておく
         std::map<int, std::unordered_map<int, CutinEntry>> entries_data_map;
 
-        bool loaded = false;
+        bool loaded = true;
     };
 
 }

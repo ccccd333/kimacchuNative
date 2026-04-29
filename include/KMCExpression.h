@@ -11,7 +11,7 @@ namespace KMCCT {
     public:
         STMFG() {}
 
-        std::map<uint64_t, STMFGPair> mfg;
+        std::map<int, STMFGPair> mfg;
     };
 
     class KMCExpression {
@@ -49,12 +49,14 @@ namespace KMCCT {
         int ForceExp(std::string exp_id, float cool_time, float exp_time);
         int GetCutInID(std::string aaaakmctype);
     private:
+        void InitLoop(int actor_id, STMFG &result);
         void PPushExpFunc(int rand, bool force, float ex_exp_time);
         void FPushExpFunc(int rand, int frand, bool force, float ex_exp_time);
         bool GetWaitFlag();
         int KMCEXPTimer(long long limit);
 
         void CategoryRandomizer();
+        void FECategoryRandomizer();
     private:
 
         STMFGPair p_now;
@@ -84,5 +86,25 @@ namespace KMCCT {
 
         std::unordered_map<std::string, KMCRandomData> kmc_category_rand_map;
         std::vector<int> kmc_category_first_values;
+
+        /*
+        {
+            "Idle":[1,21,41],
+            "IdlePM":[2,22,42,43]
+        }
+        */
+        std::unordered_map<std::string, std::set<int>> kmc_fe_category_index_map;
+        std::unordered_map<std::string, std::vector<int>> kmc_fe_category_index_final_map;
+
+        /*
+        {
+            "Idle":3,
+            "IdlePM":4
+        }
+        */
+        std::unordered_map<std::string, int> kmc_fe_category_range_map;
+
+
+        std::unordered_map<std::string, KMCRandomData> kmc_fe_category_rand_map;
     };
 }

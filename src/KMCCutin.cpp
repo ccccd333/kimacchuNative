@@ -163,7 +163,6 @@ namespace KMCCT {
     int KMCCutin::CutIn(KMCCutinValues val) {
         // init
         std::string aaaakmctype = val.aaaakmctype;
-        float c_time = val.aaaakmctime;
         float c_volum = val.aaaakmcvolum;
         float c_oar_time = val.aaaakmcoar;
         float c_exp_time = val.aaaakmcexp;

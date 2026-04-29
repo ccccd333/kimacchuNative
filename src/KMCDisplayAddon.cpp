@@ -68,6 +68,10 @@ namespace KMCCT {
                     data.expression.phoneme = exp.value("phoneme", std::vector<std::string>{});
                     data.expression.expression = exp.value("expression", "");
                     data.expression.time = exp.value("time", 0);
+                    data.expression.force_exp_category = exp.value("force_exp_category", "");
+                    if (data.expression.force_exp_category != "") {
+                        data.expression.is_force_exp = true;
+                    }
                 }
 
                 if (value.contains("voice_sound")) {

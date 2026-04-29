@@ -6,6 +6,8 @@ namespace KMCCT {
         std::vector<std::string> phoneme;
         std::string expression;
         int time = 0;
+        std::string force_exp_category = "";
+        bool is_force_exp = false;
     };
 
     struct SoundEffectData {
@@ -36,12 +38,14 @@ namespace KMCCT {
 
         const ActorAddonSet* GetActorAddons(int actor_id) const;
 
+        bool IsReady() const { return loaded; }
+
 
     private:
         bool Parse(const std::string& path, int disp_type);
 
         std::map<int, ActorAddonSet> actor_addons;
 
-        bool loaded = false;
+        bool loaded = true;
     };
 }
