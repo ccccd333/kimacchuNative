@@ -562,6 +562,7 @@ namespace KMCCT {
         KMCInequalitySign sign;
         MultiTypeValue comp_value;
         std::string result;
+        
     };
 
     struct KMCProfileStorageUtilLiveData {
@@ -573,6 +574,8 @@ namespace KMCCT {
         std::string type;
         std::string access_key;
         std::vector<KMCProfileOperatorData> pod;
+
+        std::string default_op_return_value;
         //KMCProfileReplaceMap *prm_pointer;
     };
 

@@ -141,6 +141,12 @@ namespace KMCCT {
                                             "UpdateModifiedContainer: StorageUtil failed to fetch data. "
                                             "Tag: [{}], AccessKey: [{}], VMHandle: {}. Using default value.",
                                             live.tag, live.access_key, live.sov.vm_object.handle);
+                                        if (live.default_op_return_value == ProfileSymbols::PLACEHOLDER_VALUE) {
+                                            edited_sring += sov_return_value.ToStringMV();
+                                        } else {
+                                            edited_sring += live.default_op_return_value;
+                                        }
+                                        
                                     }
                                 } else {
                                     edited_sring += mod_container->at(j);
@@ -516,6 +522,10 @@ namespace KMCCT {
                                 op_data.comp_value.SetValue(live_item.type, rule_item.value("value", ""));
 
                                 op_data.result = rule_item.value("result", "");
+                                
+                                if (op_data.sign == KMCInequalitySign::def) {
+                                    live_item.default_op_return_value = op_data.result;
+                                }
 
                                 live_item.pod.push_back(std::move(op_data));
                             } else {
