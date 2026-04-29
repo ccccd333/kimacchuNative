@@ -362,7 +362,7 @@ export class DisplayDrawingTexture {
 
         if (this.bg_bitmap && this.ctxs.bg) {
             //this.ctxs.bg.clearRect(0, 0, this.canvases.bg.width, this.canvases.bg.height);
-            DrawUtility.drawImageFit(this.ctxs.bg, this.bg_bitmap, this.canvases.bg, "");
+            DrawUtility.drawImageFit(this.ctxs.bg, this.bg_bitmap, this.canvases.bg, "center");
         }
 
         const ctx_cutin = this.ctxs.cutin;
@@ -373,7 +373,7 @@ export class DisplayDrawingTexture {
 
             const bmp = this.bitmaps[this.frame];
             if (bmp) {
-                DrawUtility.drawImageFit(ctx_cutin, bmp, canvas_cutin, "");
+                DrawUtility.drawImageFit(ctx_cutin, bmp, canvas_cutin, "center");
             }
         }
 

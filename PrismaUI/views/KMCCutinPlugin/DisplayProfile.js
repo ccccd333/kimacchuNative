@@ -13,33 +13,58 @@ export class DisplayProfile {
 
         this.container = document.getElementById("profile_display");
         
-        const ids = ["D01", "D02", "D03"];
         this.ctxs = new Map();
-        ids.forEach(id => {
-            const canvas = document.getElementById(id);
-            if (canvas) {
-                canvas.width = canvas.clientWidth || canvas.width;
-                canvas.height = canvas.clientHeight || canvas.height;
-                this.ctxs.set(id, canvas.getContext("2d"));
-            }
-        });
-
         this.text_containers = {};
-        ["T01", "T02", "T03", "T04", "T05", "T06"].forEach(id => {
-            this.text_containers[id] = document.getElementById(id);
-        });
+        
+        // const ids = ["D01", "D02", "D03"];
+        // this.ctxs = new Map();
+        // ids.forEach(id => {
+        //     const canvas = document.getElementById(id);
+        //     if (canvas) {
+        //         canvas.width = canvas.clientWidth || canvas.width;
+        //         canvas.height = canvas.clientHeight || canvas.height;
+        //         this.ctxs.set(id, canvas.getContext("2d"));
+        //     }
+        // });
+
+        // this.text_containers = {};
+        // ["T01", "T02", "T03", "T04", "T05", "T06"].forEach(id => {
+        //     this.text_containers[id] = document.getElementById(id);
+        // });
     }
 
     async setup(json) {
         const tasks = [];
         for (const [id, data] of Object.entries(json)) {
             if (id.startsWith("T")) {
-                this.initTextStructure(id, data);
+                const el = document.getElementById(id);
+                if (el) {
+                    this.text_containers[id] = el;
+                    this.initTextStructure(id, data);
+                }
             } else if (id.startsWith("D")) {
-                tasks.push(this.preloadProfile(id, data));
+                const canvas = document.getElementById(id);
+                if (canvas) {
+                    canvas.width = canvas.clientWidth || canvas.width;
+                    canvas.height = canvas.clientHeight || canvas.height;
+                    this.ctxs.set(id, canvas.getContext("2d"));
+                    tasks.push(this.preloadProfile(id, data));
+                }
             }
         }
+
         await Promise.all(tasks);
+
+        this.container.style.display = "none";
+
+        Object.values(this.text_containers).forEach(el => {
+            if (el) el.style.display = "block";
+        });
+
+        for (const [id, ctx] of this.ctxs) {
+            const el = ctx.canvas.parentElement;
+            if (el) el.style.display = "block";
+        }
     }
 
     initTextStructure(id, data) {
@@ -85,9 +110,7 @@ export class DisplayProfile {
     }
 
     show() {
-        if (this.container) {
-            this.container.style.display = "block";
-        }
+        this.container.style.display = "block";
 
         if (!this.animating) {
             this.animating = true;
@@ -101,9 +124,7 @@ export class DisplayProfile {
 
     hide() {
         this.animating = false;
-        if (this.container) {
-            this.container.style.display = "none";
-        }
+        this.container.style.display = "none";
     }
 
     animate(time) {

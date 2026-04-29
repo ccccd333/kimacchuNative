@@ -111,6 +111,7 @@
     height: 100vh;
     display: none;
     z-index: 150;
+    pointer-events: none;
 }
 
 .image-area, .text-area, .small-grid {
@@ -128,6 +129,7 @@
     border: 2px solid #aaa;
     background: #111;
     pointer-events: auto;
+    display: none;
 }
 
 .image-frame.d01 { top: 20px;  left: 40px;  width: 400px; height: 500px; }
@@ -176,6 +178,8 @@
         0px  1px 0 #000,
         0px -1px 0 #000,
         0px  0px 8px #000;
+
+    display: none;
 }
 
 .image-frame canvas {
