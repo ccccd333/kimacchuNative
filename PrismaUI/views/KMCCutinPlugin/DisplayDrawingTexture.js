@@ -442,6 +442,8 @@ export class DisplayDrawingTexture {
 
 
                 this.preloadGroup(this.current_next_group);
+
+                console.log(`preloadGroup loaded. ${this.current_group} ${this.current_next_group}`);
             }
 
             this.current_next_group = -1;
