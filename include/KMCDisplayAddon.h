@@ -34,7 +34,7 @@ namespace KMCCT {
     public:
         const std::string DISPLAY_ADD_ON_PATH = "DisplayAddons.json";
 
-        void Setup();
+        void Init();
 
         const ActorAddonSet* GetActorAddons(int actor_id) const;
 

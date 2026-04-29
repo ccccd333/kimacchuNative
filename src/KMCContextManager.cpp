@@ -198,14 +198,14 @@ namespace KMCCT {
         LocTypeClearable = (RE::BGSKeyword*)RE::TESForm::LookupByID(0x000F5E80);
 
         WeaponKeywordTypeSlash = {
-            (RE::BGSKeyword*)RE::TESDataHandler::GetSingleton()->LookupForm(0x0001E711, "Skyrim.esm"),
-            (RE::BGSKeyword*)RE::TESDataHandler::GetSingleton()->LookupForm(0x0001E713, "Skyrim.esm"),
-            (RE::BGSKeyword*)RE::TESDataHandler::GetSingleton()->LookupForm(0x0006D932, "Skyrim.esm"),
-            (RE::BGSKeyword*)RE::TESDataHandler::GetSingleton()->LookupForm(0x0006D931, "Skyrim.esm"),
-            (RE::BGSKeyword*)RE::TESDataHandler::GetSingleton()->LookupForm(0x0001E712, "Skyrim.esm")};
+            RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(0x0001E711, "Skyrim.esm"),
+            RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(0x0001E713, "Skyrim.esm"),
+            RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(0x0006D932, "Skyrim.esm"),
+            RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(0x0006D931, "Skyrim.esm"),
+            RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(0x0001E712, "Skyrim.esm")};
         WeaponKeywordTypeBlunt = {
-            (RE::BGSKeyword*)RE::TESDataHandler::GetSingleton()->LookupForm(0x0006D930, "Skyrim.esm"),
-            (RE::BGSKeyword*)RE::TESDataHandler::GetSingleton()->LookupForm(0x0001E714, "Skyrim.esm")};
+            RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(0x0006D930, "Skyrim.esm"),
+            RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(0x0001E714, "Skyrim.esm")};
 
         auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
 
@@ -230,7 +230,7 @@ namespace KMCCT {
             }
         }
 
-        auto setting = KMCCT::KMCConfig::GetSingleton()->getISetting();
+        auto setting = KMCCT::KMCConfig::GetSingleton()->GetKMCSetting();
         int interrupt_event_OnHit = KMCFindVector(setting, INTERRUPT_EVENT_ONHIT, 1);
 
         if (interrupt_event_OnHit > 0) {
@@ -360,22 +360,22 @@ namespace KMCCT {
 
                 switch (type) {
                     case KMCDetectionType::keyword:
-                        keyword = (RE::BGSKeyword*)RE::TESDataHandler::GetSingleton()->LookupForm(
+                        keyword = RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(
                             std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
                         keyword != nullptr ? found = true : found = false;
                         break;
                     case KMCDetectionType::faction:
-                        faction = (RE::TESFaction*)RE::TESDataHandler::GetSingleton()->LookupForm(
+                        faction = RE::TESDataHandler::GetSingleton()->LookupForm<RE::TESFaction>(
                             std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
                         faction != nullptr ? found = true : found = false;
                         break;
                     case KMCDetectionType::magic_effect_keyword:
-                        keyword = (RE::BGSKeyword*)RE::TESDataHandler::GetSingleton()->LookupForm(
+                        keyword = RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(
                             std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
                         keyword != nullptr ? found = true : found = false;
                         break;
                     case KMCDetectionType::global:
-                        global = (RE::TESGlobal*)RE::TESDataHandler::GetSingleton()->LookupForm(
+                        global = RE::TESDataHandler::GetSingleton()->LookupForm<RE::TESGlobal>(
                             std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
                         global != nullptr ? found = true : found = false;
                         break;

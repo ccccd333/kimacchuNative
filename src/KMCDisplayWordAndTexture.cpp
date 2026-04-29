@@ -23,7 +23,7 @@ namespace KMCCT {
             std::vector<KMCFollower> *followers = KMCConfig::GetSingleton()->GetFollowers();
             if (followers && !followers->empty()) {
                 for (const auto &follower : *followers) {
-                    auto actorPtr = follower.followerHandle.get();
+                    auto actorPtr = follower.follower_handle.get();
                     if (!actorPtr) continue;
                     int follower_index = follower.index + 1;
                     if (!Parse(COMMON_PATH + FOLLOWER_WORD_PATH + std::to_string(follower_index) + "/" + DISPLAY_WORD_AND_TEXTURE_PATH,
@@ -73,6 +73,10 @@ namespace KMCCT {
             KMC_ERROR("DisplayWordAndTexture.json, define base_path and entries in the root field.");
             return false;
         }
+
+        int cache_mode = j.value("cache_mode", 1);
+        cache_mode_map[disp_type] = cache_mode;
+
         bool is_missing_file = false;
         int type = disp_type;
 
@@ -129,27 +133,55 @@ namespace KMCCT {
                 return false;
             }
             j["first_values"] = first_values;
-        } else {
-            // player 基準のためフォロワー側はカテゴリにあるものでフィルタ
-            const auto &first_values = KMCCutin::GetSingleton()->GetCategoryFirstValues();
-            const auto &category_temp_map = category_map[type];
-            std::vector<int> filtered;
-            if (!category_temp_map.empty()) {
-                for (auto first_input : first_values) {
-                    if (category_temp_map.contains(first_input)) {
-                        filtered.push_back(first_input);
-                    }
-                }
-                j["first_values"] = filtered;
-            } else {
-                // カテゴリが空、設定できないようにする
-                KMC_ERROR(
-                    "[Error]Follower DisplayWordAndTexture.json, there are no category definitions on the player side. "
-                    "Therefore, the cut-in function will be disabled.");
-                return false;
-            }
-
         }
+        // フォロワーが複数人の場合
+        // 例)
+        // 前提：
+        // カットイングループ=[0,1,2,3]
+        //
+        // 1.初回カットイン要求(next_group=2,フォロワー２へ要求)
+        // プレイヤー事前キャッシュ
+        //[1]
+        // フォロワー１キャッシュ
+        //[1]
+        // フォロワー２キャッシュ
+        //[1]
+        //
+        // 1.1カットイン終了
+        // プレイヤー事前キャッシュ
+        //[2]
+        // フォロワー１キャッシュ
+        //[1]
+        // フォロワー２キャッシュ
+        //[2]
+        // といった風にフォロワー１がおいてけぼりになる。
+        // 
+        // なのでやめた
+        // フォロワーの対象が決まったタイミングでJS側にフォロワーのこれ読み込みお願いをするか。
+        // 要はカットイン出てない状態だから視覚的にも読み込み中なのか、
+        // まだカットインをするタイミングでないかがユーザー側がわからないから。
+        // フォロワー一人だと成り立つけど、複数人だとなりたたないので複数人前提で組む。
+        //else {
+        //    // player 基準のためフォロワー側はカテゴリにあるものでフィルタ
+        //    const auto &first_values = KMCCutin::GetSingleton()->GetCategoryFirstValues();
+        //    const auto &category_temp_map = category_map[type];
+        //    std::vector<int> filtered;
+        //    if (!category_temp_map.empty()) {
+        //        for (auto first_input : first_values) {
+        //            if (category_temp_map.contains(first_input)) {
+        //                filtered.push_back(first_input);
+        //            }
+        //        }
+        //        j["first_values"] = filtered;
+        //    } else {
+        //        // カテゴリが空、設定できないようにする
+        //        KMC_ERROR(
+        //            "[Error]Follower DisplayWordAndTexture.json, there are no category definitions on the player side. "
+        //            "Therefore, the cut-in function will be disabled.");
+        //        return false;
+        //    }
+
+        //}
 
         j["display_type"] = type;
         j["actor_name"] = actor_name;

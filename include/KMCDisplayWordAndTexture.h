@@ -28,6 +28,10 @@ namespace KMCCT {
             return entries_data_map.at(type);
         }
 
+        const int GetCacheModeMap(int type) const {
+            return cache_mode_map.at(type);
+        }
+
     private:
         bool Parse(std::string path, int disp_type, std::string actor_name);
 
@@ -67,6 +71,9 @@ namespace KMCCT {
 
         // cutin用にentryの中身を取っておく
         std::map<int, std::unordered_map<int, CutinEntry>> entries_data_map;
+
+        // キャッシュモード用のマップ
+        std::map<int, int> cache_mode_map;
 
         bool loaded = true;
     };

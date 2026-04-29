@@ -4,6 +4,7 @@
     pointer-events: auto; 
     min-width: 50px;
     min-height: 50px;
+    overflow: hidden;
 }
 
 .player {
@@ -12,7 +13,7 @@
 }
 
 .follower {
-    left: 20px;
+    right: 20px;
     top: 50px;
 }
 

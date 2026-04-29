@@ -16,7 +16,7 @@ namespace KMCCT {
 
                     if (spvalue.size() == 2) {
                         RE::TESGlobal* global = nullptr;
-                        global = (RE::TESGlobal*)RE::TESDataHandler::GetSingleton()->LookupForm(
+                        global = RE::TESDataHandler::GetSingleton()->LookupForm<RE::TESGlobal>(
                             std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
 
                         if (global != nullptr) {
@@ -52,7 +52,7 @@ namespace KMCCT {
 
                     if (spvalue.size() == 2) {
                         RE::TESGlobal* global = nullptr;
-                        global = (RE::TESGlobal*)RE::TESDataHandler::GetSingleton()->LookupForm(
+                        global = RE::TESDataHandler::GetSingleton()->LookupForm<RE::TESGlobal>(
                             std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
 
                         if (global != nullptr) {

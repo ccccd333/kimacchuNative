@@ -58,6 +58,16 @@ namespace KMCCT {
             KMCCutin::GetSingleton()->SetCutinStartReady(true);
         });
 
+        prisma_ui->RegisterJSListener(cutin_view, "KMCOnCutinUnavailable", [](const char* data) -> void {
+            SKSE::log::info("Cutin unavailable for display : {}", data);
+            KMCCutin::GetSingleton()->SetCutinUnavailable(true);
+        });
+
+        prisma_ui->RegisterJSListener(cutin_view, "OnCacheLoaded", [](const char* data) -> void {
+            SKSE::log::info("Cutin assets loaded for display ID: {}", data);
+            KMCCutin::GetSingleton()->SetFollowerCacheDataLoaded(true);
+        });
+
         prisma_ui->RegisterConsoleCallback(cutin_view, [](PrismaView view, PRISMA_UI_API::ConsoleMessageLevel level, const char* message) {
             switch (level) {
                     case PRISMA_UI_API::ConsoleMessageLevel::Log:
@@ -103,6 +113,17 @@ namespace KMCCT {
             prisma_ui->Invoke(cutin_view, script.c_str());
         } else {
             SKSE::log::warn("KMCDefineCutin failed: cutin_view is invalid.");
+        }
+    }
+
+    void KMCPrismaUIBridge::KMCPreloadGroup(int id, int group) {
+        if (prisma_ui->IsValid(cutin_view)) {
+            json group_data_map = {{"id", id}, {"group", group}};
+
+            std::string script = "KMCPreloadGroup(" + group_data_map.dump() + ")";
+            prisma_ui->Invoke(cutin_view, script.c_str());
+        } else {
+            SKSE::log::warn("KMCBatchPreloadGroups failed: cutin_view is invalid.");
         }
     }
 

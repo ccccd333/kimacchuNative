@@ -302,10 +302,10 @@ namespace KMCCT {
         }
 
     public:
-        std::vector<std::pair<std::string, std::string>> ISpeachTiming;
-        std::vector<std::pair<std::string, std::string>> IConditions;
-        std::vector<std::pair<std::string, RE::BGSKeyword *>> IKeywords;
-        RE::ActorHandle followerHandle;
+        std::unordered_map<int, std::string> playback_priority;
+        std::vector<std::pair<std::string, std::string>> restrict_keywords;
+        std::unordered_map<int, RE::BGSKeyword *> restrict_keywords_map;
+        RE::ActorHandle follower_handle;
         std::string formId = "";
         std::string pluginName = "";
         int index = 0;
@@ -316,7 +316,7 @@ namespace KMCCT {
         KMCInterruptPushCutInData() {}
         KMCInterruptPushCutInData(KMCInterruptType itt, std::string t, std::string cond1 = "", std::string cond2 = "",
                                   std::string cond3 = "", RE::TESForm *condf1 = nullptr) {
-            interruptType = itt;
+            interrupt_type = itt;
             type = t;
             condition1 = cond1;
             condition2 = cond2;
@@ -325,18 +325,12 @@ namespace KMCCT {
         }
 
     public:
-        KMCInterruptType interruptType;
+        KMCInterruptType interrupt_type;
         std::string type = "";
         std::string condition1 = "";
         std::string condition2 = "";
         std::string condition3 = "";
         RE::TESForm *conditionf1;
-    };
-
-    struct KMCUpdateProfileData {
-    public:
-        int tid = -1;
-        std::string format_data = "";
     };
 
     struct KMCWaitTaskParam {
@@ -392,11 +386,6 @@ namespace KMCCT {
         // KMCWaitTaskParam wtparam;
     };
 
-    struct KMCNamePlateAnimationSettings {
-    public:
-        std::vector<std::pair<std::string, std::string>> settings;
-    };
-
     struct KMCRandomData {
     public:
         KMCRandomData(int of, int in, std::vector<int> r, int h, int l, size_t s, const std::vector<int> *ci) {
@@ -417,20 +406,6 @@ namespace KMCCT {
         size_t size = 0;
         const std::vector<int> *category_indices;
     };
-
-    struct KMCOutputContainer {
-    public:
-        KMCOutputContainer() {}
-        KMCOutputContainer(int o, WidgetType w) { 
-            output = o;
-            wt = w;
-        }
-
-
-        int output = -99;
-        WidgetType wt = WidgetType::none;
-    };
-    // animation setting
 
     struct KMCDispConfigs {
     public:
@@ -704,9 +679,9 @@ namespace KMCCT {
         bool overri_exp_time = false;
         float exp_time = 0.0f;
         int exp_rand = -1;
-        std::vector<std::pair<std::string, std::string>> *ISpeechTiming;
+        std::unordered_map<int, std::string> *playback_priority;
         RE::TESObjectREFR *speakerp;
-        RE::TESObjectREFR *speakerf;
+        RE::ActorHandle speakerf_handle;
         KMCCompsFlag pcf;
         KMCCompsFlag fcf;
         std::string precord = "";

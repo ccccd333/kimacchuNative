@@ -1,4 +1,4 @@
-﻿#include "KMCDisplayAddon.h"
+#include "KMCDisplayAddon.h"
 
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -13,7 +13,7 @@ namespace KMCCT {
 
     using json = nlohmann::json;
 
-    void KMCDisplayAddon::Setup() {
+    void KMCDisplayAddon::Init() {
         try {
             if (!Parse(COMMON_PATH + PLAYER_WORD_PATH + "/" + DISPLAY_ADD_ON_PATH, (int)KMCDisplayType::PLAYER)) {
                 loaded = false;
@@ -22,8 +22,6 @@ namespace KMCCT {
             std::vector<KMCFollower>* followers = KMCConfig::GetSingleton()->GetFollowers();
             if (followers && !followers->empty()) {
                 for (const auto& follower : *followers) {
-                    auto actorPtr = follower.followerHandle.get();
-                    if (!actorPtr) continue;
                     int follower_index = follower.index + 1;
                     if (!Parse(COMMON_PATH + FOLLOWER_WORD_PATH + std::to_string(follower_index) + "/" +
                                    DISPLAY_ADD_ON_PATH,
@@ -52,8 +50,6 @@ namespace KMCCT {
         stream.seekg(0, std::ios::beg);
 
         json j = json::parse(stream);
-
-        actor_addons.clear();
 
         ActorAddonSet new_set;
 

@@ -187,10 +187,10 @@ namespace KMCCT {
         }
        
         static long long event_cool_time =
-            KMCFindVector(KMCCT::KMCConfig::GetSingleton()->getISetting(), KMCCT::PROFILE_DELAY_TIME_CONFIG_KEY,
+            KMCFindVector(KMCCT::KMCConfig::GetSingleton()->GetKMCSetting(), KMCCT::PROFILE_DELAY_TIME_CONFIG_KEY,
                           KMCCT::INTERRUPT_SHOW_PROFILE_DELAY_TIME) *
             (float)KMCCT::TIME_SCALE_MS;
-        static int polling_count = KMCFindVector(KMCCT::KMCConfig::GetSingleton()->getISetting(),
+        static int polling_count = KMCFindVector(KMCCT::KMCConfig::GetSingleton()->GetKMCSetting(),
                                                  KMCCT::PROFILE_POLLING_COUNT_CONFIG_KEY, KMCCT::PROFILE_POLLING_COUNT);
         
         auto *thread = KMCCT::KMCEventThread::GetSingleton();
@@ -485,7 +485,7 @@ namespace KMCCT {
                 auto spvalue = KMCSplit(ref_formid, ',');
                 if (spvalue.size() >= 1) {
                     if (spvalue.at(0) != "null") {
-                        auto form = (RE::BGSKeyword *)RE::TESDataHandler::GetSingleton()->LookupForm(
+                        auto form = RE::TESDataHandler::GetSingleton()->LookupForm(
                             std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
                         if (form) {
                             live_item.sov.vm_object = StorageUtilTracker::BuildHandleFromStackPointer(form);

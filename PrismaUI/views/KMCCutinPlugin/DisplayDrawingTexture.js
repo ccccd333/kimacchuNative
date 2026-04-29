@@ -308,8 +308,11 @@ export class DisplayDrawingTexture {
         }
 
         const frames = await this.preloadGroup(group);
-        if (!frames || frames.length === 0) return;
-
+        
+        if (!frames || frames.length === 0) {
+            OnCutinUnavailable(this.display_type);
+            return;
+        }
         const cutin = this.cutin_map.get(group);
 
         this.bitmaps = frames;
@@ -425,7 +428,7 @@ export class DisplayDrawingTexture {
                 }
             });
 
-            if (this.cache_type === 1 && this.current_next_group != this.current_group && this.current_next_group != -1) {
+            if (this.cache_type === 1 && this.current_next_group != this.current_group) {
                 // current_next_groupが-1の場合はフォロワーの場合ではあり得る。
                 // プレイヤーをベースにカットインIDが決定するため、プレイヤーの場合ここに来る条件に-1の場合はないが
                 // プレイヤーには存在するカットインIDで、フォロワー側には定義がない場合があるため。
@@ -441,7 +444,9 @@ export class DisplayDrawingTexture {
                 }
 
 
-                this.preloadGroup(this.current_next_group);
+                if(this.current_next_group != -1){
+                    this.preloadGroup(this.current_next_group);
+                }
 
                 console.log(`preloadGroup loaded. ${this.current_group} ${this.current_next_group}`);
             }
@@ -461,7 +466,7 @@ export class DisplayDrawingTexture {
 
         // TODO:停止アイコン表示時stopするので、next_group -1はあり得るか(要テスト)
         if (this.cache_type === 1 && this.current_next_group && this.current_group &&
-            this.current_next_group != this.current_group && this.current_next_group != -1
+            this.current_next_group != this.current_group
         ) {
             const group_promise = this.cache.get(this.current_group);
             if (group_promise) {
@@ -472,7 +477,9 @@ export class DisplayDrawingTexture {
                 console.log(`Released group: ${this.current_group}`);
             }
 
-            this.preloadGroup(this.current_next_group);
+            if(this.current_next_group != -1){
+                this.preloadGroup(this.current_next_group);
+            }
         }
 
         // ビットマップの配列を空にするだけで、各bmpのcloseは呼ばない
@@ -502,5 +509,10 @@ function CutinFinished(display_type) {
 
 function OnCutinStartReady(display_type) {
     window.KMCOnCutinStartReady(display_type);
+    addResponse(display_type);
+}
+
+function OnCutinUnavailable(display_type) {
+    window.KMCOnCutinUnavailable(display_type);
     addResponse(display_type);
 }

@@ -1,6 +1,7 @@
 ﻿#include "KMCCutin.h"
 
 #include "KMCConfig.h"
+#include "KMCContextManager.h"
 #include "KMCDisplayWordAndTexture.h"
 #include "KMCEventThread.h"
 #include "KMCExpression.h"
@@ -9,7 +10,6 @@
 #include "KMCSound.h"
 #include "KMCStateManager.h"
 #include "KMCWaitTask.h"
-#include "KMCContextManager.h"
 
 SINGLETONBODY(KMCCT::KMCCutin)
 
@@ -85,14 +85,12 @@ namespace KMCCT {
 
     void KMCCutin::InterruptCutInEventManager(KMCInterruptPushCutInData data) {
         static long long event_cool_time =
-            KMCFindVector(KMCCT::KMCConfig::GetSingleton()->getISetting(), KMCCT::STATE_MANAGER_CONFIG_KEY,
+            KMCFindVector(KMCCT::KMCConfig::GetSingleton()->GetKMCSetting(), KMCCT::STATE_MANAGER_CONFIG_KEY,
                           KMCCT::INTERRUPT_EVENT_COOL_TIME) *
             KMCCT::TIME_SCALE_MS;
         auto *thread = KMCCT::KMCEventThread::GetSingleton();
-        if (!thread->GetForceEndAnim() && !thread->IsShuttingDown() &&
-            thread->GetInitEndFlag() &&
-            !KMCCT::KMCCutin::GetSingleton()->GetAnimNow() &&
-            !KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag()) {
+        if (!thread->GetForceEndAnim() && !thread->IsShuttingDown() && thread->GetInitEndFlag() &&
+            !KMCCT::KMCCutin::GetSingleton()->GetAnimNow() && !KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag()) {
             time_point<Clock> interrupt_time = Clock::now();
             milliseconds diff = duration_cast<milliseconds>(interrupt_time - event_start);
             long long dur = diff.count();
@@ -104,7 +102,7 @@ namespace KMCCT {
             aaaakmcInterruptData = data;
             // LOG("InterruptCutInEventManager interrupt");
 
-            switch (aaaakmcInterruptData.interruptType) {
+            switch (aaaakmcInterruptData.interrupt_type) {
                 case KMCInterruptType::add_item:
                     KMCCT::wrap_InterruptCutInEventManager(InterruptEventAddItem);
                     break;
@@ -192,9 +190,9 @@ namespace KMCCT {
             }
         }
 
-        bool fSpeachFlag = true;
-        RE::Actor *follower = nullptr;
-        std::vector<std::pair<std::string, std::string>> *speakTiming = nullptr;
+        bool can_follower_cutin = true;
+        RE::ActorHandle follower;
+        std::unordered_map<int, std::string> *playback_priority = nullptr;
         KMCCompsFlag pcf;
         KMCCompsFlag fcf;
         std::string precord = "";
@@ -242,33 +240,32 @@ namespace KMCCT {
 
             const auto &fentry = KMCDisplayWordAndTexture::GetSingleton()->GetEntriesDataMap(frand + 1);
             if (fentry.contains(rand)) {
-                if (auto actorPtr = f[target_index].followerHandle.get()) {
-                    follower = actorPtr.get();
-                } else {
-                    fSpeachFlag = false;
+                follower = f[target_index].follower_handle;
+                if (!follower.get()) {
+                    can_follower_cutin = false;
                 }
-                speakTiming = &(f[target_index].ISpeachTiming);
+                playback_priority = &(f[target_index].playback_priority);
                 fcf.Sound = KMCCT::KMCSound::GetSingleton()->IsPlayableSoundEx(rand, frand);
 
                 fcf.SE = KMCCT::KMCSound::GetSingleton()->GetFirstSEIndexEx(rand, frand, &frecord);
 
                 follower_cutin_entry = fentry.at(rand);
             } else {
-                fSpeachFlag = false;
+                can_follower_cutin = false;
             }
 
             if (fcf.IsAllDisable()) {
-                fSpeachFlag = false;
+                can_follower_cutin = false;
             }
 
             if (fentry.contains(next_rand)) {
                 f_next_rand_id = next_rand;
             }
         } else {
-            fSpeachFlag = false;
+            can_follower_cutin = false;
         }
 
-        if (fSpeachFlag) {
+        if (can_follower_cutin) {
             auto *player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
             KMCAnimST st = KMCAnimST();
             st.t = player_cutin_entry;
@@ -280,9 +277,9 @@ namespace KMCCT {
             st.p_next_rand = next_rand;
             st.f_netx_rand = f_next_rand_id;
             st.volum = c_volum;
-            st.ISpeechTiming = speakTiming;
+            st.playback_priority = playback_priority;
             st.speakerp = player;
-            st.speakerf = follower;
+            st.speakerf_handle = follower;
             st.pcf = pcf;
             st.fcf = fcf;
             st.precord = precord;
@@ -293,7 +290,7 @@ namespace KMCCT {
             st.overri_exp_time = val.overri_exp_time;
             st.exp_rand = exp_rand;
             st.player_name = player->GetName();
-            st.follower_name = follower->GetName();
+            st.follower_name = follower.get()->GetName();
 
             PlayDuoCutin(st);
         } else {
@@ -338,11 +335,16 @@ namespace KMCCT {
     }
 
     bool KMCCutin::GetCutinStartReady() { return cutin_start_ready.load(); }
-
     void KMCCutin::SetCutinStartReady(bool set) { cutin_start_ready.store(set); }
+
+    bool KMCCutin::GetCutinUnavailable() { return cutin_unavailable.load(); }
+    void KMCCutin::SetCutinUnavailable(bool set) { cutin_unavailable.store(set); }
 
     bool KMCCutin::GetCutinFinished() { return cutin_finished.load(); }
     void KMCCutin::SetCutinFinished(bool set) { cutin_finished.store(set); }
+
+    bool KMCCutin::GetFollowerCacheDataLoaded() { return follower_cache_data_loaded.load(); }
+    void KMCCutin::SetFollowerCacheDataLoaded(bool set) { follower_cache_data_loaded.store(set); }
 
     int KMCCutin::PeekNextCutInID(std::string aaaakmctype) {
         auto findit = kmc_category_rand_map.find(aaaakmctype);
@@ -361,7 +363,10 @@ namespace KMCCT {
             rand_data.rand_values.insert(rand_data.rand_values.end(), next_loop.begin(), next_loop.end());
             return rand_data.rand_values[rand_data.offset];
         }
-        return -1;
+
+        // ここには一つの要素の場合しかこない
+        rand_data.offset = 0;
+        return rand_data.rand_values[rand_data.offset];
     }
 
     int KMCCutin::GetCutInID(std::string aaaakmctype) {
@@ -399,12 +404,12 @@ namespace KMCCT {
         std::string srnd = std::to_string(r);
         std::string timing = KMCCT::ST_AFTER;
 
-        auto speachTiming = st.ISpeechTiming;
-        if (speachTiming != nullptr) {
-            auto stimingit = std::find_if(speachTiming->begin(), speachTiming->end(),
-                                          [srnd](const auto &p) { return p.first == srnd; });
-            if (stimingit != speachTiming->end()) {
-                timing = stimingit->second;
+        auto playback_priority = st.playback_priority;
+        if (playback_priority != nullptr) {
+            auto it = playback_priority->find(r);
+
+            if (it != playback_priority->end()) {
+                timing = it->second;
             }
         }
         std::map<int, KMCCutinOrder> *animmap = nullptr;
@@ -418,6 +423,33 @@ namespace KMCCT {
         if (animmap == nullptr) {
             KMC_ERROR("not found cutin type");
             return;
+        }
+
+        // キャッシュモードが1のフォロワーがいる場合ここで画像読み込みをさせる
+        int f_ackey = st.frand + 1;
+        int cmode = KMCDisplayWordAndTexture::GetSingleton()->GetCacheModeMap(f_ackey);
+        if (cmode == 1) {
+            SetFollowerCacheDataLoaded(false);
+            KMCPrismaUIBridge::GetSingleton()->KMCPreloadGroup(f_ackey, r);
+
+
+            time_point<Clock> start_time = Clock::now();
+            auto *thread = KMCCT::KMCEventThread::GetSingleton();
+
+            while (!GetFollowerCacheDataLoaded()) {
+                if (thread->GetForceEndAnim() || thread->IsShuttingDown()) return;
+
+                auto now = Clock::now();
+                auto wait_duration = duration_cast<milliseconds>(now - start_time).count();
+
+                if (wait_duration >= READY_TIMEOUT) {
+                    // 30秒経過したら待つのをやめる
+                    KMC_ERROR("Cutin timeout: JS Ready didn't respond. ID: {} Category ID: {}", f_ackey, r);
+                    throw std::runtime_error("[KMCOnCutinStartReady] Cutin response timeout");
+                }
+
+                std::this_thread::sleep_for(milliseconds(SE_PROGRESS_ADDTION_MS));
+            }
         }
 
         auto *thread = KMCCT::KMCEventThread::GetSingleton();
@@ -515,8 +547,7 @@ namespace KMCCT {
         auto *thread = KMCCT::KMCEventThread::GetSingleton();
 
         while (true) {
-            if (thread->GetForceEndAnim() || thread->IsShuttingDown())
-                return;
+            if (thread->GetForceEndAnim() || thread->IsShuttingDown()) return;
 
             if (GetCutinFinished()) {
                 KMC_LOG("Cutin finished by JS notification.");
@@ -526,13 +557,11 @@ namespace KMCCT {
             auto now = Clock::now();
             long long elapsed_limit = duration_cast<milliseconds>(now - anim_start_time).count();
 
-            // タイムアウト保険
             if (elapsed_limit >= anim_data.time + READY_TIMEOUT) {
                 KMC_ERROR("Cutin timeout: JS Finished didn't respond.");
                 throw std::runtime_error("[AnimationLoopWithSE] Cutin response timeout");
             }
 
-            // 負荷軽減のための待機
             std::this_thread::sleep_for(milliseconds(SE_PROGRESS_ADDTION_MS));
 
             play_se_timer += SE_TIMER_INTERVAL_MS;
@@ -542,7 +571,7 @@ namespace KMCCT {
             }
         }
 
-        // 1.0で設定されたSEの場合は再生されない可能性があるため
+        // 1.0で設定されたSEの場合は再生されない可能性があるためここ
         if (se_record != "") {
             KMC_LOG(" time ms {} record {} dur {}", anim_data.time, se_record, play_se_timer);
             KMCCT::KMCSound::GetSingleton()->PlaySEEx(anim_data.rand, anim_data.frand, &se_record, anim_data.volum);
@@ -664,109 +693,115 @@ namespace KMCCT {
 #pragma region function pointer
 
     void KMCPlayAnim(KMCAnimST *st, int &is_player) {
-        //bool isanim = true;
+        // bool isanim = true;
 
-        //if (isanim) {
-            KMCCompsFlag cf;
-            std::string record = "0.0";
-            CutinEntry entry;
+        // if (isanim) {
+        KMCCompsFlag cf;
+        std::string record = "0.0";
+        CutinEntry entry;
 
-            KMCAnimData anim_data;
+        KMCAnimData anim_data;
 
-            if (is_player == 0) {
-                // player
-                anim_data.rand = st->rand;
-                anim_data.next_rand = st->p_next_rand;
-                anim_data.volum = st->volum;
-                anim_data.speaker = st->speakerp;
-                anim_data.frand = -1;
-                anim_data.time = st->time;
-                anim_data.entry = st->t;
-                anim_data.cf = st->pcf;
-                anim_data.record = st->precord;
+        if (is_player == 0) {
+            // player
+            anim_data.rand = st->rand;
+            anim_data.next_rand = st->p_next_rand;
+            anim_data.volum = st->volum;
+            anim_data.speaker = st->speakerp;
+            anim_data.frand = -1;
+            anim_data.time = st->time;
+            anim_data.entry = st->t;
+            anim_data.cf = st->pcf;
+            anim_data.record = st->precord;
+        } else {
+            auto ap = st->speakerf_handle.get();
+            if (ap) {
+                anim_data.speaker = ap.get();
             } else {
-                anim_data.rand = st->rand;
-                anim_data.next_rand = st->f_netx_rand;
-                anim_data.volum = st->volum;
-                anim_data.speaker = st->speakerf;
-                anim_data.frand = st->frand;
-                anim_data.time = st->time;
-                anim_data.entry = st->ft;
-                anim_data.cf = st->fcf;
-                anim_data.record = st->frecord;
+                // カットイン待機中のフォロワーのほうが死んでゲームから除外された場合
+                // 音声はならせないが、カットインだけ継続
+                anim_data.speaker = nullptr;
             }
 
-            // play sound
-            if (anim_data.cf.SE) {
-                KMCCT::KMCCutin::GetSingleton()->AnimationLoopWithSE(anim_data);
-            } else {
-                KMCCT::KMCCutin::GetSingleton()->AnimationLoopSimple(anim_data);
-            }
+            anim_data.rand = st->rand;
+            anim_data.next_rand = st->f_netx_rand;
+            anim_data.volum = st->volum;
+
+            anim_data.frand = st->frand;
+            anim_data.time = st->time;
+            anim_data.entry = st->ft;
+            anim_data.cf = st->fcf;
+            anim_data.record = st->frecord;
+        }
+
+        // play sound
+        if (anim_data.cf.SE) {
+            KMCCT::KMCCutin::GetSingleton()->AnimationLoopWithSE(anim_data);
+        } else {
+            KMCCT::KMCCutin::GetSingleton()->AnimationLoopSimple(anim_data);
+        }
         //} else {
-            // 使うかもしれないので残しとく
-            // アニメーションではない場合
-            //KMCPlay(st, is_player);
+        // 使うかもしれないので残しとく
+        // アニメーションではない場合
+        // KMCPlay(st, is_player);
         //}
     }
 
-    void KMCPlay(KMCAnimST *st, int &is_player) {
-        int r;
-        float volum;
-        RE::TESObjectREFR *target;
-        int frand;
-        long long time;
-        KMCCompsFlag cf;
-        std::string record = "";
-        if (is_player == 0) {
-            // player
-            r = st->rand;
-            volum = st->volum;
-            target = st->speakerp;
-            frand = -1;
-            time = st->time;
-            cf = st->pcf;
-            record = st->precord;
-        } else {
-            r = st->rand;
-            volum = st->volum;
-            target = st->speakerf;
-            frand = st->frand;
-            time = st->time;
-            cf = st->fcf;
-            record = st->frecord;
-        }
+    // void KMCPlay(KMCAnimST *st, int &is_player) {
+    //     int r;
+    //     float volum;
+    //     RE::TESObjectREFR *target;
+    //     int frand;
+    //     long long time;
+    //     KMCCompsFlag cf;
+    //     std::string record = "";
+    //     if (is_player == 0) {
+    //         // player
+    //         r = st->rand;
+    //         volum = st->volum;
+    //         target = st->speakerp;
+    //         frand = -1;
+    //         time = st->time;
+    //         cf = st->pcf;
+    //         record = st->precord;
+    //     } else {
 
-        if (cf.Sound) {
-            KMCCT::KMCSound::GetSingleton()->PlayEx(r, volum, target, frand);
-        }
+    //        r = st->rand;
+    //        volum = st->volum;
+    //        target = st->speakerf;
+    //        frand = st->frand;
+    //        time = st->time;
+    //        cf = st->fcf;
+    //        record = st->frecord;
+    //    }
 
-        if (cf.SE) {
-            KMCCT::KMCCutin::GetSingleton()->PlaySE(time, r, frand, record, volum);
-        } else {
-            KMCTimer(time);
-        }
-    }
+    //    if (cf.Sound) {
+    //        KMCCT::KMCSound::GetSingleton()->PlayEx(r, volum, target, frand);
+    //    }
+
+    //    if (cf.SE) {
+    //        KMCCT::KMCCutin::GetSingleton()->PlaySE(time, r, frand, record, volum);
+    //    } else {
+    //        KMCTimer(time);
+    //    }
+    //}
 
     void KMCOnCutinStartReady(KMCAnimST *st, int &is_player) {
         KMCCutin::GetSingleton()->SetCutinStartReady(false);
         KMCCutin::GetSingleton()->SetCutinFinished(false);
+        KMCCutin::GetSingleton()->SetCutinUnavailable(false);
 
         long long time = 0;
         int id = 0;
 
-        // フォロワー＋プレイヤーのカットインの場合KMCBatchPreloadGroupsでプリロードするんで
-        // プレイヤーのタイミングでプリロードすると重い
         if (is_player == 0) {
-            if (st->frand == -1) {
-                KMCPrismaUIBridge::GetSingleton()->KMCPlayPlayerCutin(st->rand, st->p_next_rand, st->player_name);
-            } else {
-                KMCPrismaUIBridge::GetSingleton()->KMCPlayPlayerCutin(st->rand, -1, st->player_name);
-            }
+            KMCPrismaUIBridge::GetSingleton()->KMCPlayPlayerCutin(st->rand, st->p_next_rand, st->player_name);
 
             time = st->time;
         } else {
             id = st->frand + 1;
-            KMCPrismaUIBridge::GetSingleton()->KMCPlayFollowerCutin(st->frand + 1, st->rand, -1, st->follower_name);
+            KMCPrismaUIBridge::GetSingleton()->KMCPlayFollowerCutin(st->frand + 1, st->rand, st->f_netx_rand,
+                                                                    st->follower_name);
             time = st->ftime;
         }
 
@@ -774,8 +809,7 @@ namespace KMCCT {
         auto *thread = KMCCT::KMCEventThread::GetSingleton();
 
         while (!KMCCutin::GetSingleton()->GetCutinStartReady()) {
-            if (thread->GetForceEndAnim() || thread->IsShuttingDown())
-                return;
+            if (thread->GetForceEndAnim() || thread->IsShuttingDown()) return;
 
             auto now = Clock::now();
             auto wait_duration = duration_cast<milliseconds>(now - start_time).count();
@@ -786,6 +820,11 @@ namespace KMCCT {
                 throw std::runtime_error("[KMCOnCutinStartReady] Cutin response timeout");
             }
 
+            if (KMCCutin::GetSingleton()->GetCutinUnavailable()) {
+                KMC_ERROR("Cutin skipped: JS reported unavailable (no frames). ID: {} Category ID: {}", id, st->rand);
+                throw std::runtime_error("[KMCOnCutinStartReady] Cutin unavailable - possible missing assets");
+            }
+
             std::this_thread::sleep_for(milliseconds(SE_PROGRESS_ADDTION_MS));
         }
     }
@@ -793,6 +832,7 @@ namespace KMCCT {
     void KMCOnCutinEnd(KMCAnimST *st, int &is_player) {
         KMCCutin::GetSingleton()->SetCutinStartReady(false);
         KMCCutin::GetSingleton()->SetCutinFinished(false);
+        KMCCutin::GetSingleton()->SetCutinUnavailable(false);
     }
 
     void KMCOARFuncStart(KMCAnimST *st, int &is_player) {
@@ -826,10 +866,10 @@ namespace KMCCT {
     }
 
     void KMCBatchPreloadGroups(KMCAnimST *st, int &playerorfollower) {
-        if (st->frand != -1) {
-            KMCPrismaUIBridge::GetSingleton()->KMCBatchPreloadGroups((int)KMCDisplayType::PLAYER, st->p_next_rand,
-                                                                     st->frand + 1, st->f_netx_rand);
-        }
+        // if (st->frand != -1) {
+        //     KMCPrismaUIBridge::GetSingleton()->KMCBatchPreloadGroups((int)KMCDisplayType::PLAYER, st->p_next_rand,
+        //                                                              st->frand + 1, st->f_netx_rand);
+        // }
     }
 #pragma endregion
 

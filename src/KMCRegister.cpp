@@ -23,8 +23,9 @@ namespace KMCCT {
         switch (a_msg->type) {
             case SKSE::MessagingInterface::kPostLoad: 
 
+                // この地点ではフォロワーのindex番号は決定しない
                 KMCCT::KMCConfig::GetSingleton()->Setup();
-                KMCCT::KMCDisplayAddon::GetSingleton()->Setup();
+                
 
                 KMCCT::KMCCutinCondition::GetSingleton()->Setup();
                 
@@ -34,7 +35,9 @@ namespace KMCCT {
                 
                 break;
             case SKSE::MessagingInterface::kDataLoaded:
+                // この地点でフォロワーのindexが決定
                 KMCCT::KMCConfig::GetSingleton()->Init();
+                KMCCT::KMCDisplayAddon::GetSingleton()->Init();
 
                 KMCPrismaUIBridge::GetSingleton()->Init();
 

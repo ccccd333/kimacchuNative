@@ -140,8 +140,8 @@ namespace KMCCT {
         RE::NiPoint3 ppos = player->GetPosition();
 
         for (int i = 0; i < followers->size(); i++) {
-            auto actorPtr = (*followers)[i].followerHandle.get();
-            RE::Actor *f = actorPtr.get();
+            auto actor_ptr = (*followers)[i].follower_handle.get();
+            RE::Actor *f = actor_ptr.get();
             if (f != nullptr) {
                 bool checkOK = false;
                 float dist = f->GetPosition().GetDistance(ppos);
@@ -153,11 +153,11 @@ namespace KMCCT {
                 if (checkOK) {
                     // check keyword
                     std::string r = std::to_string(rand);
-                    auto condKeywords = (*followers)[i].IKeywords;
-                    auto fmkeyword = std::find_if(condKeywords.begin(), condKeywords.end(),
-                                                  [r](const auto &p) { return p.first == r; });
-                    if (fmkeyword != condKeywords.end()) {
-                        f->HasKeyword(fmkeyword->second) ? checkOK = true : checkOK = false;
+                    const auto &restrict_keywords_map = (*followers)[i].restrict_keywords_map;
+
+                    auto it = restrict_keywords_map.find(rand);
+                    if (it != restrict_keywords_map.end()) {
+                        f->HasKeyword(it->second) ? checkOK = true : checkOK = false;
                     } else {
                         checkOK = true;
                     }

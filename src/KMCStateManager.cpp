@@ -34,7 +34,7 @@ namespace KMCCT {
 
         //auto lambda_function = [this]() { this->Register(); };
 
-        auto setting = KMCCT::KMCConfig::GetSingleton()->getISetting();
+        auto setting = KMCCT::KMCConfig::GetSingleton()->GetKMCSetting();
 
         limit = KMCFindVector(setting, STATE_MANAGER_CONFIG_KEY, (long long)1) * KMCCT::TIME_SCALE_MS;
         inSceneMS = KMCFindVector(setting, IN_SCENE_CONFIG_KEY, (long long)10) * KMCCT::TIME_SCALE_MS;

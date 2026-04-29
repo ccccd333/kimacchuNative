@@ -39,6 +39,8 @@ namespace KMCCT {
 
     // follower
     const std::string SPEACH_TIMING_FILE_NAME = "SpeachTiming.json";
+    const std::string CONDITIONS_FILE_NAME = "ConditionsAndKeywords.json";
+    const std::string FOLLOWER_BEHAVIORS_FILE_NAME = "FollowerBehaviors.json";
 
     // other
     const int WAIT_WIDGET_SIZE = 30;
@@ -68,9 +70,8 @@ namespace KMCCT {
         void Init();
         
         // common settings
-        std::vector<std::pair<std::string, std::string>>* getISetting() { return &ISetting; }
-        std::vector<std::pair<std::string, std::string>>* getIManagedFollower() { return &IManagedFollower; }    
-
+        std::vector<std::pair<std::string, std::string>>* GetKMCSetting() { return &kmc_setting; }
+       
         std::vector<std::pair<std::string, std::string>>* getIInvisibleTimingSetting() { return &IInvisibleTimingSetting; } 
         std::vector<std::pair<std::string, std::string>>* getIProfileSoundEffect() { return &IProfileSoundEffect; } 
         
@@ -79,7 +80,7 @@ namespace KMCCT {
         RE::PlayerCharacter* GetPlayer() { return player; }
 
         // Follower         
-        std::vector<KMCFollower>* GetFollowers() { return &IFollower; }
+        std::vector<KMCFollower>* GetFollowers() { return &kmc_managed_followers; }
 
         bool IsUnhookEnabled() const { return _unhook_papyrus; }
     private:
@@ -90,26 +91,21 @@ namespace KMCCT {
         bool SetupJsonNestedNodes(std::vector<std::pair<std::string, std::map<std::string, std::string>>>* configs,
                                   std::string jsonFileName,
                                   std::string rootKeyName);
-        std::string ISetup(std::string target, 
-                           std::vector<std::pair<std::string, std::string>>* cond);
+        bool ParseFollowerBehaviors(std::string path, KMCFollower* f);
 
     private:
 
         // common
-        std::vector<std::pair<std::string, std::string>> ISetting;
-        std::vector<std::pair<std::string, std::string>> IManagedFollower;
+        std::vector<std::pair<std::string, std::string>> kmc_setting;
+        std::vector<std::pair<std::string, std::string>> kmc_managed_followers_p;
 
         std::vector<std::pair<std::string, std::string>> IInvisibleTimingSetting;
         std::vector<std::pair<std::string, std::string>> IProfileSoundEffect;
 
-
-        // Player
-        std::vector<std::pair<std::string, std::string>> IConditions;
-
         RE::PlayerCharacter* player;
         
         // follower
-        std::vector<KMCFollower> IFollower;
+        std::vector<KMCFollower> kmc_managed_followers;
 
         bool _unhook_papyrus = true;
 	};

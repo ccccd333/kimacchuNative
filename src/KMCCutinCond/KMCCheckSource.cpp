@@ -31,7 +31,7 @@ namespace KMCCT {
         std::string gv2 = v.at(2);
         boost::algorithm::trim(gv1);
         boost::algorithm::trim(gv2);
-        glob_1 = (RE::TESGlobal *)RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll(gv1, NULL, 16), gv2);
+        glob_1 = RE::TESDataHandler::GetSingleton()->LookupForm<RE::TESGlobal>(std::stoll(gv1, NULL, 16), gv2);
         if (glob_1 == nullptr) {
             KMC_ERROR("ERROR The formula definition is incorrect {}", a);
             return false;
@@ -57,7 +57,8 @@ namespace KMCCT {
         std::string gv2 = v.at(2);
         boost::algorithm::trim(gv1);
         boost::algorithm::trim(gv2);
-        glob_2 = (RE::TESGlobal *)RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll(gv1, NULL, 16), gv2);
+        glob_2 = RE::TESDataHandler::GetSingleton()->LookupForm<RE::TESGlobal>(
+            std::stoll(gv1, NULL, 16), gv2);
         if (glob_2 == nullptr) {
             KMC_ERROR("ERROR The formula definition is incorrect {}", a);
             return false;
@@ -83,7 +84,7 @@ namespace KMCCT {
         std::string av2 = v.at(2);
         boost::algorithm::trim(av1);
         boost::algorithm::trim(av2);
-        p_armo_1 = (RE::TESObjectARMO *)RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll(av1, NULL, 16), av2);
+        p_armo_1 = RE::TESDataHandler::GetSingleton()->LookupForm<RE::TESObjectARMO>(std::stoll(av1, NULL, 16), av2);
         if (p_armo_1 == nullptr) {
             KMC_ERROR("ERROR The formula definition is incorrect {}", a);
             return false;
@@ -110,8 +111,8 @@ namespace KMCCT {
         std::string av2 = v.at(2);
         boost::algorithm::trim(av1);
         boost::algorithm::trim(av2);
-        p_armo_2 =
-            (RE::TESObjectARMO *)RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll(av1, NULL, 16), av2);
+        p_armo_2 = RE::TESDataHandler::GetSingleton()->LookupForm<RE::TESObjectARMO>(
+            std::stoll(av1, NULL, 16), av2);
         if (p_armo_2 == nullptr) {
             KMC_ERROR("ERROR The formula definition is incorrect {}", a);
             return false;

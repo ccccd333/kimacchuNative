@@ -18,7 +18,7 @@ namespace KMCCT {
             if (!value.voice_ref.empty()) {
                 auto spvalue = KMCSplit(value.voice_ref, ',');
                 if (spvalue.size() == 2) {
-                    auto* sd = (RE::BGSSoundDescriptorForm*)RE::TESDataHandler::GetSingleton()->LookupForm(
+                    auto* sd = RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSSoundDescriptorForm>(
                         std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
                     if (!sd) {
                         KMC_ERROR("ERROR Possibly wrong definition of SoundDescriptorForm. key: {} FORM ID: {} {}",
@@ -38,7 +38,7 @@ namespace KMCCT {
                         if (spvalue.size() == 2) {
                             try {
 
-                                auto* sd = (RE::BGSSoundDescriptorForm*)RE::TESDataHandler::GetSingleton()->LookupForm(
+                                auto* sd = RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSSoundDescriptorForm>(
                                     std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
                                 if (sd == nullptr) {
                                     KMC_ERROR(
@@ -97,22 +97,23 @@ namespace KMCCT {
         }
 
         auto* followers = KMCCT::KMCConfig::GetSingleton()->GetFollowers();
-        for (const auto& f : *followers) {
-            const auto follower_addon_set = KMCDisplayAddon::GetSingleton()->GetActorAddons(f.index + 1);
+        if (followers && !followers->empty()) {
+            for (const auto& f : *followers) {
+                const auto follower_addon_set = KMCDisplayAddon::GetSingleton()->GetActorAddons(f.index + 1);
 
-            if (follower_addon_set) {
-                std::vector<std::pair<int, RE::BGSSoundDescriptorForm*>> sd;
-                std::map<int, std::map<std::string, KMCSECond>> sd_se_map;
-                std::vector<std::pair<std::string, size_t>> si;
+                if (follower_addon_set) {
+                    std::vector<std::pair<int, RE::BGSSoundDescriptorForm*>> sd;
+                    std::map<int, std::map<std::string, KMCSECond>> sd_se_map;
+                    std::vector<std::pair<std::string, size_t>> si;
 
-                if (auto actorPtr = f.followerHandle.get()) {
-                    InitLoop(&sd, &sd_se_map, follower_addon_set, player, actorPtr.get());
+                    if (auto actor_ptr = f.follower_handle.get()) {
+                        InitLoop(&sd, &sd_se_map, follower_addon_set, player, actor_ptr.get());
+                    }
+
+                    FSoundDescriptiorMap.push_back(std::make_pair(f.index, KMCFSoundDescription(sd, sd_se_map)));
                 }
-
-                FSoundDescriptiorMap.push_back(std::make_pair(f.index, KMCFSoundDescription(sd, sd_se_map)));
             }
         }
-
 
         // Profile SE
         {
@@ -126,7 +127,7 @@ namespace KMCCT {
                 try {
                     formId = spvalue.at(0);
                     pluginn = spvalue.at(1);
-                    auto* sd = (RE::BGSSoundDescriptorForm*)RE::TESDataHandler::GetSingleton()->LookupForm(
+                    auto* sd = RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSSoundDescriptorForm>(
                         std::stoll(formId, NULL, 16), pluginn);
                     if (sd != nullptr) {
                         ProfileSE.insert(std::make_pair(index, sd));

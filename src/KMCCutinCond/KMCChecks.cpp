@@ -143,7 +143,7 @@ namespace KMCCT {
 
     bool KMCCCTPlayerKill::Init() {
         time_in_kill_count =
-            KMCFindVector(KMCCT::KMCConfig::GetSingleton()->getISetting(), TIME_TO_INCLUDE_IN_KILL_COUNT, 3) *
+            KMCFindVector(KMCCT::KMCConfig::GetSingleton()->GetKMCSetting(), TIME_TO_INCLUDE_IN_KILL_COUNT, 3) *
             KMCCT::TIME_SCALE_MS;
 
         KMCCT::KMCGameEventListener::GetSingleton()->SetCallBack(

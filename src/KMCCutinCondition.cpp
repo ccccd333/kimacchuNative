@@ -97,7 +97,7 @@ namespace KMCCT {
 
                     if (!mnger->disable) {
                         for (int i = 0; i < sp_keyword_formid.size(); i++) {
-                            auto keyword_tmp = (RE::BGSKeyword *)RE::TESDataHandler::GetSingleton()->LookupForm(
+                            auto keyword_tmp = RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(
                                 std::stoll(sp_keyword_formid.at(i), NULL, 16), sp_keyword_plugin_name.at(i));
                             if (keyword_tmp == nullptr) {
                                 mnger->disable = true;

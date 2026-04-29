@@ -20,6 +20,8 @@ namespace KMCCT {
         // cutin
         void KMCDefineCutin(const json &j);
 
+        void KMCPreloadGroup(int id, int group);
+
         void KMCBatchPreloadGroups(int id, int next_group, int f_id, int f_next_group);
 
         void KMCPlayPlayerCutin(int group, int next_group, std::string actor_name);

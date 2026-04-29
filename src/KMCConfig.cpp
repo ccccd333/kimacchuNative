@@ -1,8 +1,11 @@
 ﻿#include "KMCConfig.h"
 
-#include "KMCEventThread.h"
 #include <yaml-cpp/yaml.h>
 
+#include <fstream>
+#include <nlohmann/json.hpp>
+
+#include "KMCEventThread.h"
 
 SINGLETONBODY(KMCCT::KMCConfig)
 
@@ -10,6 +13,7 @@ bool g_enableLog = false;
 
 namespace KMCCT {
     using namespace boost::property_tree;
+    using json = nlohmann::json;
 
     void KMCConfig::Setup() {
         try {
@@ -31,11 +35,9 @@ namespace KMCCT {
         // ここから LOG マクロが有効になる
         KMC_LOG("KMCConfig: Setup started. Logging is {}", g_enableLog ? "enabled" : "disabled");
 
-
         player = RE::PlayerCharacter::GetSingleton();
 
-
-        if (!SetupJsonSimpleNodes(&ISetting, SETTING_FILE_NAME, JSON_ROOT_KEY_STRING)) {
+        if (!SetupJsonSimpleNodes(&kmc_setting, SETTING_FILE_NAME, JSON_ROOT_KEY_STRING)) {
             KMC_ERROR("setting.json json description error.");
         }
 
@@ -49,42 +51,74 @@ namespace KMCCT {
             KMC_ERROR("Profile SoundEffect.json json description error.");
         }
 
-        ISetup(PLAYER_WORD_PATH, &IConditions);
-
-        if (!SetupJsonSimpleNodes(&IManagedFollower, MANAGED_FOLLOWER_FILE_NAME, JSON_ROOT_KEY_STRING)) {
+        if (!SetupJsonSimpleNodes(&kmc_managed_followers_p, MANAGED_FOLLOWER_FILE_NAME, JSON_ROOT_KEY_STRING)) {
             KMC_ERROR("ManagedFollower.json json description error.");
         } else {
             int i = 0;
-            for (auto [key, value] : IManagedFollower) {
+            for (auto [key, value] : kmc_managed_followers_p) {
                 try {
                     std::vector<std::string> fc = KMCSplit(value, ',');
                     std::string fkey = std::to_string(i + 1);
-                    IFollower.push_back(KMCFollower(fc.at(0), fc.at(1)));
+                    kmc_managed_followers.push_back(KMCFollower(fc.at(0), fc.at(1)));
 
-                    KMCFollower *target = &(IFollower[i]);
-                    ISetup(FOLLOWER_WORD_PATH + fkey, &(target->IConditions));
-
-                    if (!SetupJsonSimpleNodes(&(target->ISpeachTiming),
-                                              FOLLOWER_WORD_PATH + fkey + "/" + SPEACH_TIMING_FILE_NAME,
-                                              JSON_ROOT_KEY_STRING)) {
-                        KMC_ERROR("SpeachTiming.json json description error.");
-                    }
+                    KMCFollower *target = &(kmc_managed_followers[i]);
+                    ParseFollowerBehaviors(COMMON_PATH + FOLLOWER_WORD_PATH + fkey + "/" + FOLLOWER_BEHAVIORS_FILE_NAME,
+                                           target);
 
                     ++i;
                 } catch (...) {
-                    KMC_ERROR("ERROR Setup Follower AutoWordWFConfig etc. The number of elements in the value is wrong.");
+                    KMC_ERROR(
+                        "ERROR Setup Follower AutoWordWFConfig etc. The number of elements in the value is wrong.");
                 }
             }
         }
     }
 
-    std::string KMCConfig::ISetup(std::string target,std::vector<std::pair<std::string, std::string>> *cond) {
+    bool KMCConfig::ParseFollowerBehaviors(std::string path, KMCFollower *f) {
+        std::ifstream stream(path);
 
-        //if (!SetupJsonSimpleNodes(cond, target + "/" + CONDITIONS_FILE_NAME, JSON_ROOT_KEY_STRING)) {
-        //    KMC_ERROR("{} ConditionsAndKeywords.json ERROR.", target);
-        //}
+        if (!stream.is_open()) {
+            throw std::runtime_error("Failed open file. Path ==> " + path);
+        }
 
-        return target;
+        if (!json::accept(stream)) {
+            throw std::runtime_error("Incorrect json format. Path ==> " + path);
+        }
+
+        stream.seekg(0, std::ios::beg);
+
+        json j = json::parse(stream);
+
+        try {
+            // 1. restrict_keywords のパース (vector<pair>)
+            if (j.contains("restrict_keywords")) {
+                for (auto &[key, value] : j["restrict_keywords"].items()) {
+                    // key: "181", value: "12B24,SexLab.esm"
+                    f->restrict_keywords.push_back({key, value.get<std::string>()});
+                }
+            }
+
+            if (j.contains("playback_priority")) {
+                for (auto &[key, value] : j["playback_priority"].items()) {
+                    try {
+                        int category_id = std::stoi(key);
+
+                        int p_val = value.is_number() ? value.get<int>() : 0;
+                        if (p_val > 0) {
+                            f->playback_priority[category_id] = KMCCT::ST_BEFORE;
+                        } else {
+                            f->playback_priority[category_id] = KMCCT::ST_AFTER;
+                        }
+                    } catch (const std::exception &e) {
+                        KMC_ERROR("Failed to parse priority key: {} - {}", key, e.what());
+                    }
+                }
+            }
+        } catch (const std::exception &e) {
+            KMC_ERROR("JSON Load Error: {}", e.what());
+        }
+
+        return true;
     }
 
     void KMCConfig::Init() {
@@ -92,37 +126,45 @@ namespace KMCCT {
 
         int i = 0;
         // try {
-        for (; i < IFollower.size(); i++) {
-            KMCFollower *target = &(IFollower[i]);
-            std::string formid = target->formId;
+        for (; i < kmc_managed_followers.size(); i++) {
+            KMCFollower *target = &(kmc_managed_followers[i]);
+            std::string ak_formid = target->formId;
             std::string pluginname = target->pluginName;
-            if (auto form = RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll(formid, NULL, 16), pluginname)) {
-                if (auto actor = form->As<RE::Actor>()) {
-                    IFollower[i].followerHandle = actor->GetHandle();
+            try {
+                if (auto form =
+                        RE::TESDataHandler::GetSingleton()->LookupForm(std::stoll(ak_formid, NULL, 16), pluginname)) {
+                    if (auto actor = form->As<RE::Actor>()) {
+                        kmc_managed_followers[i].follower_handle = actor->GetHandle();
+                    }
                 }
+            } catch (...) {
+                KMC_ERROR("Invalid Follower FormID: {}", ak_formid);
             }
-            IFollower[i].index = i;
-        }
 
-        for (i = 0; i < IFollower.size(); i++) {
-            for (auto [ckey, cvalue] : IFollower[i].IConditions) {
+            for (auto [ckey, cvalue] : kmc_managed_followers[i].restrict_keywords) {
                 try {
+                    int category_id = std::stoi(ckey);
+
                     std::vector<std::string> fcond = KMCSplit(cvalue, ',');
-                    long long formid = std::stoll(fcond.at(0), NULL, 16);
-                    std::string pluginname = fcond.at(1);
+                    long long kw_formid = std::stoll(fcond.at(0), NULL, 16);
+                    std::string kw_pluginname = fcond.at(1);
 
-                    KMC_LOG("formid {} pluginname {}", formid, pluginname);
-
-                    IFollower[i].IKeywords.push_back(std::make_pair(
-                        ckey, (RE::BGSKeyword *)RE::TESDataHandler::GetSingleton()->LookupForm(formid, pluginname)));
+                    KMC_LOG("formid {} pluginname {}", kw_formid, kw_pluginname);
+                    auto keyword_form =
+                        RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(kw_formid, kw_pluginname);
+                    if (keyword_form) {
+                        kmc_managed_followers[i].restrict_keywords_map[category_id] = keyword_form;
+                    } else {
+                        KMC_ERROR("Keyword not found or type mismatch: [Category: {}] [FormID: {}] [Plugin: {}]",
+                                  category_id, kw_formid, pluginname);
+                    }
                 } catch (...) {
                     KMC_ERROR("ERROR Setup ConditionsAndKeywords.json. The number of elements in the value is wrong.");
                 }
             }
+
+            kmc_managed_followers[i].index = i;
         }
-        //} catch (...) {
-        // ERROR("ERROR Setup Follower not found. Specify the FormID of the NPC placed in the world space.");
-        //}
     }
 
     bool KMCConfig::SetupJsonSimpleNodes(std::vector<std::pair<std::string, std::string>> *configs,

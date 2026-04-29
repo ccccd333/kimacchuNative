@@ -63,8 +63,14 @@ namespace KMCCT {
         bool GetCutinStartReady();
         void SetCutinStartReady(bool set);
 
+        bool GetCutinUnavailable();
+        void SetCutinUnavailable(bool set);
+
         bool GetCutinFinished();
         void SetCutinFinished(bool set);
+
+        bool GetFollowerCacheDataLoaded();
+        void SetFollowerCacheDataLoaded(bool set);
 
         void AnimationLoopSimple(const KMCAnimData &anim_data);
         void AnimationLoopWithSE(const KMCAnimData &anim_data);
@@ -103,7 +109,9 @@ namespace KMCCT {
         std::mutex animnow_mtx;
 
         std::atomic<bool> cutin_start_ready{false};
+        std::atomic<bool> cutin_unavailable{false};
         std::atomic<bool> cutin_finished{false};
+        std::atomic<bool> follower_cache_data_loaded{false};
 
         time_point<Clock> event_start = Clock::now();
         float followerDetectRange = 1000.0;

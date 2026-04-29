@@ -157,29 +157,52 @@ window.KMCDefineCutin = async (json) => {
     return "KMCAddCutinPaths loaded id " + id;
 };
 
-window.KMCPreloadGroups = async (json) => {
-    const id = Number(json.display_type);
-    const groups = json.groups;
+window.KMCPreloadGroup = async (json) => {
+    const id = Number(json.id);
+    const group = json.group;
 
     const display = window.KMCDisplayManager.get(id);
-    if (!display) return;
-
-    for (const group of groups) {
-        await display.preloadGroup(group);
+    if (!display) {
+        console.warn(`[Preload] Display ID ${id} not found.`);
+         // 見つからなくても通知して、C++側の待ちを解除する
+        OnCacheLoaded(id);
+        return;
     }
+
+    console.log(`[ID:${id}] Early preloading group: ${group}`);
+    await display.preloadGroup(group);
+
+    OnCacheLoaded(id);
 };
 
-window.KMCBatchPreloadGroups = async (json) => {
-    for (const [id_str, next_group] of Object.entries(json)) {
-        const id = Number(id_str);
-        if (id != -1 && next_group != -1) {
-            const display_instance = window.KMCDisplayManager.get(id);
-            await display_instance.preloadGroup(next_group);
-        } else {
-            console.warn(`[BatchPreload] Display instance or group not found for ID: ${id}`);
-        }
-    }
-};
+function OnCacheLoaded(display_type) {
+    window.OnCacheLoaded(display_type);
+    addResponse(display_type);
+}
+
+// window.KMCPreloadGroups = async (json) => {
+//     const id = Number(json.display_type);
+//     const groups = json.groups;
+
+//     const display = window.KMCDisplayManager.get(id);
+//     if (!display) return;
+
+//     for (const group of groups) {
+//         await display.preloadGroup(group);
+//     }
+// };
+
+// window.KMCBatchPreloadGroups = async (json) => {
+//     for (const [id_str, next_group] of Object.entries(json)) {
+//         const id = Number(id_str);
+//         if (id != -1 && next_group != -1) {
+//             const display_instance = window.KMCDisplayManager.get(id);
+//             await display_instance.preloadGroup(next_group);
+//         } else {
+//             console.warn(`[BatchPreload] Display instance or group not found for ID: ${id}`);
+//         }
+//     }
+// };
 
 window.KMCPlayPlayerCutin = (json) => {
     const group = json.group;
@@ -189,7 +212,7 @@ window.KMCPlayPlayerCutin = (json) => {
 };
 
 window.KMCPlayFollowerCutin = (json) => {
-    const id = json.follower_id;
+    const id = json.id;
     const group = json.group;
     const next_group = json.next_group;
     const actor_name = json.actor_name;

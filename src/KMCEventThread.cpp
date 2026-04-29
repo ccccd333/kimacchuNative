@@ -382,7 +382,7 @@ namespace KMCCT {
 
     // これはゲームロード時に入ってくる
     void KMCEventThread::Init() {
-        auto setting = KMCCT::KMCConfig::GetSingleton()->getISetting();
+        auto setting = KMCCT::KMCConfig::GetSingleton()->GetKMCSetting();
         enable_cutin = KMCFindVector(setting, ENABLE_CUT_IN_SETTING, true);
         enable_profile = KMCFindVector(setting, ENABLE_PROFILE_SETTING, true);
         form = RE::TESDataHandler::GetSingleton()->LookupForm(0x806, "KimachuuCutIn.esp"); 
