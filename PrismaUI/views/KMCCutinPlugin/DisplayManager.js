@@ -157,9 +157,9 @@ window.KMCDefineCutin = async (json) => {
         if (loading_overlay) {
             setTimeout(() => { loading_overlay.style.display = "none"; }, 500);
         }
-    } else if (cache_mode === 1 && json.first_values) {
+    } else if ((cache_mode === 1 || cache_mode === 2) && json.first_values) {
         // 最初のカットイン候補だけプリロード
-        console.log(`[CacheMode 1] Partial Bulk Preload`, json.first_values);
+        console.log(`[CacheMode ${cache_mode}] Partial Bulk Preload`, json.first_values);
         
         await display.bulkPreloadGroupsWithProgress(json.first_values, update_progress);
     }

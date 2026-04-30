@@ -425,10 +425,10 @@ namespace KMCCT {
             return;
         }
 
-        // キャッシュモードが1のフォロワーがいる場合ここで画像読み込みをさせる
+        // キャッシュモードが1か2のフォロワーがいる場合ここで画像読み込みをさせる
         int f_ackey = st.frand + 1;
         int cmode = KMCDisplayWordAndTexture::GetSingleton()->GetCacheModeMap(f_ackey);
-        if (cmode == 1) {
+        if (cmode == 1 || cmode == 2) {
             SetFollowerCacheDataLoaded(false);
             KMCPrismaUIBridge::GetSingleton()->KMCPreloadGroup(f_ackey, r);
 

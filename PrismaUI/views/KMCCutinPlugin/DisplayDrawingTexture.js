@@ -289,6 +289,7 @@ export class DisplayDrawingTexture {
         if (!this.cache) this.cache = new Map();
 
         if (this.cache.has(group)) {
+            console.log(`[PreLoad] mode ${this.cache_type} Group ${group} is already cached. Skipping fetch.`);
             return this.cache.get(group);
         }
 
@@ -486,27 +487,31 @@ export class DisplayDrawingTexture {
                 }
             });
 
-            if (this.cache_type === 1 && this.current_next_group != this.current_group) {
+
+            if (this.current_next_group !== this.current_group) {
+
                 // current_next_groupが-1の場合はフォロワーの場合ではあり得る。
                 // プレイヤーをベースにカットインIDが決定するため、プレイヤーの場合ここに来る条件に-1の場合はないが
                 // プレイヤーには存在するカットインIDで、フォロワー側には定義がない場合があるため。
                 // これはIDで一致するプレイヤー→フォロワーで順番にカットインする仕様によるもの
-
-                const group_promise = this.cache.get(this.current_group);
-                if (group_promise) {
-                    group_promise.then(frames => {
-                        frames.forEach(bmp => bmp.close());
-                    });
-                    this.cache.delete(this.current_group);
-                    console.log(`Released group: ${this.current_group}`);
+                if (this.cache_type === 1) {
+                    const group_promise = this.cache.get(this.current_group);
+                    if (group_promise) {
+                        group_promise.then(frames => {
+                            frames.forEach(bmp => bmp.close());
+                        });
+                        this.cache.delete(this.current_group);
+                        console.log(`[Mode 1] Released group: ${this.current_group}`);
+                    }
+                }
+                else if (this.cache_type === 2) {
+                    console.log(`[Mode 2] Keep cache: ${this.current_group}`);
                 }
 
-
-                if (this.current_next_group != -1) {
+                if ((this.cache_type === 1 || this.cache_type === 2) && this.current_next_group !== -1) {
                     this.preloadGroup(this.current_next_group);
+                    console.log(`[Mode ${this.cache_type}] Preloading next group: ${this.current_next_group}`);
                 }
-
-                console.log(`preloadGroup loaded. ${this.current_group} ${this.current_next_group}`);
             }
 
             this.current_next_group = -1;
@@ -522,20 +527,17 @@ export class DisplayDrawingTexture {
         if (!this.animating) return;
         this.animating = false;
 
-        // TODO:停止アイコン表示時stopするので、next_group -1はあり得るか(要テスト)
-        if (this.cache_type === 1 && this.current_next_group && this.current_group &&
-            this.current_next_group != this.current_group
-        ) {
-            const group_promise = this.cache.get(this.current_group);
-            if (group_promise) {
-                group_promise.then(frames => {
-                    frames.forEach(bmp => bmp.close());
-                });
-                this.cache.delete(this.current_group);
-                console.log(`Released group: ${this.current_group}`);
+
+        if (this.current_next_group !== this.current_group) {
+            if (this.cache_type === 1) {
+                const group_promise = this.cache.get(this.current_group);
+                if (group_promise) {
+                    group_promise.then(frames => frames.forEach(bmp => bmp.close()));
+                    this.cache.delete(this.current_group);
+                }
             }
 
-            if (this.current_next_group != -1) {
+            if ((this.cache_type === 1 || this.cache_type === 2) && this.current_next_group !== -1) {
                 this.preloadGroup(this.current_next_group);
             }
         }
