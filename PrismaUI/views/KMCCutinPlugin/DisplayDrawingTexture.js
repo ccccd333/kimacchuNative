@@ -178,12 +178,6 @@ export class DisplayDrawingTexture {
 
             dummy_bmp.close();
 
-            const lines = word.split('\n');
-            const line_widths = lines.map(line => this.ctxs.word.measureText(line).width);
-            const max_line_width = Math.max(...line_widths);
-            cutin.word_lines = lines;
-            cutin.word_start_x = (this.canvases.word.width - max_line_width) / 2;
-            cutin.word_total_height = lines.length * cutin.word_line_height;
 
         }
     }
@@ -349,6 +343,20 @@ export class DisplayDrawingTexture {
             return;
         }
         const cutin = this.cutin_map.get(group);
+        if (!cutin.word_layout_initialized) {
+            const ctx = this.ctxs.word;
+            ctx.font = cutin.word_font_spec;
+
+            const lines = cutin.word.split('\n');
+            const line_widths = lines.map(line => ctx.measureText(line).width);
+            const max_line_width = Math.max(...line_widths);
+
+            cutin.word_lines = lines;
+            cutin.word_start_x = (this.canvases.word.width - max_line_width) / 2;
+            cutin.word_total_height = lines.length * cutin.word_line_height;
+
+            cutin.word_layout_initialized = true;
+        }
 
         this.bitmaps = frames;
         this.frame = 0;
@@ -433,7 +441,7 @@ export class DisplayDrawingTexture {
                 ctx.shadowBlur = 4;
 
                 ctx.textAlign = "left";
-                
+
                 let y = (this.canvases.word.height - this.word_total_height) / 2 + (this.word_line_height / 1.5);
 
                 for (const line of this.word_lines) {

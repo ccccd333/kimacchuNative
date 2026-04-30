@@ -82,9 +82,18 @@
                 "1": {
                     texture_range: { start: 1, end: 9 },
                     display_time: 30.0,
-                    word:"町には近づきたくない\n目立つからだ",
+                    word:"宿か寝るところを探さないと・・・\n目立つからだ",
 
-                    "text_size": 20,
+                    "text_size": 16,
+                    "text_bold": true,
+                    "text_color": "pink",
+                    "text_shadow": "black"
+                },"2": {
+                    texture_range: { start: 1, end: 9 },
+                    display_time: 30.0,
+                    word:"宿か寝るところを探さないと・・・\n目立つからだ",
+
+                    "text_size": 16,
                     "text_bold": true,
                     "text_color": "pink",
                     "text_shadow": "black"
@@ -120,7 +129,7 @@
         }, 1000);
 
         setTimeout(() => {
-            KMCPlayPlayerCutin({group:1,next_group:1,actor_name:"Test"});
+            KMCPlayPlayerCutin({group:2,next_group:1,actor_name:"Test"});
         }, 500);
 
         setTimeout(() => {

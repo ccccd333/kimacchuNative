@@ -22,6 +22,8 @@ export class CutinData {
 
         this.word_line_height = 24;
 
+        this.word_layout_initialized = false;
+
         this.word_lines = [];
         this.word_start_x = 0;
         this.word_total_height = 0;
