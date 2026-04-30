@@ -106,7 +106,17 @@ window.KMCDefineCutin = async (json) => {
             duration: entry.display_time || 5.0,
             bg_path: background_path || null,
             actor_name: json.actor_name || "",
-            word: entry.word || ""
+            word: entry.word || "",
+        
+            font: json.font || "sans-serif",
+            actor_size: json.name_size || 20,
+            actor_bold: json.name_bold ?? true,
+            actor_fill: json.name_color || "white",
+            actor_shadow: json.name_shadow || "black",
+            word_size: entry.text_size || 18,
+            word_bold: entry.text_bold ?? false,
+            word_fill: entry.text_color || "white",
+            word_shadow: entry.text_shadow || "black"
         });
     });
 

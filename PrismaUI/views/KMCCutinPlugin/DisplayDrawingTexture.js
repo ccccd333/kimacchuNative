@@ -50,6 +50,18 @@ export class DisplayDrawingTexture {
         this.bg_path = "";
         this.bg_bitmap = null;
         this.bg_loading = false;
+        // anim中のフォント設定
+        this.actor_font_spec = "";
+        this.actor_fill_color = "";
+        this.actor_shadow_color = "";
+
+        this.word_font_spec = "";
+        this.word_fill_color = "";
+        this.word_shadow_color = "";
+
+        this.word_line_height = 24;
+
+        this.font = "sans-serif";
     }
 
     setCacheType(chache_type) {
@@ -65,11 +77,15 @@ export class DisplayDrawingTexture {
             duration = 5.0,
             bg_path = null,
             actor_name = "",
-            word = ""
+            word = "",
+            font,
+            actor_size, actor_bold, actor_fill, actor_shadow,
+            word_size, word_bold, word_fill, word_shadow,
         } = config;
 
         this.display_type = id;
         this.actor_name = actor_name;
+        this.font = font;
         if (!this.cutin_map.has(group)) {
             this.cutin_map.set(group, new CutinData());
         }
@@ -86,6 +102,18 @@ export class DisplayDrawingTexture {
         cutin.word = word;
 
         cutin.display_time = duration;
+
+        const boldStr = (isBold) => isBold ? "bold" : "";
+
+        cutin.actor_font_spec = `${boldStr(actor_bold)} ${actor_size}px ${this.font}`.trim();
+        cutin.actor_fill_color = actor_fill;
+        cutin.actor_shadow_color = actor_shadow;
+
+        cutin.word_font_spec = `${boldStr(word_bold)} ${word_size}px ${this.font}`.trim();
+        cutin.word_fill_color = word_fill;
+        cutin.word_shadow_color = word_shadow;
+
+        cutin.word_line_height = word_size + 4;
 
 
         let total = 0;
@@ -125,17 +153,17 @@ export class DisplayDrawingTexture {
 
 
             const ctx = this.ctxs.name;
-            ctx.fillStyle = "white";
-            ctx.font = "bold 22px sans-serif";
-            ctx.shadowColor = "black";
+            ctx.fillStyle = cutin.actor_fill_color;
+            ctx.font = cutin.actor_font_spec;
+            ctx.shadowColor = cutin.actor_shadow_color;
             ctx.shadowBlur = 4;
             ctx.fillText(this.actor_name, 10, 30);
 
 
             const ctx2 = this.ctxs.word;
-            ctx2.fillStyle = "white";
-            ctx2.font = "18px sans-serif";
-            ctx2.shadowColor = "black";
+            ctx2.fillStyle = cutin.word_fill_color;
+            ctx2.font = cutin.word_font_spec;
+            ctx2.shadowColor = cutin.word_shadow_color;
             ctx2.shadowBlur = 4;
             ctx2.fillText("", 10, 30);
 
@@ -244,15 +272,15 @@ export class DisplayDrawingTexture {
             });
 
             const groupPromise = Promise.all(loadPromises);
-            
+
             this.cache.set(group, groupPromise);
             allTasks.push(groupPromise);
         }
 
         console.info(`[Bulk Preload] Simultaneous launch for ${allTasks.length} groups.`);
-        
+
         await Promise.all(allTasks);
-        
+
         console.info(`[Bulk Preload] All images are now in memory.`);
     }
 
@@ -308,7 +336,7 @@ export class DisplayDrawingTexture {
         }
 
         const frames = await this.preloadGroup(group);
-        
+
         if (!frames || frames.length === 0) {
             OnCutinUnavailable(this.display_type);
             return;
@@ -326,6 +354,16 @@ export class DisplayDrawingTexture {
         this.cutin_word = cutin?.word ?? "";
         this.actor_name = actor_name;
 
+        this.actor_font_spec = cutin.actor_font_spec;
+        this.actor_fill_color = cutin.actor_fill_color;
+        this.actor_shadow_color = cutin.actor_shadow_color;
+
+        this.word_font_spec = cutin.word_font_spec;
+        this.word_fill_color = cutin.word_fill_color;
+        this.word_shadow_color = cutin.word_shadow_color;
+
+        this.word_line_height = cutin.word_line_height;
+
 
         // CPUレンダリングなのでフェードとかスンナとのことなのでスライドアニメーション
         const unit_container = this.canvases.cutin.parentElement;
@@ -340,10 +378,6 @@ export class DisplayDrawingTexture {
             if (canvas) canvas.style.display = "block";
         });
 
-        //if (this.cache_type == 1 && next_group) {
-        //    this.preloadGroup(next_group);
-        //}
-
         requestAnimationFrame(this.animate);
 
         // カットインできたよ通知
@@ -357,17 +391,56 @@ export class DisplayDrawingTexture {
         requestAnimationFrame(this.animate);
 
         if (this.start_time === null) {
+            // 初回時のみ描画するもの
+            if (this.bg_bitmap && this.ctxs.bg) {
+                //this.ctxs.bg.clearRect(0, 0, this.canvases.bg.width, this.canvases.bg.height);
+                DrawUtility.drawImageFit(this.ctxs.bg, this.bg_bitmap, this.canvases.bg, "center");
+            }
+
+            if (this.ctxs.name) {
+                const ctx = this.ctxs.name;
+                const canvas = this.canvases.name;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.font = this.actor_font_spec;
+                ctx.fillStyle = this.actor_fill_color;
+                ctx.shadowColor = this.actor_shadow_color;
+                ctx.shadowBlur = 4;
+
+                ctx.textAlign = "center";
+
+                ctx.fillText(this.actor_name, canvas.width / 2, 35);
+            }
+
+            if (this.ctxs.word) {
+                const ctx = this.ctxs.word;
+                ctx.clearRect(0, 0, this.canvases.word.width, this.canvases.word.height);
+
+                ctx.font = this.word_font_spec; // エントリーごとの設定を適用
+                ctx.fillStyle = this.word_fill_color;
+                ctx.shadowColor = this.word_shadow_color;
+                ctx.shadowBlur = 4;
+
+                ctx.textAlign = "center";
+
+                const lines = this.cutin_word.split('\n');
+
+                const totalHeight = lines.length * this.word_line_height;
+                let y = (this.canvases.word.height - totalHeight) / 2 + (this.word_line_height / 1.5);
+
+                for (const line of lines) {
+                    ctx.fillText(line, this.canvases.word.width / 2, y);
+                    y += this.word_line_height;
+                }
+            }
+
             this.start_time = time;
         }
 
         if (time - this.last_time < this.interval) return;
         this.last_time = time;
 
-        if (this.bg_bitmap && this.ctxs.bg) {
-            //this.ctxs.bg.clearRect(0, 0, this.canvases.bg.width, this.canvases.bg.height);
-            DrawUtility.drawImageFit(this.ctxs.bg, this.bg_bitmap, this.canvases.bg, "center");
-        }
-
+        // インターバル毎に描画するもの
         const ctx_cutin = this.ctxs.cutin;
         const canvas_cutin = this.canvases.cutin;
 
@@ -377,37 +450,6 @@ export class DisplayDrawingTexture {
             const bmp = this.bitmaps[this.frame];
             if (bmp) {
                 DrawUtility.drawImageFit(ctx_cutin, bmp, canvas_cutin, "center");
-            }
-        }
-
-        if (this.ctxs.name) {
-            const ctx = this.ctxs.name;
-            ctx.clearRect(0, 0, this.canvases.name.width, this.canvases.name.height);
-            ctx.fillStyle = "white";
-            ctx.font = "bold 22px sans-serif";
-            ctx.shadowColor = "black";
-            ctx.shadowBlur = 4;
-            ctx.fillText(this.actor_name, 10, 30);
-        }
-
-        if (this.ctxs.word) {
-            const ctx = this.ctxs.word;
-            const canvas = this.canvases.word;
-
-            ctx.fillStyle = "white";
-            ctx.font = "18px sans-serif";
-            ctx.shadowColor = "black";
-            ctx.shadowBlur = 4;
-
-            const x = 10;
-            let y = 30;
-            const lineHeight = 24;
-
-            const lines = this.cutin_word.split('\n');
-
-            for (const line of lines) {
-                ctx.fillText(line, x, y);
-                y += lineHeight;
             }
         }
 
@@ -444,7 +486,7 @@ export class DisplayDrawingTexture {
                 }
 
 
-                if(this.current_next_group != -1){
+                if (this.current_next_group != -1) {
                     this.preloadGroup(this.current_next_group);
                 }
 
@@ -461,7 +503,7 @@ export class DisplayDrawingTexture {
 
     stopAll() {
         // ゲームロード時
-        if(!this.animating) return;
+        if (!this.animating) return;
         this.animating = false;
 
         // TODO:停止アイコン表示時stopするので、next_group -1はあり得るか(要テスト)
@@ -477,7 +519,7 @@ export class DisplayDrawingTexture {
                 console.log(`Released group: ${this.current_group}`);
             }
 
-            if(this.current_next_group != -1){
+            if (this.current_next_group != -1) {
                 this.preloadGroup(this.current_next_group);
             }
         }

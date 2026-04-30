@@ -69,13 +69,25 @@
         const playerJson = {
             base_path: "textures/player/cutin/",
             bg_path: "textures/bg.png",
+            cache_mode:0,
             display_type: 0,
-            actor_name:"Hina",
+            actor_name:"Test",
+            "name_size": 30,
+            "name_bold": true,
+            "name_color": "black",
+            "name_shadow": "pink",
+            "font":"cursive",
+
             entries: {
                 "1": {
                     texture_range: { start: 1, end: 9 },
                     display_time: 30.0,
-                    word:"aaaaaaaaaaaaaaaaa\naaaaaaaaaaaaaaa\naaaaaaaaaaaaaaaaa"
+                    word:"ストレッチきもちー",
+
+                    "text_size": 20,
+                    "text_bold": true,
+                    "text_color": "pink",
+                    "text_shadow": "black"
                 }
             }
         };
@@ -83,7 +95,9 @@
         const followerJson = {
             base_path: "textures/follower/cutin/",
             bg_path: "textures/bg.png",
+            cache_mode:0,
             display_type: 1,
+            actor_name:"Test",
             entries: {
                 "1": {
                     texture_range: { start: 1, end: 1 },
@@ -106,13 +120,13 @@
         }, 1000);
 
         setTimeout(() => {
-            KMCPlayPlayerCutin({group:1,next_group:1});
+            KMCPlayPlayerCutin({group:1,next_group:1,actor_name:"Test"});
         }, 500);
 
         setTimeout(() => {
             KMCPlayFollowerCutin({
-                follower_id: 1,
-                group: 1,next_group:1
+                id: 1,
+                group: 1,next_group:1,actor_name:"aaa"
             });
         }, 1500);
 
