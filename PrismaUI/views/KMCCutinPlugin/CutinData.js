@@ -12,7 +12,7 @@ export class CutinData {
         this.word = "";
 
         // "bold 20px sans-serif"
-        this.actor_font_spec = ""; 
+        this.actor_font_spec = "";
         this.actor_fill_color = "white";
         this.actor_shadow_color = "black";
 
@@ -21,5 +21,9 @@ export class CutinData {
         this.word_shadow_color = "black";
 
         this.word_line_height = 24;
+
+        this.word_lines = [];
+        this.word_start_x = 0;
+        this.word_total_height = 0;
     }
 }

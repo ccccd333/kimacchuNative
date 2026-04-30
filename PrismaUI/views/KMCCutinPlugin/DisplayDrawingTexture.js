@@ -178,6 +178,13 @@ export class DisplayDrawingTexture {
 
             dummy_bmp.close();
 
+            const lines = word.split('\n');
+            const line_widths = lines.map(line => this.ctxs.word.measureText(line).width);
+            const max_line_width = Math.max(...line_widths);
+            cutin.word_lines = lines;
+            cutin.word_start_x = (this.canvases.word.width - max_line_width) / 2;
+            cutin.word_total_height = lines.length * cutin.word_line_height;
+
         }
     }
 
@@ -362,6 +369,10 @@ export class DisplayDrawingTexture {
         this.word_fill_color = cutin.word_fill_color;
         this.word_shadow_color = cutin.word_shadow_color;
 
+
+        this.word_lines = cutin.word_lines;
+        this.word_start_x = cutin.word_start_x;
+        this.word_total_height = cutin.word_total_height;
         this.word_line_height = cutin.word_line_height;
 
 
@@ -421,15 +432,12 @@ export class DisplayDrawingTexture {
                 ctx.shadowColor = this.word_shadow_color;
                 ctx.shadowBlur = 4;
 
-                ctx.textAlign = "center";
+                ctx.textAlign = "left";
+                
+                let y = (this.canvases.word.height - this.word_total_height) / 2 + (this.word_line_height / 1.5);
 
-                const lines = this.cutin_word.split('\n');
-
-                const totalHeight = lines.length * this.word_line_height;
-                let y = (this.canvases.word.height - totalHeight) / 2 + (this.word_line_height / 1.5);
-
-                for (const line of lines) {
-                    ctx.fillText(line, this.canvases.word.width / 2, y);
+                for (const line of this.word_lines) {
+                    ctx.fillText(line, this.word_start_x, y);
                     y += this.word_line_height;
                 }
             }
