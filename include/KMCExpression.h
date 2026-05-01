@@ -22,6 +22,7 @@ namespace KMCCT {
         const int EXP_TIMER_LOOP = 500;
 
         void Setup();
+        void Prepare();
         void Init();
         void Reset() { 
             papyrus_end_exp = false;

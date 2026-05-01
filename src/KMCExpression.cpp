@@ -110,6 +110,16 @@ namespace KMCCT {
     }
 
     void KMCExpression::Setup() {
+        papyrus_end_exp = false;
+        exp_loop_now = false;
+        f_papyrus_end_exp = false;
+        f_exp_loop_now = false;
+        force_exp_loop = false;
+        force_cool_time = 0.0f;
+        force_exp_time = 0.0f;
+    }
+
+    void KMCExpression::Prepare() {
         // player
         InitLoop((int)KMCDisplayType::PLAYER, player_mfg);
 
@@ -125,14 +135,6 @@ namespace KMCCT {
             kmc_fe_category_range_map[category] = static_cast<int>(indices.size());
             kmc_fe_category_index_final_map[category] = std::vector<int>(indices.begin(), indices.end());
         }
-
-        papyrus_end_exp = false;
-        exp_loop_now = false;
-        f_papyrus_end_exp = false;
-        f_exp_loop_now = false;
-        force_exp_loop = false;
-        force_cool_time = 0.0f;
-        force_exp_time = 0.0f;
     }
 
     void KMCExpression::Init() { 

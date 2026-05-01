@@ -38,6 +38,7 @@ namespace KMCCT {
                 // この地点でフォロワーのindexが決定
                 KMCCT::KMCConfig::GetSingleton()->Init();
                 KMCCT::KMCDisplayAddon::GetSingleton()->Init();
+                KMCCT::KMCExpression::GetSingleton()->Prepare();
 
                 KMCPrismaUIBridge::GetSingleton()->Init();
 
