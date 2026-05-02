@@ -27,9 +27,9 @@ namespace KMCCT {
                             KMC_ERROR("[DisplayAddons.json] [OAR] [Player] GlobalForm not found. Key: {}", key);
                         }
                     } else {
-                        KMC_ERROR(
-                            "[DisplayAddons.json] [OAR] [Player] Invalid oar_ref format (expected FormID,Plugin). Key: "
-                            "{}, Value: {}",
+                        KMC_WARN(
+                            "[DisplayAddons.json] [OAR] [Player] 'expression' is empty. Is this intentional? "
+                            "Key: {}, Value: {}",
                             key, value.oar_ref);
                     }
                 } catch (...) {
