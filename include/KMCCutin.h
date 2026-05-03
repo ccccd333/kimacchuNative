@@ -1,7 +1,12 @@
-#pragma once
+﻿#pragma once
 #include "KMCUtility.h"
 
 namespace KMCCT {
+    const long long READY_TIMEOUT = 30000;
+
+    const long long SE_PROGRESS_ADDTION_MS = 100;
+    const long long SE_TIMER_INTERVAL_MS = SE_PROGRESS_ADDTION_MS;
+
     struct KMCCutinValues {
     public:
         KMCCutinValues() {}
@@ -34,148 +39,87 @@ namespace KMCCT {
         bool overri_fc_exp = false;
     };
 
-    void WidgetVisible(KMCAnimST *st, int &playerorfollower);
-    void WidgetInVisible(KMCAnimST *st, int &playerorfollower);
-    void AnimWidgetVisible(KMCAnimST *st, int &playerorfollower);
-    void AnimWidgetInVisible(KMCAnimST *st, int &playerorfollower);
-    void TextVisible(KMCAnimST *st, int &playerorfollower);
-    void TextInVisible(KMCAnimST *st, int &playerorfollower);
     void KMCPlayAnim(KMCAnimST *st, int &playerorfollower);
     void KMCPlay(KMCAnimST *st, int &playerorfollower);
-    void KMCNamePlateStartAnim(KMCAnimST *st, int &playerorfollower);
-    void KMCNamePlateEndAnim(KMCAnimST *st, int &playerorfollower);
+    void KMCOnCutinStartReady(KMCAnimST *st, int &playerorfollower);
+    void KMCOnCutinEnd(KMCAnimST *st, int &playerorfollower);
     void KMCOARFuncStart(KMCAnimST *st, int &playerorfollower);
     void KMCExpFuncStart(KMCAnimST *st, int &playerorfollower);
-
-    void KMCMoveWidgetWaitTask(KMCWaitTaskParam st);
+    void KMCBatchPreloadGroups(KMCAnimST *st, int &playerorfollower);
 
     class KMCCutin {
         SINGLETONHEADER(KMCCutin)
     public:
-        ~KMCCutin();
-        void InitCutin(std::string skyroot, std::vector<float> *floatArray);
+        void InitCutin();
 
         void InterruptCutInEventManager(KMCInterruptPushCutInData data);
-
-        int WaitLoad(int *wid, uint64_t *rand, std::string *root,
-                     std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> **loadedWedget);
-        int WaitMultLoad(int *wid, uint64_t *rand, std::string *root, int *index,
-                         std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> **loadedWedget);
-        int WaitLoadText(int *wid, uint64_t *rand, std::string *root,
-                         std::vector<std::pair<uint64_t, int>> **loadedText);
-        int WaitLoadNamePlate(int *wid);
-
-        void OutputLoop();
 
         int CondCutIn(KMCCutinValues val);
         int IterCutIn(KMCCutinValues val);
 
         bool GetAnimNow();
         void SetAnimNow(bool set);
-        void AnimationLoop(long long time, KMCLoadedWidgetData it);
-        void AnimationLoop(long long time, KMCLoadedWidgetData it, std::string trackid, int frand, std::string record,
-                           float volume);
-        void PlaySE(long long time, std::string trackid, int frand, std::string record, float volume);
+
+        bool GetCutinStartReady();
+        void SetCutinStartReady(bool set);
+
+        bool GetCutinUnavailable();
+        void SetCutinUnavailable(bool set);
+
+        bool GetCutinFinished();
+        void SetCutinFinished(bool set);
+
+        bool GetFollowerCacheDataLoaded();
+        void SetFollowerCacheDataLoaded(bool set);
+
+        void AnimationLoopSimple(const KMCAnimData &anim_data);
+        void AnimationLoopWithSE(const KMCAnimData &anim_data);
+        void PlaySE(long long time, int trackid, int frand, std::string record, float volume);
         void MCMSettingChange(std::vector<float> *floatArray);
 
-        bool ExistCategory(std::string t) { return aaaakmcCategoryRandMap.contains(t); }
+        bool ExistCategory(std::string t) { return kmc_category_rand_map.contains(t); }
+        const std::vector<int> &GetCategoryFirstValues() const { return kmc_category_first_values; }
+
+        void CategoryRandomizer();
 
         void Reset() {
-            ResetLoadedWedget();
-            ResetLoadedText();
-            ResetFLoadedWT();
-            ResetFNamePlate();
             PlayerNamePlate.LoadedText = 0;
             PlayerNamePlate.LoadedWidget = 0;
-            ResetIDsConfigs();
-            OutputContainer.clear();
+            cutin_start_ready.store(false);
+            cutin_finished.store(false);
         }
 
-        void ResetLoadedWedget() { LoadedWedget.clear(); }
-        void ResetLoadedText() { LoadedText.clear(); }
-        void ResetFLoadedWT() {
-            for (int i = 0; i < FLoadedWT.size(); i++) {
-                FLoadedWT[i].second.ResetLW();
-            }
-            FLoadedWT.clear();
-        }
-        void ResetFNamePlate() { FNamePlate.clear(); }
-        void ResetIDsConfigs() {
-            LoadedTIDsConfigs.clear();
-            FLoadedTIDsConfigs.clear();
-            LoadedWIDsConfigs.clear();
-            FLoadedWIDsConfigs.clear();
-            LoadedNTIDsConfigs.clear();
-            LoadedNWIDsConfigs.clear();
-            FLoadedNTIDsConfigs.clear();
-            FLoadedNWIDsConfigs.clear();
-        }
 
-        std::unordered_map<int, KMCLoadedWidgetData> *GetLoadedWedget() { return &LoadedWedget; }
-        std::unordered_map<int, KMCLoadedWidgetData> *GetLoadedText() { return &LoadedText; }
-        std::unordered_map<int, KMCDispConfigs> *GetLoadedTIDsConfigs() { return &LoadedTIDsConfigs; }
-        std::unordered_map<int, KMCDispConfigs> *GetLoadedWIDsConfigs() { return &LoadedWIDsConfigs; }
-
-        std::unordered_map<int, KMCDispConfigs> *GetLoadedNTIDsConfigs() { return &LoadedNTIDsConfigs; }
-        std::unordered_map<int, KMCDispConfigs> *GetLoadedNWIDsConfigs() { return &LoadedNWIDsConfigs; }
 
         KMCNPLoadedWidget *GetPlayerNamePlate() { return &PlayerNamePlate; }
 
-        std::vector<std::pair<std::string, KMCFLoadedWidget>> *GetFLoadedWT() { return &FLoadedWT; }
-        std::vector<KMCNPLoadedWidget> *GetFNamePlate() { return &FNamePlate; };
-        std::unordered_map<int, KMCDispConfigs> *GetFLoadedTIDsConfigs() { return &FLoadedTIDsConfigs; }
-        std::unordered_map<int, KMCDispConfigs> *GetFLoadedWIDsConfigs() { return &FLoadedWIDsConfigs; }
-
-        std::unordered_map<int, KMCDispConfigs> *GetFLoadedNTIDsConfigs() { return &FLoadedNTIDsConfigs; }
-        std::unordered_map<int, KMCDispConfigs> *GetFLoadedNWIDsConfigs() { return &FLoadedNWIDsConfigs; }
 
     private:
         int CutIn(KMCCutinValues val);
-        void InitNamePlate();
-        void InitLoop(std::vector<std::pair<std::string, std::string>> *ar,
-                      std::vector<std::pair<std::string, std::string>> *awwf,
-                      std::vector<std::pair<std::string, std::string>> *aw,
-                      std::unordered_map<int, KMCLoadedWidgetData> *loadedWedget,
-                      std::unordered_map<int, KMCLoadedWidgetData> *loadedText,
-                      std::unordered_map<int, KMCDispConfigs> *loadedTIDsConfigs,
-                      std::unordered_map<int, KMCDispConfigs> *loadedWIDsConfigs, int offset_tx, int offset_ty,
-                      int offset_wx, int offset_wy, WidgetType widget, WidgetType text_widget,
-                      const std::string *target);
-        void WidgetInitEnd(int rand, std::unordered_map<int, KMCLoadedWidgetData> *LWidget,
-                           std::unordered_map<int, KMCLoadedWidgetData> *LText,
-                           std::unordered_map<int, KMCDispConfigs> *LWConfig,
-                           std::unordered_map<int, KMCDispConfigs> *LTConfig);
         int GetCutInID(std::string aaaakmctype);
-        void CategoryRandomizer();
-        void DispPFWidget(KMCAnimST st);
-        void DispPWidget(KMCAnimST st);
+        int PeekNextCutInID(std::string aaaakmctype);
+        void RefreshRandValues(size_t size, int min, int max, const std::vector<int> *random_indices,
+                                         std::vector<int> &out_values);
+        
+        void PlayDuoCutin(KMCAnimST st);
+        void PlaySoloCutin(KMCAnimST st);
 
     private:
         bool animnow = false;
         std::mutex animnow_mtx;
-        std::mutex output_mtx;
+
+        std::atomic<bool> cutin_start_ready{false};
+        std::atomic<bool> cutin_unavailable{false};
+        std::atomic<bool> cutin_finished{false};
+        std::atomic<bool> follower_cache_data_loaded{false};
+
         time_point<Clock> event_start = Clock::now();
         float followerDetectRange = 1000.0;
-        std::unordered_map<std::string, KMCRandomData> aaaakmcCategoryRandMap;
-
+        std::unordered_map<std::string, KMCRandomData> kmc_category_rand_map;
+        std::vector<int> kmc_category_first_values;
         // player
-        std::unordered_map<int, KMCLoadedWidgetData> LoadedWedget;
-        std::unordered_map<int, KMCLoadedWidgetData> LoadedText;
-        std::unordered_map<int, KMCDispConfigs> LoadedTIDsConfigs;
-        std::unordered_map<int, KMCDispConfigs> LoadedWIDsConfigs;
-        std::unordered_map<int, KMCDispConfigs> LoadedNTIDsConfigs;
-        std::unordered_map<int, KMCDispConfigs> LoadedNWIDsConfigs;
-
         KMCNPLoadedWidget PlayerNamePlate;
 
         // follower
-        std::vector<std::pair<std::string, KMCFLoadedWidget>> FLoadedWT;
-        std::vector<KMCNPLoadedWidget> FNamePlate;
-        std::unordered_map<int, KMCDispConfigs> FLoadedTIDsConfigs;
-        std::unordered_map<int, KMCDispConfigs> FLoadedWIDsConfigs;
-        std::unordered_map<int, KMCDispConfigs> FLoadedNTIDsConfigs;
-        std::unordered_map<int, KMCDispConfigs> FLoadedNWIDsConfigs;
-
-        std::unordered_map<int, KMCOutputContainer> OutputContainer;
     };
 }

@@ -1,5 +1,4 @@
-#pragma once
-#include <IWWFunctions.h>
+﻿#pragma once
 #include "KMCConfig.h"
 #include "KMCUtility.h"
 
@@ -20,14 +19,7 @@ namespace KMCCT {
     void ProfilePeriodicCall();
     void PapyrusPeriodicCall();
 #pragma region init function
-    int WaitLoad(int *wid, uint64_t *rand, std::string *root,
-                 std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> **loadedWedget);
-    int WaitMultLoad(int *wid, uint64_t *rand, std::string *root, int *index,
-                     std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> **loadedWedget);
-    int WaitLoadText(int *wid, uint64_t *rand, std::string *root, std::vector<std::pair<uint64_t, int>> **loadedText);
-    int WaitLoadNamePlate(int *wid);
-    void WaitOutputLoop();
-    void InitMain(std::vector<float> *floatArray);
+   // void InitMain(std::vector<float> *floatArray);
 #pragma endregion
 
 #pragma region interrupt event
@@ -47,7 +39,6 @@ namespace KMCCT {
     void wrap_InterruptCutInEventManager(std::function<void(void)> fn);
     void InterruptProfileEventManager();
 
-    void KMCLoadedWidget();
     void KMCSetInitFlag();
     bool KMCGetInitFlag();
     void LaunchOAR(OARCompDetail &ocd);
@@ -59,7 +50,6 @@ namespace KMCCT {
     const std::string STATE_MANAGER_CONFIG_KEY = "event_cool_time";
     const std::string PROFILE_DELAY_TIME_CONFIG_KEY = "profile_delay_time";
     const std::string PROFILE_POLLING_COUNT_CONFIG_KEY = "profile_polling_count";
-    const std::string OTHER_INITIALIZATION_WAITING_TIME = "other_initialization_waiting_time";
     const std::string PROFILE_SETTING_KEY_NAME_OTHER = "other";
     const std::string TEXT_FADE_IN_OUT_TIME_SETTING = "text_fade_in_out_time";
     const std::string WIDGET_FADE_IN_OUT_TIME_SETTING = "widget_fade_in_out_time";
@@ -74,35 +64,30 @@ namespace KMCCT {
     class KMCEventThread {
         SINGLETONHEADER(KMCEventThread)
     public:
-
         ~KMCEventThread();
-
         bool IsAlreadyInited();
         void InitWordsAndWidgets(RE::BSFixedString skyroot, std::vector<float> floatArray);
         void Init();
         void CutInCreate(std::vector<std::string> variableArray);
         void TryShowProfile();
         void MCMSettingChange(std::vector<float> floatArray);
-        
-        int wrap_WaitLoadNamePlate(int &wid);
-        int wrap_WaitMultLoad(int &wid, uint64_t &rand, int &index,
-                              std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> *loadedWedget);
-        int wrap_WaitLoad(int &wid, uint64_t &rand, 
-                     std::vector<std::pair<uint64_t, KMCLoadedWidgetData>> *loadedWedget);
-        int wrap_WaitLoadText(int &wid, uint64_t &rand, 
-                         std::vector<std::pair<uint64_t, int>> *loadedText);
-        void wrap_OutputLoop();
 
+        bool IsShuttingDown() const { return is_shutting_down.load(std::memory_order_relaxed); }
+
+        int GetForceEndAnim() const { return force_end_anim.load(std::memory_order_relaxed); }
+        void SetForceEndAnim(bool flag) { force_end_anim.store(flag, std::memory_order_relaxed); }
+        
         void Reset();
         bool GetProfileInitEnd();
         bool GetInitFirstFlag();
         bool GetEnableProfileFlag();
         bool GetInitEndFlag();
     public:
-        std::atomic<bool> forceendanim;
+        std::atomic<bool> force_end_anim;
+        
         
     private:
-        
+        std::atomic<bool> is_shutting_down{false};
         std::vector<float> papyrus_floatArray;
         std::vector<float> papyrus_mcm;
     };

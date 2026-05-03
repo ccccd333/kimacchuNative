@@ -1,5 +1,4 @@
-#pragma once
-#include "IWWFunctions.h"
+ï»¿#pragma once
 #include "KMCCheckSource.h"
 #include "KMCGameEventListener.h"
 #include "KMCCategory.h"
@@ -9,7 +8,7 @@ namespace KMCCT {
     // class KMCCCheckTaskIF {
     // public:
     //     virtual ~KMCCCheckTaskIF() = default;
-    //     // ƒJƒEƒ“ƒg‚ği‚ß‚é‚½‚ß‚ÌIF
+    //     // ã‚«ã‚¦ãƒ³ãƒˆã‚’é€²ã‚ã‚‹ãŸã‚ã®IF
     //     virtual void Check() const = 0;
     //     virtual KMCCustomCondCheckHub GetDetail(KMCCCheckSource source) const = 0;
     // };

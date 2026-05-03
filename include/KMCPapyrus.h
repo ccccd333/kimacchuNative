@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "KMCEventThread.h"
 #include "KMCProfile.h"
 #include "KMCStateManager.h"
@@ -10,8 +10,6 @@ namespace KMCCT {
     class KMCPapyrus {
         SINGLETONHEADER(KMCPapyrus)
     public:
-        ~KMCPapyrus() {}
-
         // form
         bool KMCIsCapturedForm();
         void KMCCacheForms(std::vector<std::string> form_names);

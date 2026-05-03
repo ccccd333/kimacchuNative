@@ -1,10 +1,14 @@
-#include "KMCProfile.h"
-
+﻿#include "KMCProfile.h"
 #include "KMCConfig.h"
 #include "KMCEventThread.h"
 #include "KMCSound.h"
 #include "KMCStateManager.h"
 #include "KMCWaitTask.h"
+#include "KMCPrismaUIBridge.h"
+#include "KMCStorageUtilTracker.h"
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 SINGLETONBODY(KMCCT::KMCProfile)
 
@@ -12,155 +16,38 @@ namespace KMCCT {
 
     void KMCProfile::Init() {
         StrageUtilStartIndex = 0;
-        ModifiedContainer = KMCCT::KMCStateManager::GetSingleton()->GetStrageUtilAccessKeys();
-        StrageUtilEndIndex = (int)ModifiedContainer.size() - 1;
-        if (StrageUtilEndIndex < 0) StrageUtilEndIndex = 0;
-
-        // Player Profile
-        auto pws = KMCCT::KMCConfig::GetSingleton()->getIWidgetSetting();
-        auto pts = KMCCT::KMCConfig::GetSingleton()->getITextSetting();
-        auto ppt = KMCCT::KMCConfig::GetSingleton()->getIProfileText();
-
-        if (StrageUtilEndIndex == 0) {
-            ModStartIndex = 0;
-        } else {
-            ModStartIndex = StrageUtilEndIndex + 1;
-        }
-
-        ProfileInit(PlayerProfil, KMCCT::PLAYER_WORD_PATH, pws, pts, ppt);
-        ModEndIndex = ModStartIndex + PlayerProfil.format_id_num;
-
-        if (ModStartIndex != ModEndIndex) {
-            std::vector<std::string> sp_format_id_string = KMCSplit(PlayerProfil.format_id_strings, ',');
-            for (int i = 0; i < PlayerProfil.format_id_num; i++) {
-                try {
-                    std::string fid = sp_format_id_string.at(i);
-                    ModifiedContainer.push_back(fid);
-                } catch (...) {
-                    ERROR("KMCEventThread::Init not found format id key : {}", i);
-                    ModEndIndex = ModStartIndex + i;
-                    break;
-                }
-            }
-        }
-
-        // for (auto &[key, value] : PlayerProfil.tids) {
-        //     LOG("KMCEventThread::Init ROW : {} size {}", key, PlayerProfil.tids.size());
-        //     LOG("Params x {} y {} font {} fsize {} r {} g {} b {}", value.defx, value.defy, value.font,
-        //     value.font_size, value.r, value.g, value.b);
-        // }
-
-        // for (auto &[key, value] : PlayerProfil.format_map) {
-        //     LOG("KMCEventThread::Init format_map ROW : {}", key);
-        //     LOG("Params row {} row_string {} tid {} ", value.row, value.row_string, value.tid);
-        // }
-
-        // for (auto &[key, value] : PlayerProfil.map_index) {
-        //     LOG("KMCEventThread::Init map_index before : {} after : {}", key, value);
-        // }
-
-        // for (auto &value : PlayerProfil.row_string) {
-        //     LOG("KMCEventThread::Init row_string value : {}", value);
-        // }
-        //
-        // LOG("KMCEventThread::Init format_id_strings {}", PlayerProfil.format_id_strings);
-    }
-
-    void KMCProfile::InitProfile(std::string skyroot, std::vector<float> *floatArray) {
-        aaaakmcroot = skyroot;
-        aaaakmcvolum = (*floatArray)[0];
-
-        if (PlayerProfil.tids.size() == 0) return;
-
-        if (PlayerProfil.wids.size() != 0) {
-            for (auto &values : PlayerProfil.wids) {
-                int rwid = -1;
-                std::string filename = KMCCT::PICT_PATH1 + "/" + values.any1 + KMCCT::PICT_TYPE;
-                if (IsFileExist(KMCCT::PICT_ROOT + filename)) {
-                    int wid =
-                        IWW::MainFunctions::GetSingleton()->LoadWidget(aaaakmcroot, filename, 10000, 10000, false);
-                    rwid = WaitLoadNamePlate(&wid);
-                    if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                        return;
-                    }
-                    values.id = rwid;
-                    if (rwid > 0) {
-                        IWW::MainFunctions::GetSingleton()->SetPosX(aaaakmcroot, rwid, values.defx);
-                        IWW::MainFunctions::GetSingleton()->SetPosY(aaaakmcroot, rwid, values.defy);
-                        IWW::MainFunctions::GetSingleton()->SetSizeW(aaaakmcroot, rwid, values.defsizex);
-                        IWW::MainFunctions::GetSingleton()->SetSizeH(aaaakmcroot, rwid, values.defsizey);
-                    }
-                } else {
-                    WARN("File path not found. If not intended, no problem. {}", filename);
-                }
-            }
-        }
-
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-            return;
-        }
+        StrageUtilEndIndex = 0;
 
         try {
-            int row_string_index_count = 0;
-            std::map<int, KMCDispConfigs> copy_tids = PlayerProfil.tids;
-            for (auto &[key, value] : copy_tids) {
-                std::string text = PlayerProfil.row_string.at(row_string_index_count);
-                auto tid_form = &(PlayerProfil.tids.at(key));
-                KMCProfilFormatIdMap *format_map = nullptr;
-
-                if (PlayerProfil.format_map.contains(key)) {
-                    format_map = &(PlayerProfil.format_map.at(key));
-                }
-
-                int tid = IWW::MainFunctions::GetSingleton()->LoadText(aaaakmcroot, text, tid_form->font,
-                                                                       tid_form->font_size, 10000, 10000, false);
-                int rtid = WaitLoadNamePlate(&tid);
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                    return;
-                }
-                tid_form->id = rtid;
-                if (format_map != nullptr) {
-                    format_map->tid = rtid;
-                }
-                IWW::MainFunctions::GetSingleton()->SetPosX(aaaakmcroot, rtid, tid_form->defx);
-                IWW::MainFunctions::GetSingleton()->SetPosY(aaaakmcroot, rtid, tid_form->defy);
-                IWW::MainFunctions::GetSingleton()->SetRGB(aaaakmcroot, rtid, tid_form->r, tid_form->g, tid_form->b);
-                ++row_string_index_count;
+            if (!Parse(COMMON_PATH + PROFILE_PATH + "/" + DISPLAY_PROFILE_PATH)) {
+                loaded = false;
             }
-        } catch (std::exception &e) {
-            ERROR("InitProfile error {}", e.what());
-        }
 
-        // for (int i = 0; i < ppro->tids.size(); i++) {
-        //     std::string text = ppro->row_string.at(i);
-        //     auto tid_form = &(ppro->tids[i]);
-        //     KMCProfilFormatIdMap* format_map = nullptr;
-        //
-        //     if (ppro->format_map.contains(i)) {
-        //         format_map = &(ppro->format_map[i]);
-        //     }
-        //
-        //     int tid = IWW::MainFunctions::GetSingleton()->LoadText(aaaakmcroot, text, tid_form->font,
-        //     tid_form->font_size,
-        //                                                            10000, 10000, false);
-        //     auto lwID = executor.submit(WaitLoadNamePlate, &tid);
-        //     lwID.wait();
-        //     int rtid = lwID.get();
-        //     if (KMCCT::KMCEventThread::GetSingleton()->forceendanim || shutdown) {
-        //         return;
-        //     }
-        //     tid_form->id = rtid;
-        //     if (format_map != nullptr) {
-        //         format_map->tid = rtid;
-        //     }
-        //     IWW::MainFunctions::GetSingleton()->SetPosX(aaaakmcroot, rtid, tid_form->defx);
-        //     IWW::MainFunctions::GetSingleton()->SetPosY(aaaakmcroot, rtid, tid_form->defy);
-        //     IWW::MainFunctions::GetSingleton()->SetRGB(aaaakmcroot, rtid, tid_form->r, tid_form->g, tid_form->b);
-        // }
+            if (loaded) {
+                mod_end_index = mod_start_index + profil_ex_data.format_id_num;
+
+                if (mod_start_index != mod_end_index) {
+                    for (const auto &fm : profil_ex_data.format_maps) {
+                        for (const auto &index : fm.placeholder_indices) {
+                            if (fm.live_map_keys.contains(index)) {
+                                modified_container.push_back(fm.live_map_keys.at(index));
+                            } else {
+                                modified_container.push_back(fm.format_strings.at(index));
+                            }
+                        }
+                    }
+                }
+            } else {
+                KMC_ERROR("[Error] Failed to parse profile configuration JSON. The profile function will be disabled.");
+            }
+        } catch (std::runtime_error ex) {
+            loaded = false;
+            KMC_ERROR("ERROR LOADING {}", ex.what());
+        }
     }
 
     std::vector<std::string> KMCProfile::GetModifiedContainer() { 
-        return ModifiedContainer;
+        return modified_container;
     
     }
 
@@ -171,35 +58,28 @@ namespace KMCCT {
             if (update_prifile) return;
             update_prifile = true;
 
-            ResultModifiedContainer = std::move(container);
+            ResultModifiedContainer = container;
 
-            if (BefResultModifiedContainer.size() > 0 && BefResultModifiedContainer == ResultModifiedContainer) {
-                update_prifile = false;
-                return;
-            }
-            BefResultModifiedContainer = ResultModifiedContainer;
+            //if (BefResultModifiedContainer.size() > 0 && BefResultModifiedContainer == ResultModifiedContainer) {
+            //    update_prifile = false;
+            //    return;
+            //}
+            //BefResultModifiedContainer = ResultModifiedContainer;
         }
 
-        KMCCT::wrap_UpdateModifiedContainer(ResultModifiedContainer, StrageUtilEndIndex, ModStartIndex, ModEndIndex,
-                                            PlayerProfil);
+        KMCCT::wrap_UpdateModifiedContainer(ResultModifiedContainer, StrageUtilEndIndex, mod_start_index, mod_end_index,
+                                            profil_ex_data);
     }
 
     void KMCProfile::UpdateModifiedContainer(std::vector<std::string> *mod_container, int *SUtilEndIndex,
                                              int *ModStIndex, int *ModEnIndex, KMCProfil *profile) {
 
-        int profile_start_index = 0;
-        if (*SUtilEndIndex > 0) {
-            profile_start_index += *SUtilEndIndex + 1;
-            KMCCT::KMCStateManager::GetSingleton()->SetResultStrageUtil(*mod_container);
-        } else {
-            profile_start_index = 0;
-        }
         if (mod_container->size() <= *ModEnIndex && *ModStIndex != *ModEnIndex) {
             if (!KMCCT::KMCEventThread::GetSingleton()->GetProfileInitEnd()) {
                 {
                     std::lock_guard<std::mutex> lock(pr_mtx);
                     ResultModifiedContainer.clear();
-                    BefResultModifiedContainer.clear();
+                    //BefResultModifiedContainer.clear();
                     update_prifile = false;
                 }
 
@@ -207,33 +87,85 @@ namespace KMCCT {
             }
 
             try {
-                auto formmap = profile->format_map;
-                std::map<int, KMCUpdateProfileData> formated_map;
-                for (int i = profile_start_index; i < mod_container->size(); i++) {
-                    std::string value = mod_container->at(i);
-                    std::string format_id = profile->format_id_strings_array.at(i - profile_start_index);
-                    int row = profile->map_index.at(i - profile_start_index).second;
-                    if (formmap.contains(row)) {
-                        auto pfm = formmap.at(row);
-                        if (formated_map.contains(row)) {
-                            std::string formated = formated_map.at(row).format_data;
-                            Replace(formated, format_id, value);
-                            formated_map.at(row).format_data = formated;
-                        } else {
-                            formated_map.insert(std::make_pair(row, KMCUpdateProfileData()));
-                            std::string formated = pfm.row_string;
-                            Replace(formated, format_id, value);
-                            formated_map.at(row).format_data = formated;
-                            formated_map.at(row).tid = pfm.tid;
-                        }
-                    }
-                }
+                json js = json::object();
+                std::unordered_map<std::string, std::map<std::string, std::string>> formated_map;
+                if (profil_ex_data.format_id_num != mod_container->size()) {
+                    KMC_ERROR(
+                        "UpdateModifiedContainer: Data count mismatch. Expected (format_id_num): {}, Actual "
+                        "(mod_container size): {}",
+                        profil_ex_data.format_id_num, mod_container->size());
+                } else {
+                    int fm_index = 0;
+                    for (int i = 0; i < mod_container->size();) {
+                        const auto &cross_ref = profile->format_maps.at(fm_index);
 
-                for (auto &[key, value] : formated_map) {
-                    IWW::MainFunctions::GetSingleton()->SetText(aaaakmcroot, value.tid, value.format_data);
+                        int j = i;
+                        std::string edited_sring = "";
+                        for (int index = 0; index < cross_ref.format_strings.size(); index++) {
+                            if (std::ranges::contains(cross_ref.placeholder_indices, index)) {
+                                std::string tag_or_edited_string = mod_container->at(j);
+                                if (tag_or_edited_string.starts_with(LIVE_DATA_PREFIX)) {
+                                    // ライブデータの処理
+                                    const auto &live = profil_ex_data.live_data.at(cross_ref.live_map_keys.at(index));
+                                    MultiTypeValue sov_return_value;
+                                    const VMObjectHandleInfo *vmhandle = nullptr;
+                                    if (!live.sov_is_null) {
+                                        vmhandle = &live.sov.vm_object;
+                                    }
+                                    if (StorageUtilTracker::GetValue(live.default_value, live.access_key, vmhandle,
+                                                                     sov_return_value)) {
+                                        bool edited = false;
+                                        for (const auto &v : live.pod) {
+                                            if (v.sign == KMCInequalitySign::def) {
+                                                edited = true;
+                                            } else if (JudgeKMCInequalitySign(v.sign, sov_return_value, v.comp_value)) {
+                                                edited = true;
+                                            }
+
+                                            if (edited) {
+                                                if (v.result == ProfileSymbols::PLACEHOLDER_VALUE) {
+                                                    edited_sring += sov_return_value.ToStringMV();
+                                                } else {
+                                                    edited_sring += v.result;
+                                                }
+                                                break;
+                                            }
+                                        }
+
+                                        if (!edited) {
+                                            edited_sring += "<N/A>";
+                                        }
+                                    } else {
+                                        // StrageUtilから値が取れない場合
+                                        KMC_WARN(
+                                            "UpdateModifiedContainer: StorageUtil failed to fetch data. "
+                                            "Tag: [{}], AccessKey: [{}], VMHandle: {}. Using default value.",
+                                            live.tag, live.access_key, live.sov.vm_object.handle);
+                                        if (live.default_op_return_value == ProfileSymbols::PLACEHOLDER_VALUE) {
+                                            edited_sring += sov_return_value.ToStringMV();
+                                        } else {
+                                            edited_sring += live.default_op_return_value;
+                                        }
+                                        
+                                    }
+                                } else {
+                                    edited_sring += mod_container->at(j);
+                                }
+                                ++j;
+                            } else {
+                                edited_sring += cross_ref.format_strings.at(index);
+                            }
+                        }
+                        formated_map[cross_ref.id][std::to_string(cross_ref.row)] = edited_sring;
+
+                        i = j;
+                        ++fm_index;
+                    }
+                    js = formated_map;
+                    KMCPrismaUIBridge::GetSingleton()->KMCUpdateProfileText(js);
                 }
             } catch (std::exception &e) {
-                ERROR("UpdateModifiedContainer Error {}", e.what());
+                KMC_ERROR("UpdateModifiedContainer Error {}", e.what());
             }
         }
 
@@ -247,7 +179,7 @@ namespace KMCCT {
     void KMCProfile::KMCResetProfileContainer() {
         {
             std::lock_guard<std::mutex> lock(pr_mtx);
-            BefResultModifiedContainer.clear();
+            //BefResultModifiedContainer.clear();
             ResultModifiedContainer.clear();
             first_profile_update = false;
             update_prifile = false;
@@ -261,12 +193,14 @@ namespace KMCCT {
         }
        
         static long long event_cool_time =
-            KMCFindVector(KMCCT::KMCConfig::GetSingleton()->getISetting(), KMCCT::PROFILE_DELAY_TIME_CONFIG_KEY,
+            KMCFindVector(KMCCT::KMCConfig::GetSingleton()->GetKMCSetting(), KMCCT::PROFILE_DELAY_TIME_CONFIG_KEY,
                           KMCCT::INTERRUPT_SHOW_PROFILE_DELAY_TIME) *
             (float)KMCCT::TIME_SCALE_MS;
-        static int polling_count = KMCFindVector(KMCCT::KMCConfig::GetSingleton()->getISetting(),
+        static int polling_count = KMCFindVector(KMCCT::KMCConfig::GetSingleton()->GetKMCSetting(),
                                                  KMCCT::PROFILE_POLLING_COUNT_CONFIG_KEY, KMCCT::PROFILE_POLLING_COUNT);
-        if (!KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+        
+        auto *thread = KMCCT::KMCEventThread::GetSingleton();
+        if (!thread->IsShuttingDown() && !thread->GetForceEndAnim()) {
             for (int i = 0; i < polling_count; i++) {
                 time_point<Clock> start = Clock::now();
                 time_point<Clock> end;
@@ -288,16 +222,16 @@ namespace KMCCT {
                 }
 
                 if (!u_p && fpu && !sh_p) {
-                    LOG("Show Profile {} {} {}", u_p, fpu, sh_p);
+                    KMC_LOG("Show Profile {} {} {}", u_p, fpu, sh_p);
                     ShowProfile(!switch_disp_profile_flag);
                     switch_disp_profile_flag = !switch_disp_profile_flag;
                     break;
                 } else {
-                    WARN("Profile Stack !!!! {} {} {}", u_p, fpu, sh_p);
+                    KMC_WARN("Profile Stack !!!! {} {} {}", u_p, fpu, sh_p);
                 }
                 // sleep
                 while (true) {
-                    if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                    if (thread->IsShuttingDown() || thread->GetForceEndAnim()) {
                         return;
                     }
 
@@ -321,7 +255,9 @@ namespace KMCCT {
 
     void KMCProfile::ShowProfile(bool visible) {
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim &&
+        auto *thread = KMCCT::KMCEventThread::GetSingleton();
+
+        if (thread->IsShuttingDown() && thread->GetForceEndAnim() &&
             !KMCCT::KMCEventThread::GetSingleton()->GetProfileInitEnd()) {
             return;
         }
@@ -337,124 +273,34 @@ namespace KMCCT {
             showing_profile = true;
         }
         // player only
-        if (PlayerProfil.tids.size() == 0) return;
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        if (!loaded) return;
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player == nullptr) return;
 
-        static float text_fade_in_out_time = KMCFindVector(KMCCT::KMCConfig::GetSingleton()->getIProfileAnimTextFade(),
-                                                           KMCCT::TEXT_FADE_IN_OUT_TIME_SETTING, 1.0f);
-        static float widget_fade_in_out_time = KMCFindVector(
-            KMCCT::KMCConfig::GetSingleton()->getIProfileAnimTextFade(), KMCCT::WIDGET_FADE_IN_OUT_TIME_SETTING, 1.0f);
+        //static float text_fade_in_out_time = KMCFindVector(KMCCT::KMCConfig::GetSingleton()->getIProfileAnimTextFade(),
+        //                                                   KMCCT::TEXT_FADE_IN_OUT_TIME_SETTING, 1.0f);
+        //static float widget_fade_in_out_time = KMCFindVector(
+        //    KMCCT::KMCConfig::GetSingleton()->getIProfileAnimTextFade(), KMCCT::WIDGET_FADE_IN_OUT_TIME_SETTING, 1.0f);
 
         int time = 0;
-        text_fade_in_out_time > widget_fade_in_out_time ? time = text_fade_in_out_time * (float)KMCCT::TIME_SCALE_MS
-                                                        : time = widget_fade_in_out_time * (float)KMCCT::TIME_SCALE_MS;
+        //text_fade_in_out_time > widget_fade_in_out_time ? time = text_fade_in_out_time * (float)KMCCT::TIME_SCALE_MS
+        //                                                : time = widget_fade_in_out_time * (float)KMCCT::TIME_SCALE_MS;
 
         if (visible) {
             KMCCT::KMCSound::GetSingleton()->PlayProfileSE(KMCProfileSEType::open, aaaakmcvolum, player);
 
             // visible
-            for (auto &value : PlayerProfil.wids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                    return;
-                }
-
-                if (value.id > 0 && value.widget_visible) {
-                    IWW::MainFunctions::GetSingleton()->SetTransparency(aaaakmcroot, value.id, 0);
-                    std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::SET_ALPHA_MS));
-                    IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, true);
-                }
-            }
-
-            for (auto &[key, value] : PlayerProfil.tids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                    return;
-                }
-
-                if (value.id > 0) {
-                    IWW::MainFunctions::GetSingleton()->SetTransparency(aaaakmcroot, value.id, 0);
-                    std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::SET_ALPHA_MS));
-                    IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, true);
-                }
-            }
-
-            // disp anim
-            for (auto &value : PlayerProfil.wids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                    return;
-                }
-
-                if (value.id > 0 && value.widget_visible) {
-                    IWW::MainFunctions::GetSingleton()->DoTransitionByTime(
-                        aaaakmcroot, value.id, 100, widget_fade_in_out_time, "alpha", "none", "none", 0.0);
-                    std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::SET_ALPHA_MS));
-                }
-            }
-
-            for (auto &[key, value] : PlayerProfil.tids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                    return;
-                }
-
-                if (value.id > 0) {
-                    IWW::MainFunctions::GetSingleton()->DoTransitionByTime(
-                        aaaakmcroot, value.id, 100, text_fade_in_out_time, "alpha", "none", "none", 0.0);
-                    std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::SET_ALPHA_MS));
-                    time += KMCCT::SET_ALPHA_MS;
-                }
-            }
+            KMCPrismaUIBridge::GetSingleton()->KMCShowProfile();
 
             std::this_thread::sleep_for(std::chrono::milliseconds(time));
         } else {
             KMCCT::KMCSound::GetSingleton()->PlayProfileSE(KMCProfileSEType::end, aaaakmcvolum, player);
 
-            // invisible anim
-            for (auto &value : PlayerProfil.wids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                    return;
-                }
-
-                if (value.id > 0 && value.widget_visible) {
-                    IWW::MainFunctions::GetSingleton()->DoTransitionByTime(
-                        aaaakmcroot, value.id, 0, widget_fade_in_out_time, "alpha", "none", "none", 0.0);
-                    std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::SET_ALPHA_MS));
-                }
-            }
-            for (auto &[key, value] : PlayerProfil.tids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                    return;
-                }
-
-                if (value.id > 0) {
-                    IWW::MainFunctions::GetSingleton()->DoTransitionByTime(
-                        aaaakmcroot, value.id, 0, text_fade_in_out_time, "alpha", "none", "none", 0.0);
-                    time += KMCCT::SET_ALPHA_MS;
-                    std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::SET_ALPHA_MS));
-                }
-            }
+            // invisible
+            KMCPrismaUIBridge::GetSingleton()->KMCHideProfile();
 
             std::this_thread::sleep_for(std::chrono::milliseconds(time));
 
-            // invisible
-            for (auto &value : PlayerProfil.wids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                    return;
-                }
-
-                if (value.id > 0 && value.widget_visible) {
-                    IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, false);
-                }
-            }
-
-            for (auto &[key, value] : PlayerProfil.tids) {
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                    return;
-                }
-
-                if (value.id > 0) {
-                    IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, value.id, false);
-                }
-            }
             {
                 std::lock_guard<std::mutex> lock(pr_mtx);
                 show_prifile = false;
@@ -484,11 +330,12 @@ namespace KMCCT {
             isp = interrupt_show_profile;
         }
 
-        if (!KMCCT::KMCEventThread::GetSingleton()->GetInitFirstFlag()) {
-            return -4;  // not work iwant widget ng
-        } else if (!KMCCT::KMCEventThread::GetSingleton()->GetEnableProfileFlag()) {
+        //if (!KMCCT::KMCEventThread::GetSingleton()->GetInitFirstFlag()) {
+        //    return -4;  // not work iwant widget ng
+        //} else 
+            if (!KMCCT::KMCEventThread::GetSingleton()->GetEnableProfileFlag()) {
             return -5;  // profile disable
-        } else if (KMCCT::KMCEventThread::GetSingleton()->forceendanim ||
+        } else if (KMCCT::KMCEventThread::GetSingleton()->IsShuttingDown() ||
                    !KMCCT::KMCEventThread::GetSingleton()->GetProfileInitEnd()) {
             return -3;  // init now
         } else if (isp || sh_p) {
@@ -504,448 +351,695 @@ namespace KMCCT {
         //}
     }
 
-    void KMCProfile::ProfileInit(KMCProfil &profil, std::string target,
-                                 std::vector<std::pair<std::string, std::string>> *ws,
-                                 std::vector<std::pair<std::string, std::string>> *ts, std::vector<std::string> *pt) {
-        KMCProfil result;
-        try {
-            for (auto &[key, value] : *ws) {
-                auto spresult = KMCSplit(value, ',');
-                KMCDispConfigs wid;
-                wid.defx = std::stoi(spresult.at(0));
-                wid.defy = std::stoi(spresult.at(1));
-                wid.defsizex = std::stoi(spresult.at(2));
-                wid.defsizey = std::stoi(spresult.at(3));
-                spresult.at(4) == "1" ? wid.widget_visible = true : wid.widget_visible = false;
-                try {
-                    std::string any = spresult.at(5);
-                    if (any != "") {
-                        wid.any1 = any;
-                    } else {
-                        wid.any1 = KMCCT::PROFILE_PICT_NAME;
-                    }
-                } catch (...) {
-                    wid.any1 = KMCCT::PROFILE_PICT_NAME;
-                }
-                result.wids.push_back(wid);
-            }
-        } catch (std::exception &e) {
-            ERROR("{} ProfileInit WidgetSetting Error out of range {}", target, e.what());
+    bool KMCProfile::Parse(std::string path) {
+        std::ifstream stream(path);
+
+        if (!stream.is_open()) {
+            throw std::runtime_error("Failed open file. Path ==> " + path);
         }
 
-        std::map<int, std::vector<int>> XGroup;
-        try {
-            for (int row = 0; row < pt->size(); row++) {
-                std::string text = pt->at(row);
-
-                std::regex pattern(R"(\{([0-9]|[a-z]|[A-Z])+\})");
-                std::sregex_iterator it(text.begin(), text.end(), pattern);
-                std::sregex_iterator end;
-
-                if (it != end) {
-                    // LOG("match {}", text);
-                    KMCProfilFormatIdMap pfim;
-                    std::string fids = result.format_id_strings;
-                    while (it != end) {
-                        std::string format_id = (*it).str();
-                        pfim.row = row;
-                        pfim.row_string = text;
-                        fids = fids + format_id + ",";
-                        pfim.format_id.push_back(format_id);
-                        result.format_id_num += 1;
-                        result.map_index.push_back(std::make_pair(row, -1));
-                        it++;
-                    }
-                    result.isFormat = true;
-                    result.format_id_strings = fids;
-                    result.format_map.insert(std::make_pair(row, pfim));
-                }
-                result.tids.insert(std::make_pair(row, KMCDispConfigs((int)text.size())));
-                result.row_string.push_back(text);
-            }
-        } catch (std::exception &e) {
-            ERROR("{} ProfileInit ProfileText Error out of range {}", target, e.what());
-            return;
+        if (!json::accept(stream)) {
+            throw std::runtime_error("Incorrect json format. Path ==> " + path);
         }
 
-        try {
-            int group_id = 0;
-            std::set<int> skip_row;
-            std::vector<std::string> bsp;
+        stream.seekg(0, std::ios::beg);
 
-            auto fill_disp_config = [&](int to_end) {
-                if (bsp.size() == 0) {
-                    return;
-                }
-                int bef_end = std::stoi(bsp.at(7));
+        json j = json::parse(stream);
 
-                for (int i = bef_end; i < to_end; i++) {
-                    if (skip_row.size() > 0 && skip_row.find(i) != skip_row.end()) {
-                        continue;
-                    }
-                    auto fmprofile = &result.tids.at(i);
-                    fmprofile->defx = std::stoi(bsp.at(0));
-                    fmprofile->defy = std::stoi(bsp.at(1));
-                    fmprofile->font = bsp.at(2);
-                    fmprofile->font_size = std::stoi(bsp.at(3));
-                    fmprofile->r = std::stoi(bsp.at(4));
-                    fmprofile->g = std::stoi(bsp.at(5));
-                    fmprofile->b = std::stoi(bsp.at(6));
+        /*
+        {PlayerSLSValidFreedomLic}みたいなのを蓄積していく。
+        linesへstd::unordered_map<id, std::map<row, std::string>>でアクセスする。
+        papyrus側で{PlayerSLSValidFreedomLic}を文字列に置き換えた後の値を
+        */
+        //std::vector<KMCProfileReplaceMap> format_map;
 
-                    skip_row.insert(i);
 
-                    if (XGroup.contains(group_id)) {
-                        XGroup.at(group_id).push_back(i);
-                    } else {
-                        XGroup.insert(std::make_pair(group_id, std::vector<int>()));
-                        XGroup.at(group_id).push_back(i);
-                    }
-                }
-            };
-            bool fill = false;
-            for (const auto &[key, value] : *ts) {
-                if (key == PROFILE_SETTING_KEY_NAME_OTHER) {
-                    if (value == "") {
-                        fill = true;
-                    } else {
-                        if (fill) {
-                            fill_disp_config((int)result.tids.size());
-                            fill = false;
+        for (auto &[key, profile] : j.items()) {
+            if (key.empty()) continue;
+
+            char type = key[0];
+            if (type == 'T') {
+                if (profile.contains("lines") && profile["lines"].is_array()) {
+                    int current_row = 0;
+
+                        for (auto &line_item : profile["lines"]) {
+                        if (!line_item.is_string()) {
+                            current_row++;
+                            continue;
                         }
 
-                        ++group_id;
+                        std::string original_text = line_item.get<std::string>();
+                        profil_ex_data.profile_lines[key][current_row] = original_text;
 
-                        std::vector<std::string> sp = KMCSplit(value, ',');
-                        for (int i = 0; i < result.tids.size(); i++) {
-                            if (skip_row.size() > 0 && skip_row.find(i) != skip_row.end()) {
-                                continue;
-                            }
+                        static const std::regex re_placeholder(R"(\{([a-zA-Z0-9]+)\})");
+                        std::smatch match;
 
-                            auto fmprofile = &result.tids.at(i);
-                            fmprofile->defx = std::stoi(sp.at(0));
-                            fmprofile->defy = std::stoi(sp.at(1));
-                            fmprofile->font = sp.at(2);
-                            fmprofile->font_size = std::stoi(sp.at(3));
-                            fmprofile->r = std::stoi(sp.at(4));
-                            fmprofile->g = std::stoi(sp.at(5));
-                            fmprofile->b = std::stoi(sp.at(6));
-
-                            if (XGroup.contains(group_id)) {
-                                XGroup.at(group_id).push_back(i);
-                            } else {
-                                XGroup.insert(std::make_pair(group_id, std::vector<int>()));
-                                XGroup.at(group_id).push_back(i);
-                            }
+                        if (!std::regex_search(original_text, match, re_placeholder)) {
+                            // {~}中括弧のものがなければそのままテキストのみを保管する
+                            current_row++;
+                            continue;
                         }
+
+                        KMCProfileReplaceMap rep_map;
+                        rep_map.id = key;
+                        rep_map.row = current_row;
+
+                        std::string::const_iterator search_start(original_text.cbegin());
+
+                        while (std::regex_search(search_start, original_text.cend(), match, re_placeholder)) {
+                            std::string prefix(search_start, match[0].first);
+                            if (!prefix.empty()) {
+                                rep_map.format_strings.push_back(prefix);
+                            }
+
+                            rep_map.placeholder_indices.push_back(static_cast<int>(rep_map.format_strings.size()));
+                            rep_map.format_strings.push_back(match[0].str());
+
+                            search_start = match[0].second;
+                        }
+
+                        std::string suffix(search_start, original_text.cend());
+                        if (!suffix.empty()) {
+                            rep_map.format_strings.push_back(suffix);
+                        }
+
+                        profil_ex_data.format_id_num += static_cast<int>(rep_map.placeholder_indices.size());
+                        profil_ex_data.format_maps.push_back(std::move(rep_map));
+
+                        current_row++;
                     }
+                } 
+                
+                if (profile.contains("bg_path") && profile["bg_path"].is_string()) {
+                    std::string bg_path = profile.value("bg_path", "");
+                    if (!fs::exists(PRISMA_UI_HTML_PATH + bg_path)) {
+                        std::string error_path = PRISMA_UI_HTML_PATH + bg_path;
+                        KMC_ERROR("Missing back ground file: {}", error_path);
+                        is_missing_file = true;
+                    }
+
+                    profil_ex_data.bg_map.emplace(key, bg_path);
+                }
+            } else if (type == 'D') {
+                KMCProfileDrawingData data;
+
+                std::string bg_path = profile.value("bg_path", "");
+                if (!fs::exists(PRISMA_UI_HTML_PATH + bg_path)) {
+                    std::string error_path = PRISMA_UI_HTML_PATH + bg_path;
+                    KMC_ERROR("Missing back ground file: {}", error_path);
+                    is_missing_file = true;
+                }
+                profil_ex_data.bg_map.emplace(key, bg_path);
+
+                data.base_path =  profile.value("base_path", "");
+
+                if (profile.contains("texture_range") && profile["texture_range"].is_object()) {
+                    data.start = profile["texture_range"].value("start", 1);
+                    data.end = profile["texture_range"].value("end", 1);
                 } else {
-                    std::vector<std::string> sp = KMCSplit(value, ',');
+                    data.start = 1;
+                    data.end = 1;
+                }
 
-                    if (key.contains('-')) {
-                        std::vector<std::string> krange = KMCSplit(key, '-');
-                        int start = std::stoi(krange.at(0)) - 1;
-                        int end = std::stoi(krange.at(1));
+                for (int i = data.start; i <= data.end; i++) {
+                    std::string file_path = data.base_path + key + "/" + std::to_string(i) + ".png";
+                    if (!fs::exists(PRISMA_UI_HTML_PATH + file_path)) {
+                        std::string error_path = PRISMA_UI_HTML_PATH + file_path;
+                        KMC_ERROR("Missing file: {}", error_path);
+                        is_missing_file = true;
+                    }
+                }
 
-                        if (fill) {
-                            fill_disp_config(start);
-                            fill = false;
+                profil_ex_data.drawing_data[key] = data;
+            }
+        }
+        bool is_error_strage_util = false;
+        if (j.contains("strage_util_tags") && j["strage_util_tags"].is_array()) {
+
+            for (auto &tag_item : j["strage_util_tags"]) {
+                KMCProfileStorageUtilLiveData live_item;
+                bool error = false;
+
+                std::string tag_name = tag_item.value("tag", "");
+                if (tag_name.empty()) continue;
+
+                live_item.tag = tag_name;
+                std::string live_key = LIVE_DATA_PREFIX + tag_name;
+
+                live_item.type = tag_item.value("type", "int");
+                std::string ref_formid = tag_item.value("ref", "");
+                auto spvalue = KMCSplit(ref_formid, ',');
+                if (spvalue.size() >= 1) {
+                    if (spvalue.at(0) != "null") {
+                        auto form = RE::TESDataHandler::GetSingleton()->LookupForm(
+                            std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
+                        if (form) {
+                            live_item.sov.vm_object = StorageUtilTracker::BuildHandleFromStackPointer(form);
+                            live_item.sov_is_null = false;
+                        } else {
+                            is_error_strage_util = true;
+                            error = true;
+                            KMC_ERROR(
+                                "strage_util_tags: Failed to LookupForm for tag [{}]. FormID: {}, Plugin: {}. Check if "
+                                "the "
+                                "plugin is loaded or FormID is correct.",
+                                tag_name, spvalue.at(0), spvalue.at(1));
                         }
+                    } else {
+                        live_item.sov_is_null = true;
+                    }
 
-                        ++group_id;
+                    live_item.access_key = tag_item.value("access_key", "");
 
-                        for (int i = start; i < end; i++) {
-                            if (result.tids.contains(i)) {
-                                auto tid_setting = &result.tids.at(i);
-                                tid_setting->defx = std::stoi(sp.at(0));
-                                tid_setting->defy = std::stoi(sp.at(1));
-                                tid_setting->font = sp.at(2);
-                                tid_setting->font_size = std::stoi(sp.at(3));
-                                tid_setting->r = std::stoi(sp.at(4));
-                                tid_setting->g = std::stoi(sp.at(5));
-                                tid_setting->b = std::stoi(sp.at(6));
-                                skip_row.insert(i);
+                    live_item.default_value.SetValue(live_item.type, tag_item.value("default_value", "0"));
 
-                                if (XGroup.contains(group_id)) {
-                                    XGroup.at(group_id).push_back(i);
-                                } else {
-                                    XGroup.insert(std::make_pair(group_id, std::vector<int>()));
-                                    XGroup.at(group_id).push_back(i);
+                    if (tag_item.contains("rules") && tag_item["rules"].is_array()) {
+                        for (auto &rule_item : tag_item["rules"]) {
+                            KMCProfileOperatorData op_data;
+                            op_data.op = rule_item.value("op", "");
+                            op_data.sign = StringToKMCInequalitySign(op_data.op);
+                            if (op_data.sign != KMCInequalitySign::unk) {
+                                op_data.comp_value.SetValue(live_item.type, rule_item.value("value", ""));
+
+                                op_data.result = rule_item.value("result", "");
+                                
+                                if (op_data.sign == KMCInequalitySign::def) {
+                                    live_item.default_op_return_value = op_data.result;
                                 }
-                            }
-                        }
 
-                        bsp = sp;
-                        bsp.push_back(krange.at(1));
-                    } else {
-                        int row = std::stoi(key) - 1;
-
-                        if (fill) {
-                            fill_disp_config(row);
-                            fill = false;
-                        }
-
-                        ++group_id;
-
-                        if (result.tids.contains(row)) {
-                            auto tid_setting = &result.tids.at(row);
-                            tid_setting->defx = std::stoi(sp.at(0));
-                            tid_setting->defy = std::stoi(sp.at(1));
-                            tid_setting->font = sp.at(2);
-                            tid_setting->font_size = std::stoi(sp.at(3));
-                            tid_setting->r = std::stoi(sp.at(4));
-                            tid_setting->g = std::stoi(sp.at(5));
-                            tid_setting->b = std::stoi(sp.at(6));
-                            skip_row.insert(row);
-
-                            if (XGroup.contains(group_id)) {
-                                XGroup.at(group_id).push_back(row);
+                                live_item.pod.push_back(std::move(op_data));
                             } else {
-                                XGroup.insert(std::make_pair(group_id, std::vector<int>()));
-                                XGroup.at(group_id).push_back(row);
+                                KMC_ERROR(
+                                    "strage_util_tags: Invalid operator '{}' in tag [{}]. "
+                                    "Available operators: '==', '!=', '>', '<', '>=', '<=', 'default'",
+                                    op_data.op, tag_name);
+                                error = true;
+                                is_error_strage_util = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        // ルール無しはだめ
+                        KMC_ERROR(
+                            "strage_util_tags: Invalid 'ref' format in tag [{}]. Expected 'FormID,PluginName' "
+                            "(e.g. '14,Skyrim.esm'), but got: '{}'",
+                            tag_name, ref_formid);
+                        error = true;
+                        is_error_strage_util = true;
+                    }
+
+                    // T01とかのやつのformat用文字列変換クラスをポインタでもらっとく
+                    for (auto &prm : profil_ex_data.format_maps) {
+                        bool found = false;
+                        int post_index = 0;
+                        for (const auto &index : prm.placeholder_indices) {
+                            if (prm.format_strings.at(index) == tag_name) {
+                                found = true;
+                                post_index = index;
+                                break;
                             }
                         }
 
-                        bsp = sp;
-                        bsp.push_back(key);
-                    }
-                }
-            }
-        } catch (std::exception &e) {
-            ERROR("{} ProfileInit TextSetting.json Error out of range", target, e.what());
-            return;
-        }
-#pragma region Legacy
-        // try {
-        //     int group_id = 0;
-        //     std::set<int> skip_row;
-        //     std::vector<std::string> bsp;
-
-        //    auto fill_disp_pos_config = [&](int to_end) {
-        //        if (bsp.size() == 0) {
-        //            return;
-        //        }
-        //        int bef_end = std::stoi(bsp.at(2));
-        //        int font_size = 0;
-        //        int base_font_size = std::stoi(bsp.at(3));
-        //        int y = std::stoi(bsp.at(1));
-        //        for (int i = bef_end; i < to_end; i++) {
-        //            if (skip_row.size() > 0 && skip_row.find(i) != skip_row.end()) {
-        //                continue;
-        //            }
-        //            auto fmprofile = &result.tids.at(i);
-        //            int befpoint = i - 1;
-        //            if (result.tids.contains(befpoint)) {
-        //                auto tid_setting_pos = &result.tids.at(befpoint);
-        //                if (tid_setting_pos->font_size > fmprofile->font_size) {
-        //                    font_size = tid_setting_pos->font_size;
-        //                } else {
-        //                    font_size = fmprofile->font_size;
-        //                }
-        //            } else {
-        //                font_size = base_font_size;
-        //            }
-
-        //
-        //            fmprofile->defx = std::stoi(bsp.at(0));
-        //            y += font_size;
-        //            fmprofile->defy = y;
-        //            skip_row.insert(i);
-        //            if (XGroup.contains(group_id)) {
-        //                XGroup.at(group_id).push_back(i);
-        //            } else {
-        //                XGroup.insert(std::make_pair(group_id, std::vector<int>()));
-        //                XGroup.at(group_id).push_back(i);
-        //            }
-        //        }
-        //    };
-        //    bool fill = false;
-        //    for (const auto &[key, value] : *ps) {
-        //        if (key == PROFILE_SETTING_KEY_NAME_OTHER) {
-        //            if (value == "") {
-        //                fill = true;
-        //            } else {
-        //                if (fill) {
-        //                    fill_disp_pos_config((int)result.tids.size());
-        //                    fill = false;
-        //                }
-
-        //                ++group_id;
-        //                std::vector<std::string> sp = KMCSplit(value, ',');
-        //                int y = std::stoi(sp.at(1));
-        //                int bef_font_size = 0;
-        //                for (int i = 0; i < result.tids.size(); i++) {
-        //                    if (skip_row.size() > 0 && skip_row.find(i) != skip_row.end()) {
-        //                        continue;
-        //                    }
-        //
-        //                    auto fmprofile = &result.tids.at(i);
-        //                    fmprofile->defx = std::stoi(sp.at(0));
-        //                    if (bef_font_size != 0 && fmprofile->font_size > bef_font_size) {
-        //                        y += fmprofile->font_size;
-        //                    } else {
-        //                        y += bef_font_size;
-        //                    }
-        //
-        //                    fmprofile->defy = y;
-
-        //                    bef_font_size = fmprofile->font_size;
-
-        //                    if (XGroup.contains(group_id)) {
-        //                        XGroup.at(group_id).push_back(i);
-        //                    } else {
-        //                        XGroup.insert(std::make_pair(group_id, std::vector<int>()));
-        //                        XGroup.at(group_id).push_back(i);
-        //                    }
-        //
-        //                }
-        //            }
-        //        } else {
-        //            std::vector<std::string> sp = KMCSplit(value, ',');
-        //            if (key.contains('-')) {
-
-        //                std::vector<std::string> krange = KMCSplit(key, '-');
-        //                int start = std::stoi(krange.at(0)) - 1;
-        //                int end = std::stoi(krange.at(1));
-
-        //                if (fill) {
-        //                    fill_disp_pos_config(start);
-        //                    fill = false;
-        //                }
-
-        //                ++group_id;
-        //                int y = std::stoi(sp.at(1));
-        //                int font_size = 0;
-        //                int last_posy = 0;
-        //                int bef_font_size = 0;
-        //                for (int i = start; i < end; i++) {
-        //                    if (result.tids.contains(i)) {
-        //                        auto tid_setting_pos = &result.tids.at(i);
-        //                        tid_setting_pos->defx = std::stoi(sp.at(0));
-        //                        if (bef_font_size != 0 && tid_setting_pos->font_size > bef_font_size) {
-        //                            y += tid_setting_pos->font_size;
-        //                        } else {
-        //                            y += bef_font_size;
-        //                        }
-
-        //                        tid_setting_pos->defy = y;
-        //                        bef_font_size = tid_setting_pos->font_size;
-
-        //                        font_size = tid_setting_pos->font_size;
-        //                        last_posy = tid_setting_pos->defy;
-        //                        skip_row.insert(i);
-        //                        if (XGroup.contains(group_id)) {
-        //                            XGroup.at(group_id).push_back(i);
-        //                        } else {
-        //                            XGroup.insert(std::make_pair(group_id, std::vector<int>()));
-        //                            XGroup.at(group_id).push_back(i);
-        //                        }
-        //                    }
-        //                }
-
-        //                sp[1] = std::to_string(last_posy);
-        //                bsp = sp;
-        //                bsp.push_back(krange.at(1));
-        //                bsp.push_back(std::to_string(font_size));
-        //            } else {
-        //                int row = std::stoi(key) - 1;
-
-        //                if (fill) {
-        //                    fill_disp_pos_config(row);
-        //                    fill = false;
-        //                }
-
-        //                ++group_id;
-        //                int font_size = 0;
-        //                int last_posy = 0;
-        //                if (result.tids.contains(row)) {
-        //                    auto tid_setting_pos = &result.tids.at(row);
-        //                    tid_setting_pos->defx = std::stoi(sp.at(0));
-        //                    tid_setting_pos->defy = std::stoi(sp.at(1));
-        //                    font_size = tid_setting_pos->font_size;
-        //                    last_posy = tid_setting_pos->defy;
-        //                    skip_row.insert(row);
-        //                    if (XGroup.contains(group_id)) {
-        //                        XGroup.at(group_id).push_back(row);
-        //                    } else {
-        //                        XGroup.insert(std::make_pair(group_id, std::vector<int>()));
-        //                        XGroup.at(group_id).push_back(row);
-        //                    }
-        //                }
-
-        //                sp[1] = std::to_string(last_posy);
-        //                bsp = sp;
-        //                bsp.push_back(key);
-        //                bsp.push_back(std::to_string(font_size));
-        //            }
-        //        }
-        //    }
-        //} catch (std::exception &e) {
-        //    ERROR("{} ProfileInit PositionSetting.json Error out of range {}", target, e.what());
-        //}
-#pragma endregion
-        std::string cat = "";
-        int format_id_num = result.format_id_num;
-        std::string format_id_strings = result.format_id_strings;
-        std::map<int, KMCProfilFormatIdMap> format_map;
-        std::map<int, KMCDispConfigs> tids;
-        std::vector<std::pair<int, int>> map_index;
-
-        int push_index = -1;
-        int bef_row = -1;
-        for (auto &[key, value] : XGroup) {
-            int row = key - 1;
-            int count = 0;
-
-            if (bef_row != row) {
-                ++push_index;
-            }
-
-            for (auto &k : value) {
-                // LOG("XGroup : {} {}", key, k);
-                if (count == 0) {
-                    cat = result.row_string[k];
-                    ++count;
-                } else {
-                    cat = cat + "\n" + result.row_string[k];
-                }
-
-                for (auto it = result.map_index.begin(); it != result.map_index.end(); ++it) {
-                    if (it->first == k) {
-                        map_index.push_back(std::make_pair(k, push_index));
-                    }
-                }
-
-                if (result.format_map.contains(k)) {
-                    if (format_map.contains(push_index)) {
-                        auto rfm = result.format_map[k];
-                        for (int i = 0; i < rfm.format_id.size(); i++) {
-                            format_map[push_index].format_id.push_back(rfm.format_id[i]);
+                        if (found) {
+                            prm.live_map_keys[post_index] = live_key;
+                            break;
                         }
-                    } else {
-                        format_map.insert(std::make_pair(push_index, result.format_map[k]));
                     }
+                } else {
+                    error = true;
+                    is_error_strage_util = true;
+                    KMC_ERROR(
+                        "strage_util_tags: Missing 'rules' array for tag [{}]. Logic requires at least one comparison "
+                        "rule or a 'default' result.",
+                        tag_name);
                 }
 
-                if (result.tids.contains(k)) {
-                    if (!tids.contains(push_index)) {
-                        tids.insert(std::make_pair(push_index, result.tids[k]));
-                    }
+                if (!error) {
+                    profil_ex_data.live_data[live_key] = std::move(live_item);
                 }
             }
-            format_map[push_index].row_string = cat;
-            profil.row_string.push_back(cat);
-
-            bef_row = row;
         }
-        sort(map_index.begin(), map_index.end());
-        profil.map_index = map_index;
-        profil.format_id_num = format_id_num;
-        profil.format_id_strings = format_id_strings;
-        profil.format_id_strings_array = KMCSplit(format_id_strings, ',');
-        profil.isFormat = result.isFormat;
-        profil.tids = tids;
-        profil.format_map = format_map;
-        profil.wids = result.wids;
+
+        if (is_missing_file) {
+            // 1つでもpngが無ければNG、JS側でエラーになる
+            KMC_ERROR("[Error]Some image files could not be loaded. Therefore, the profile function will be disabled.");
+            return false;
+        }
+
+        if (is_error_strage_util) {
+            KMC_ERROR(
+                "[StorageUtil] Profile loading failed due to invalid 'strage_util_tags' configuration. Check previous "
+                "error logs for specific tag failures.");
+            return false;
+        }
+
+        KMCPrismaUIBridge::GetSingleton()->KMCSetupProfile(j);
+
+        return true;
     }
+    // レガシー
+//    void KMCProfile::ProfileInit(KMCProfil &profil, std::string target,
+//                                 std::vector<std::pair<std::string, std::string>> *ws,
+//                                 std::vector<std::pair<std::string, std::string>> *ts, std::vector<std::string> *pt) {
+//        KMCProfil result;
+//        try {
+//            for (auto &[key, value] : *ws) {
+//                auto spresult = KMCSplit(value, ',');
+//                KMCDispConfigs wid;
+//                wid.defx = std::stoi(spresult.at(0));
+//                wid.defy = std::stoi(spresult.at(1));
+//                wid.defsizex = std::stoi(spresult.at(2));
+//                wid.defsizey = std::stoi(spresult.at(3));
+//                spresult.at(4) == "1" ? wid.widget_visible = true : wid.widget_visible = false;
+//                try {
+//                    std::string any = spresult.at(5);
+//                    if (any != "") {
+//                        wid.any1 = any;
+//                    } else {
+//                        wid.any1 = KMCCT::PROFILE_PICT_NAME;
+//                    }
+//                } catch (...) {
+//                    wid.any1 = KMCCT::PROFILE_PICT_NAME;
+//                }
+//                result.wids.push_back(wid);
+//            }
+//        } catch (std::exception &e) {
+//            ERROR("{} ProfileInit WidgetSetting Error out of range {}", target, e.what());
+//        }
+//
+//        std::map<int, std::vector<int>> XGroup;
+//        try {
+//            for (int row = 0; row < pt->size(); row++) {
+//                std::string text = pt->at(row);
+//
+//                std::regex pattern(R"(\{([0-9]|[a-z]|[A-Z])+\})");
+//                std::sregex_iterator it(text.begin(), text.end(), pattern);
+//                std::sregex_iterator end;
+//
+//                if (it != end) {
+//                    // LOG("match {}", text);
+//                    KMCProfilFormatIdMap pfim;
+//                    std::string fids = result.format_id_strings;
+//                    while (it != end) {
+//                        std::string format_id = (*it).str();
+//                        pfim.row = row;
+//                        pfim.row_string = text;
+//                        fids = fids + format_id + ",";
+//                        pfim.format_id.push_back(format_id);
+//                        result.format_id_num += 1;
+//                        result.map_index.push_back(std::make_pair(row, -1));
+//                        it++;
+//                    }
+//                    result.isFormat = true;
+//                    result.format_id_strings = fids;
+//                    result.format_map.insert(std::make_pair(row, pfim));
+//                }
+//                result.tids.insert(std::make_pair(row, KMCDispConfigs((int)text.size())));
+//                result.row_string.push_back(text);
+//            }
+//        } catch (std::exception &e) {
+//            ERROR("{} ProfileInit ProfileText Error out of range {}", target, e.what());
+//            return;
+//        }
+//
+//        try {
+//            int group_id = 0;
+//            std::set<int> skip_row;
+//            std::vector<std::string> bsp;
+//
+//            auto fill_disp_config = [&](int to_end) {
+//                if (bsp.size() == 0) {
+//                    return;
+//                }
+//                int bef_end = std::stoi(bsp.at(7));
+//
+//                for (int i = bef_end; i < to_end; i++) {
+//                    if (skip_row.size() > 0 && skip_row.find(i) != skip_row.end()) {
+//                        continue;
+//                    }
+//                    auto fmprofile = &result.tids.at(i);
+//                    fmprofile->defx = std::stoi(bsp.at(0));
+//                    fmprofile->defy = std::stoi(bsp.at(1));
+//                    fmprofile->font = bsp.at(2);
+//                    fmprofile->font_size = std::stoi(bsp.at(3));
+//                    fmprofile->r = std::stoi(bsp.at(4));
+//                    fmprofile->g = std::stoi(bsp.at(5));
+//                    fmprofile->b = std::stoi(bsp.at(6));
+//
+//                    skip_row.insert(i);
+//
+//                    if (XGroup.contains(group_id)) {
+//                        XGroup.at(group_id).push_back(i);
+//                    } else {
+//                        XGroup.insert(std::make_pair(group_id, std::vector<int>()));
+//                        XGroup.at(group_id).push_back(i);
+//                    }
+//                }
+//            };
+//            bool fill = false;
+//            for (const auto &[key, value] : *ts) {
+//                if (key == PROFILE_SETTING_KEY_NAME_OTHER) {
+//                    if (value == "") {
+//                        fill = true;
+//                    } else {
+//                        if (fill) {
+//                            fill_disp_config((int)result.tids.size());
+//                            fill = false;
+//                        }
+//
+//                        ++group_id;
+//
+//                        std::vector<std::string> sp = KMCSplit(value, ',');
+//                        for (int i = 0; i < result.tids.size(); i++) {
+//                            if (skip_row.size() > 0 && skip_row.find(i) != skip_row.end()) {
+//                                continue;
+//                            }
+//
+//                            auto fmprofile = &result.tids.at(i);
+//                            fmprofile->defx = std::stoi(sp.at(0));
+//                            fmprofile->defy = std::stoi(sp.at(1));
+//                            fmprofile->font = sp.at(2);
+//                            fmprofile->font_size = std::stoi(sp.at(3));
+//                            fmprofile->r = std::stoi(sp.at(4));
+//                            fmprofile->g = std::stoi(sp.at(5));
+//                            fmprofile->b = std::stoi(sp.at(6));
+//
+//                            if (XGroup.contains(group_id)) {
+//                                XGroup.at(group_id).push_back(i);
+//                            } else {
+//                                XGroup.insert(std::make_pair(group_id, std::vector<int>()));
+//                                XGroup.at(group_id).push_back(i);
+//                            }
+//                        }
+//                    }
+//                } else {
+//                    std::vector<std::string> sp = KMCSplit(value, ',');
+//
+//                    if (key.contains('-')) {
+//                        std::vector<std::string> krange = KMCSplit(key, '-');
+//                        int start = std::stoi(krange.at(0)) - 1;
+//                        int end = std::stoi(krange.at(1));
+//
+//                        if (fill) {
+//                            fill_disp_config(start);
+//                            fill = false;
+//                        }
+//
+//                        ++group_id;
+//
+//                        for (int i = start; i < end; i++) {
+//                            if (result.tids.contains(i)) {
+//                                auto tid_setting = &result.tids.at(i);
+//                                tid_setting->defx = std::stoi(sp.at(0));
+//                                tid_setting->defy = std::stoi(sp.at(1));
+//                                tid_setting->font = sp.at(2);
+//                                tid_setting->font_size = std::stoi(sp.at(3));
+//                                tid_setting->r = std::stoi(sp.at(4));
+//                                tid_setting->g = std::stoi(sp.at(5));
+//                                tid_setting->b = std::stoi(sp.at(6));
+//                                skip_row.insert(i);
+//
+//                                if (XGroup.contains(group_id)) {
+//                                    XGroup.at(group_id).push_back(i);
+//                                } else {
+//                                    XGroup.insert(std::make_pair(group_id, std::vector<int>()));
+//                                    XGroup.at(group_id).push_back(i);
+//                                }
+//                            }
+//                        }
+//
+//                        bsp = sp;
+//                        bsp.push_back(krange.at(1));
+//                    } else {
+//                        int row = std::stoi(key) - 1;
+//
+//                        if (fill) {
+//                            fill_disp_config(row);
+//                            fill = false;
+//                        }
+//
+//                        ++group_id;
+//
+//                        if (result.tids.contains(row)) {
+//                            auto tid_setting = &result.tids.at(row);
+//                            tid_setting->defx = std::stoi(sp.at(0));
+//                            tid_setting->defy = std::stoi(sp.at(1));
+//                            tid_setting->font = sp.at(2);
+//                            tid_setting->font_size = std::stoi(sp.at(3));
+//                            tid_setting->r = std::stoi(sp.at(4));
+//                            tid_setting->g = std::stoi(sp.at(5));
+//                            tid_setting->b = std::stoi(sp.at(6));
+//                            skip_row.insert(row);
+//
+//                            if (XGroup.contains(group_id)) {
+//                                XGroup.at(group_id).push_back(row);
+//                            } else {
+//                                XGroup.insert(std::make_pair(group_id, std::vector<int>()));
+//                                XGroup.at(group_id).push_back(row);
+//                            }
+//                        }
+//
+//                        bsp = sp;
+//                        bsp.push_back(key);
+//                    }
+//                }
+//            }
+//        } catch (std::exception &e) {
+//            ERROR("{} ProfileInit TextSetting.json Error out of range", target, e.what());
+//            return;
+//        }
+//#pragma region Legacy
+//        // try {
+//        //     int group_id = 0;
+//        //     std::set<int> skip_row;
+//        //     std::vector<std::string> bsp;
+//
+//        //    auto fill_disp_pos_config = [&](int to_end) {
+//        //        if (bsp.size() == 0) {
+//        //            return;
+//        //        }
+//        //        int bef_end = std::stoi(bsp.at(2));
+//        //        int font_size = 0;
+//        //        int base_font_size = std::stoi(bsp.at(3));
+//        //        int y = std::stoi(bsp.at(1));
+//        //        for (int i = bef_end; i < to_end; i++) {
+//        //            if (skip_row.size() > 0 && skip_row.find(i) != skip_row.end()) {
+//        //                continue;
+//        //            }
+//        //            auto fmprofile = &result.tids.at(i);
+//        //            int befpoint = i - 1;
+//        //            if (result.tids.contains(befpoint)) {
+//        //                auto tid_setting_pos = &result.tids.at(befpoint);
+//        //                if (tid_setting_pos->font_size > fmprofile->font_size) {
+//        //                    font_size = tid_setting_pos->font_size;
+//        //                } else {
+//        //                    font_size = fmprofile->font_size;
+//        //                }
+//        //            } else {
+//        //                font_size = base_font_size;
+//        //            }
+//
+//        //
+//        //            fmprofile->defx = std::stoi(bsp.at(0));
+//        //            y += font_size;
+//        //            fmprofile->defy = y;
+//        //            skip_row.insert(i);
+//        //            if (XGroup.contains(group_id)) {
+//        //                XGroup.at(group_id).push_back(i);
+//        //            } else {
+//        //                XGroup.insert(std::make_pair(group_id, std::vector<int>()));
+//        //                XGroup.at(group_id).push_back(i);
+//        //            }
+//        //        }
+//        //    };
+//        //    bool fill = false;
+//        //    for (const auto &[key, value] : *ps) {
+//        //        if (key == PROFILE_SETTING_KEY_NAME_OTHER) {
+//        //            if (value == "") {
+//        //                fill = true;
+//        //            } else {
+//        //                if (fill) {
+//        //                    fill_disp_pos_config((int)result.tids.size());
+//        //                    fill = false;
+//        //                }
+//
+//        //                ++group_id;
+//        //                std::vector<std::string> sp = KMCSplit(value, ',');
+//        //                int y = std::stoi(sp.at(1));
+//        //                int bef_font_size = 0;
+//        //                for (int i = 0; i < result.tids.size(); i++) {
+//        //                    if (skip_row.size() > 0 && skip_row.find(i) != skip_row.end()) {
+//        //                        continue;
+//        //                    }
+//        //
+//        //                    auto fmprofile = &result.tids.at(i);
+//        //                    fmprofile->defx = std::stoi(sp.at(0));
+//        //                    if (bef_font_size != 0 && fmprofile->font_size > bef_font_size) {
+//        //                        y += fmprofile->font_size;
+//        //                    } else {
+//        //                        y += bef_font_size;
+//        //                    }
+//        //
+//        //                    fmprofile->defy = y;
+//
+//        //                    bef_font_size = fmprofile->font_size;
+//
+//        //                    if (XGroup.contains(group_id)) {
+//        //                        XGroup.at(group_id).push_back(i);
+//        //                    } else {
+//        //                        XGroup.insert(std::make_pair(group_id, std::vector<int>()));
+//        //                        XGroup.at(group_id).push_back(i);
+//        //                    }
+//        //
+//        //                }
+//        //            }
+//        //        } else {
+//        //            std::vector<std::string> sp = KMCSplit(value, ',');
+//        //            if (key.contains('-')) {
+//
+//        //                std::vector<std::string> krange = KMCSplit(key, '-');
+//        //                int start = std::stoi(krange.at(0)) - 1;
+//        //                int end = std::stoi(krange.at(1));
+//
+//        //                if (fill) {
+//        //                    fill_disp_pos_config(start);
+//        //                    fill = false;
+//        //                }
+//
+//        //                ++group_id;
+//        //                int y = std::stoi(sp.at(1));
+//        //                int font_size = 0;
+//        //                int last_posy = 0;
+//        //                int bef_font_size = 0;
+//        //                for (int i = start; i < end; i++) {
+//        //                    if (result.tids.contains(i)) {
+//        //                        auto tid_setting_pos = &result.tids.at(i);
+//        //                        tid_setting_pos->defx = std::stoi(sp.at(0));
+//        //                        if (bef_font_size != 0 && tid_setting_pos->font_size > bef_font_size) {
+//        //                            y += tid_setting_pos->font_size;
+//        //                        } else {
+//        //                            y += bef_font_size;
+//        //                        }
+//
+//        //                        tid_setting_pos->defy = y;
+//        //                        bef_font_size = tid_setting_pos->font_size;
+//
+//        //                        font_size = tid_setting_pos->font_size;
+//        //                        last_posy = tid_setting_pos->defy;
+//        //                        skip_row.insert(i);
+//        //                        if (XGroup.contains(group_id)) {
+//        //                            XGroup.at(group_id).push_back(i);
+//        //                        } else {
+//        //                            XGroup.insert(std::make_pair(group_id, std::vector<int>()));
+//        //                            XGroup.at(group_id).push_back(i);
+//        //                        }
+//        //                    }
+//        //                }
+//
+//        //                sp[1] = std::to_string(last_posy);
+//        //                bsp = sp;
+//        //                bsp.push_back(krange.at(1));
+//        //                bsp.push_back(std::to_string(font_size));
+//        //            } else {
+//        //                int row = std::stoi(key) - 1;
+//
+//        //                if (fill) {
+//        //                    fill_disp_pos_config(row);
+//        //                    fill = false;
+//        //                }
+//
+//        //                ++group_id;
+//        //                int font_size = 0;
+//        //                int last_posy = 0;
+//        //                if (result.tids.contains(row)) {
+//        //                    auto tid_setting_pos = &result.tids.at(row);
+//        //                    tid_setting_pos->defx = std::stoi(sp.at(0));
+//        //                    tid_setting_pos->defy = std::stoi(sp.at(1));
+//        //                    font_size = tid_setting_pos->font_size;
+//        //                    last_posy = tid_setting_pos->defy;
+//        //                    skip_row.insert(row);
+//        //                    if (XGroup.contains(group_id)) {
+//        //                        XGroup.at(group_id).push_back(row);
+//        //                    } else {
+//        //                        XGroup.insert(std::make_pair(group_id, std::vector<int>()));
+//        //                        XGroup.at(group_id).push_back(row);
+//        //                    }
+//        //                }
+//
+//        //                sp[1] = std::to_string(last_posy);
+//        //                bsp = sp;
+//        //                bsp.push_back(key);
+//        //                bsp.push_back(std::to_string(font_size));
+//        //            }
+//        //        }
+//        //    }
+//        //} catch (std::exception &e) {
+//        //    ERROR("{} ProfileInit PositionSetting.json Error out of range {}", target, e.what());
+//        //}
+//#pragma endregion
+//        std::string cat = "";
+//        int format_id_num = result.format_id_num;
+//        std::string format_id_strings = result.format_id_strings;
+//        std::map<int, KMCProfilFormatIdMap> format_map;
+//        std::map<int, KMCDispConfigs> tids;
+//        std::vector<std::pair<int, int>> map_index;
+//
+//        int push_index = -1;
+//        int bef_row = -1;
+//        for (auto &[key, value] : XGroup) {
+//            int row = key - 1;
+//            int count = 0;
+//
+//            if (bef_row != row) {
+//                ++push_index;
+//            }
+//
+//            for (auto &k : value) {
+//                // LOG("XGroup : {} {}", key, k);
+//                if (count == 0) {
+//                    cat = result.row_string[k];
+//                    ++count;
+//                } else {
+//                    cat = cat + "\n" + result.row_string[k];
+//                }
+//
+//                for (auto it = result.map_index.begin(); it != result.map_index.end(); ++it) {
+//                    if (it->first == k) {
+//                        map_index.push_back(std::make_pair(k, push_index));
+//                    }
+//                }
+//
+//                if (result.format_map.contains(k)) {
+//                    if (format_map.contains(push_index)) {
+//                        auto rfm = result.format_map[k];
+//                        for (int i = 0; i < rfm.format_id.size(); i++) {
+//                            format_map[push_index].format_id.push_back(rfm.format_id[i]);
+//                        }
+//                    } else {
+//                        format_map.insert(std::make_pair(push_index, result.format_map[k]));
+//                    }
+//                }
+//
+//                if (result.tids.contains(k)) {
+//                    if (!tids.contains(push_index)) {
+//                        tids.insert(std::make_pair(push_index, result.tids[k]));
+//                    }
+//                }
+//            }
+//            format_map[push_index].row_string = cat;
+//            profil.row_string.push_back(cat);
+//
+//            bef_row = row;
+//        }
+//        sort(map_index.begin(), map_index.end());
+//        profil.map_index = map_index;
+//        profil.format_id_num = format_id_num;
+//        profil.format_id_strings = format_id_strings;
+//        profil.format_id_strings_array = KMCSplit(format_id_strings, ',');
+//        profil.isFormat = result.isFormat;
+//        profil.tids = tids;
+//        profil.format_map = format_map;
+//        profil.wids = result.wids;
+//    }
 
 }

@@ -1,60 +1,78 @@
-#include "KMCOAR.h"
+﻿#include "KMCOAR.h"
 #include "KMCConfig.h"
 #include "KMCEventThread.h"
+#include "KMCDisplayAddon.h"
+#include "KMCDisplayWordAndTexture.h"
 
 SINGLETONBODY(KMCCT::KMCOAR)
 
 namespace KMCCT {
     void KMCOAR::Init() { 
-        auto poar = KMCConfig::GetSingleton()->getIConnectOAR();
-       
-        for (auto [key, value] : *poar) {
-            try {
-                auto spvalue = KMCSplit(value, ',');
+        const auto player_addon_set = KMCDisplayAddon::GetSingleton()->GetActorAddons((int)KMCDisplayType::PLAYER);
+        if (player_addon_set) {
+            for (const auto& [key, value] : player_addon_set->cutin_entries) {
+                try {
+                    auto spvalue = KMCSplit(value.oar_ref, ',');
 
-                RE::TESGlobal* global = nullptr;
-                global = (RE::TESGlobal*)RE::TESDataHandler::GetSingleton()->LookupForm(
-                    std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
+                    if (spvalue.size() == 2) {
+                        RE::TESGlobal* global = nullptr;
+                        global = RE::TESDataHandler::GetSingleton()->LookupForm<RE::TESGlobal>(
+                            std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
 
-                if (global != nullptr) {
-                    global->value = 0.0f;
-                    OARComponents.push_back(
-                        std::make_pair(std::stoi(key), OARCompDetail(global, std::stof(spvalue.at(2)))));
+                        if (global != nullptr) {
+                            global->value = 0.0f;
+                            oar_components.push_back(std::make_pair(key, OARCompDetail(global, value.anim_duration)));
 
-                } else {
-                    ERROR("OARComps.json not found global value key = {}", key);
+                        } else {
+                            KMC_ERROR("[DisplayAddons.json] [OAR] [Player] GlobalForm not found. Key: {}", key);
+                        }
+                    } else {
+                        KMC_WARN(
+                            "[DisplayAddons.json] [OAR] [Player] 'expression' is empty. Is this intentional? "
+                            "Key: {}, Value: {}",
+                            key, value.oar_ref);
+                    }
+                } catch (...) {
+                    KMC_ERROR("[DisplayAddons.json] [OAR] [Player] Unknown fatal error.  Key: {}", key);
                 }
-            } catch (...) {
-                ERROR("OARComps.json fatal key: {} value : {}", key, value);
             }
         }
 
-        auto foar = KMCConfig::GetSingleton()->getFollowers();
-        for (auto fins : *foar) {
+        auto foar = KMCConfig::GetSingleton()->GetFollowers();
+        for (const auto& fins : *foar) {
             try {
+                int f_index = fins.index + 1;
+                const auto follower_addon_set = KMCDisplayAddon::GetSingleton()->GetActorAddons(f_index);
+                if (!follower_addon_set) continue;
+
                 std::vector<std::pair<uint64_t, OARCompDetail>> oarc;
 
-                for (auto [key, value] : fins.IConnectOAR) {
-                    auto spvalue = KMCSplit(value, ',');
+                for (const auto &[key, value] : follower_addon_set->cutin_entries) {
+                    auto spvalue = KMCSplit(value.oar_ref, ',');
 
-                    RE::TESGlobal* global = nullptr;
-                    global = (RE::TESGlobal*)RE::TESDataHandler::GetSingleton()->LookupForm(
-                        std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
+                    if (spvalue.size() == 2) {
+                        RE::TESGlobal* global = nullptr;
+                        global = RE::TESDataHandler::GetSingleton()->LookupForm<RE::TESGlobal>(
+                            std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
 
-                    if (global != nullptr) {
-                        global->value = 0.0f;
-                        oarc.push_back(
-                            std::make_pair(std::stoi(key), OARCompDetail(global, std::stof(spvalue.at(2)))));
+                        if (global != nullptr) {
+                            global->value = 0.0f;
+                            oarc.push_back(std::make_pair(key, OARCompDetail(global, value.anim_duration)));
 
+                        } else {
+                            KMC_ERROR("[DisplayAddons.json] [OAR] [Follower{}] GlobalForm not found. Key: {}", f_index,
+                                  key);
+                        }
                     } else {
-                        ERROR("OARComps.json not found global value key = {}", key);
+                        KMC_ERROR("[DisplayAddons.json] [OAR] [Follower{}] Invalid oar_ref format. Key: {}, Value: {}", fins.index, key,
+                              value.oar_ref);
                     }
                 }
 
-                FOARComponents.push_back(std::make_pair(fins.index, FOARCompDetail(oarc)));
+                f_oar_components.push_back(std::make_pair(fins.index, FOARCompDetail(oarc)));
                 fplays.push_back(FPlayNowOARCompDetail(OARCompDetail(), fins.index));
             } catch (...) {
-                ERROR("follower {} OARComps.json fatal", fins.index);
+                KMC_ERROR("[DisplayAddons.json] [OAR] [Follower{}] Unknown fatal error.", fins.index);
             }
         }
 
@@ -64,16 +82,16 @@ namespace KMCCT {
     void KMCOAR::Reset() { 
         now.global = nullptr;
         now.time = 0.0f;
-        for (auto& [key, value] : OARComponents) {
+        for (auto& [key, value] : oar_components) {
             value.global->value = 0.0f;
         }
 
         for (auto& value : fplays) {
-            value.OARComponents.global = nullptr;
+            value.oar_components.global = nullptr;
         }
 
-        for (auto& [key, value] : FOARComponents) {
-            for (auto& [ikey, ivalue] : value.OARComponents) {
+        for (auto& [key, value] : f_oar_components) {
+            for (auto& [ikey, ivalue] : value.oar_components) {
                 ivalue.global->value = 0.0f;
             }
         }
@@ -92,7 +110,8 @@ namespace KMCCT {
 
         KMCCT::KMCTimer(ocd->time * KMCCT::WHILE_WAIT_TIME);
 
-        if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+        auto* thread = KMCCT::KMCEventThread::GetSingleton();
+        if (thread->GetForceEndAnim() || thread->IsShuttingDown()) {
             return;
         }
 
@@ -101,8 +120,8 @@ namespace KMCCT {
 
     void KMCOAR::PPushOARFunc(uint64_t rand, bool force, float ex_oar_time) {
         auto comps =
-            std::find_if(OARComponents.begin(), OARComponents.end(), [rand](const auto& p) { return p.first == rand; });
-        if (comps != OARComponents.end()) {
+            std::find_if(oar_components.begin(), oar_components.end(), [rand](const auto& p) { return p.first == rand; });
+        if (comps != oar_components.end()) {
             if (comps->second.global == nullptr) {
                 return;
             }
@@ -124,11 +143,11 @@ namespace KMCCT {
     }
 
     void KMCOAR::FPushOARFunc(uint64_t rand, uint64_t frand, bool force, float ex_oar_time) {
-        auto it = std::find_if(FOARComponents.begin(), FOARComponents.end(),
+        auto it = std::find_if(f_oar_components.begin(), f_oar_components.end(),
                                [frand](const auto& p) { return p.first == frand; });
-        if (it != FOARComponents.end()) {
+        if (it != f_oar_components.end()) {
 
-            auto foar = it->second.OARComponents;
+            auto foar = it->second.oar_components;
             auto it2 = std::find_if(foar.begin(), foar.end(), [rand](const auto& p) { return p.first == rand; });
             if (it2 != foar.end()) {
                 auto comp = it2->second;
@@ -139,23 +158,23 @@ namespace KMCCT {
                 for (int i = 0; i < fplays.size(); i++) {
                     auto *fOldOarComp = &(fplays[i]);
                     if (fOldOarComp->index == frand) {
-                        if (fOldOarComp->OARComponents.global != comp.global) {
-                            if (fOldOarComp->OARComponents.global != nullptr) {
-                                fOldOarComp->OARComponents.global->value = 0.0f;
+                        if (fOldOarComp->oar_components.global != comp.global) {
+                            if (fOldOarComp->oar_components.global != nullptr) {
+                                fOldOarComp->oar_components.global->value = 0.0f;
                             }
 
-                            fOldOarComp->OARComponents = comp;
+                            fOldOarComp->oar_components = comp;
                             if (force) {
-                                fOldOarComp->OARComponents.time = ex_oar_time;
+                                fOldOarComp->oar_components.time = ex_oar_time;
                             }
-                            LaunchOAR(fOldOarComp->OARComponents);
-                        } else if (fOldOarComp->OARComponents.global == comp.global &&
-                                   fOldOarComp->OARComponents.global->value <= 0.5f) {
-                            fOldOarComp->OARComponents = comp;
+                            LaunchOAR(fOldOarComp->oar_components);
+                        } else if (fOldOarComp->oar_components.global == comp.global &&
+                                   fOldOarComp->oar_components.global->value <= 0.5f) {
+                            fOldOarComp->oar_components = comp;
                             if (force) {
-                                fOldOarComp->OARComponents.time = ex_oar_time;
+                                fOldOarComp->oar_components.time = ex_oar_time;
                             }
-                            LaunchOAR(fOldOarComp->OARComponents);
+                            LaunchOAR(fOldOarComp->oar_components);
                         }
                     }
                 }

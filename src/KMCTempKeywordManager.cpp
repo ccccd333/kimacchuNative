@@ -1,5 +1,4 @@
-#include "KMCTempKeywordManager.h"
-#include "IWWFunctions.h"
+﻿#include "KMCTempKeywordManager.h"
 
 SINGLETONBODY(KMCCT::KMCTempKeywordManager)
 
@@ -135,7 +134,7 @@ namespace KMCCT {
                     ok = false;
                 }
 
-                LOG("[TEMP KEYWORD] ADD {}", sk);
+                KMC_LOG("[TEMP KEYWORD] ADD {}", sk);
             }
 
             return ok;
@@ -153,7 +152,7 @@ namespace KMCCT {
                     ok = false;
                 }
 
-                LOG("[TEMP KEYWORD] REMOVE {}", sk);
+                KMC_LOG("[TEMP KEYWORD] REMOVE {}", sk);
             }
 
             return ok;
@@ -162,12 +161,12 @@ namespace KMCCT {
 
     void KMCTempKeywordManager::ToLog() {
         for (auto &tk : temp_keywords) {
-            LOG("[TEMP KEYWORD CONTAINER] {}", tk);
+            KMC_LOG("[TEMP KEYWORD CONTAINER] {}", tk);
         }
     }
 
     void KMCTempKeywordManager::Reset() { 
-        LOG("[TEMP KEYWORD] RESET");
+        KMC_LOG("[TEMP KEYWORD] RESET");
         temp_keywords.clear(); 
     }
 }

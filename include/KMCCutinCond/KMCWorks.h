@@ -1,5 +1,4 @@
-#pragma once
-#include "IWWFunctions.h"
+ï»¿#pragma once
 #include "KMCChecks.h"
 #include "KMCConfig.h"
 
@@ -28,7 +27,7 @@ namespace KMCCT {
 
         virtual bool Init(KMCCustomCondCheckHub* check, KMCCCheckSource* source) { return false; }
         virtual bool PreProcessing() { return false; }
-        // ƒJƒEƒ“ƒg‚ði‚ß‚éBAdd‚È‚çŒW”‚²‚Æ‚ÉƒJƒEƒ“ƒgƒAƒbƒvBTime‚È‚ç1•b‰ÁŽZ‚È‚Ç
+        // ã‚«ã‚¦ãƒ³ãƒˆã‚’é€²ã‚ã‚‹ã€‚Addãªã‚‰ä¿‚æ•°ã”ã¨ã«ã‚«ã‚¦ãƒ³ãƒˆã‚¢ãƒƒãƒ—ã€‚Timeãªã‚‰1ç§’åŠ ç®—ãªã©
         virtual void ToMove() {}
 
         virtual void Reset() {}
@@ -52,7 +51,7 @@ namespace KMCCT {
             } else if (cr == CCTCoefR::COEF_2) {
                 coef_relation = CCTCoefR::COEF_2;
             }
-            ERROR("CCTCoefR::Check NG {}", cr);
+            KMC_ERROR("CCTCoefR::Check NG {}", cr);
             coef_relation = CCTCoefR::BETWEEN;
         }
 
@@ -108,7 +107,7 @@ namespace KMCCT {
         bool PreProcessing() override { return true; }
         void Correction(float c) override {
             wrk_value_add = wrk_value_add + wrk_value_add * c;
-            LOG("[KMCCCAdd.Correction] av {}", wrk_value_add);
+            KMC_LOG("[KMCCCAdd.Correction] av {}", wrk_value_add);
         }
 
         void ToMove() override {
@@ -120,7 +119,7 @@ namespace KMCCT {
                     if (dur >= cool_time * KMCCT::TIME_SCALE_MS) {
                         cool_time_now = false;
                     } else {
-                        LOG("[ADD.ToMove] cool time av {}, dur(ms) {}, cool time(ms) {}", std::to_string(wrk_value_add),
+                        KMC_LOG("[ADD.ToMove] cool time av {}, dur(ms) {}, cool time(ms) {}", std::to_string(wrk_value_add),
                             dur, cool_time * KMCCT::TIME_SCALE_MS);
                         return;
                     }
@@ -142,13 +141,13 @@ namespace KMCCT {
                 wrk_value_add = add_value * coef_2;
             }
 
-            LOG("[ADD.ToMove] av {}", std::to_string(wrk_value_add));
+            KMC_LOG("[ADD.ToMove] av {}", std::to_string(wrk_value_add));
         }
 
         void Add(float c_add_value, float correction) override {
             float cor_addv = c_add_value + c_add_value * correction;
             wrk_value_add += cor_addv;
-            LOG("[ADD.Add] av {}, addv {}, cm {}", std::to_string(wrk_value_add), std::to_string(cor_addv),
+            KMC_LOG("[ADD.Add] av {}, addv {}, cm {}", std::to_string(wrk_value_add), std::to_string(cor_addv),
                 std::to_string(commit_wrk_value_add));
         }
 
@@ -156,12 +155,12 @@ namespace KMCCT {
             float cor_subv = subtract_value + subtract_value * correction;
             if (cor_subv > 0.0f && (commit_wrk_value_add + wrk_value_add) - cor_subv >= 0.0f) {
                 wrk_value_add -= cor_subv;
-                LOG("[ADD.Subtract] av {}, subtractv {}, cm {}", std::to_string(wrk_value_add),
+                KMC_LOG("[ADD.Subtract] av {}, subtractv {}, cm {}", std::to_string(wrk_value_add),
                     std::to_string(cor_subv), std::to_string(commit_wrk_value_add));
 
             } else if (cor_subv > 0.0f) {
                 wrk_value_add = 0.0f;
-                LOG("[ADD.Subtract.reset] av {}, subtractv {}, cm {}", std::to_string(wrk_value_add),
+                KMC_LOG("[ADD.Subtract.reset] av {}, subtractv {}, cm {}", std::to_string(wrk_value_add),
                     std::to_string(cor_subv), std::to_string(commit_wrk_value_add));
             }
         }
@@ -170,10 +169,10 @@ namespace KMCCT {
             float cor_divv = div_value + div_value * correction;
             if (cor_divv != 0.0f) {
                 wrk_value_add /= cor_divv;
-                LOG("[ADD.Div] av {}, divv {}, cm {}", std::to_string(wrk_value_add), std::to_string(cor_divv),
+                KMC_LOG("[ADD.Div] av {}, divv {}, cm {}", std::to_string(wrk_value_add), std::to_string(cor_divv),
                     std::to_string(commit_wrk_value_add));
             } else {
-                LOG("[ADD.Div] skip div(Reason: For division by zero) av {}, divv {}, cm {}",
+                KMC_LOG("[ADD.Div] skip div(Reason: For division by zero) av {}, divv {}, cm {}",
                     std::to_string(wrk_value_add), std::to_string(cor_divv), std::to_string(commit_wrk_value_add));
             }
         }
@@ -181,14 +180,14 @@ namespace KMCCT {
         void Mult(float mult_value, float correction) override {
             float cor_multv = mult_value + mult_value * correction;
             wrk_value_add *= cor_multv;
-            LOG("[ADD.Mult] av {}, multv {}, cm {}", std::to_string(wrk_value_add), std::to_string(cor_multv),
+            KMC_LOG("[ADD.Mult] av {}, multv {}, cm {}", std::to_string(wrk_value_add), std::to_string(cor_multv),
                 std::to_string(commit_wrk_value_add));
         }
 
         void MultToCMValue(float mult_value, float correction) override {
             float cor_multv = mult_value + mult_value * correction;
             commit_wrk_value_add *= cor_multv;
-            LOG("[ADD.MultToCMValue] av {}, multv {}, cm {}", std::to_string(wrk_value_add), std::to_string(cor_multv),
+            KMC_LOG("[ADD.MultToCMValue] av {}, multv {}, cm {}", std::to_string(wrk_value_add), std::to_string(cor_multv),
                 std::to_string(commit_wrk_value_add));
         }
 
@@ -211,7 +210,7 @@ namespace KMCCT {
             commit_wrk_value_add = lower_value;
             wrk_value_add = 0.0f;
             cool_time_now = false;
-            LOG("[ADD.Reset] av {} cv {}", std::to_string(wrk_value_add), std::to_string(commit_wrk_value_add));
+            KMC_LOG("[ADD.Reset] av {} cv {}", std::to_string(wrk_value_add), std::to_string(commit_wrk_value_add));
         }
         void Commit() override {
             if (commit_wrk_value_add + wrk_value_add > 0.0f) {
@@ -221,12 +220,12 @@ namespace KMCCT {
             }
             
             wrk_value_add = 0.0f;
-            LOG("[ADD.Commit] cv {}, av {}", std::to_string(commit_wrk_value_add), std::to_string(wrk_value_add));
+            KMC_LOG("[ADD.Commit] cv {}, av {}", std::to_string(commit_wrk_value_add), std::to_string(wrk_value_add));
         }
 
         bool Completed() override {
             if (commit_wrk_value_add >= upper_value) {
-                LOG("[ADD.Completed] cv {}, av {}", std::to_string(commit_wrk_value_add),
+                KMC_LOG("[ADD.Completed] cv {}, av {}", std::to_string(commit_wrk_value_add),
                     std::to_string(wrk_value_add));
                 return true;
             }
@@ -248,17 +247,17 @@ namespace KMCCT {
         bool PreProcessing() override { return true; }
         void Correction(float c) override {
             wrk_value_time = wrk_value_time + wrk_value_time * c;
-            LOG("[KMCCCTime.Correction] av {}", wrk_value_time);
+            KMC_LOG("[KMCCCTime.Correction] av {}", wrk_value_time);
         }
         void ToMove() override {
             wrk_value_time = add_time_v;
-            LOG("[TIME.ToMove] av {}", std::to_string(wrk_value_time));
+            KMC_LOG("[TIME.ToMove] av {}", std::to_string(wrk_value_time));
         }
 
         void Add(float c_add_value, float correction) override {
             float cor_addv = c_add_value + c_add_value * correction;
             wrk_value_time += cor_addv;
-            LOG("[TIME.Add] av {}, addv {}, cm {}", std::to_string(wrk_value_time), std::to_string(cor_addv),
+            KMC_LOG("[TIME.Add] av {}, addv {}, cm {}", std::to_string(wrk_value_time), std::to_string(cor_addv),
                 std::to_string(commit_wrk_value_time));
         }
 
@@ -266,11 +265,11 @@ namespace KMCCT {
             float cor_subv = subtract_value + subtract_value * correction;
             if (cor_subv > 0.0f && (commit_wrk_value_time + wrk_value_time) - cor_subv >= 0.0f) {
                 wrk_value_time -= cor_subv;
-                LOG("[TIME.Subtract] av {}, subtractv {}, cm {}", std::to_string(wrk_value_time),
+                KMC_LOG("[TIME.Subtract] av {}, subtractv {}, cm {}", std::to_string(wrk_value_time),
                     std::to_string(cor_subv), std::to_string(commit_wrk_value_time));
             } else if (cor_subv > 0.0f) {
                 wrk_value_time = 0.0f;
-                LOG("[TIME.Subtract.reset] av {}, subtractv {}, cm {}", std::to_string(wrk_value_time),
+                KMC_LOG("[TIME.Subtract.reset] av {}, subtractv {}, cm {}", std::to_string(wrk_value_time),
                     std::to_string(cor_subv), std::to_string(commit_wrk_value_time));
             }
         }
@@ -279,10 +278,10 @@ namespace KMCCT {
             float cor_divv = div_value + div_value * correction;
             if (cor_divv != 0.0f) {
                 wrk_value_time /= cor_divv;
-                LOG("[TIME.Div] av {}, divv {}, cm {}", std::to_string(wrk_value_time), std::to_string(cor_divv),
+                KMC_LOG("[TIME.Div] av {}, divv {}, cm {}", std::to_string(wrk_value_time), std::to_string(cor_divv),
                     std::to_string(commit_wrk_value_time));
             } else {
-                LOG("[TIME.Div] skip div(Reason: For division by zero) av {}, divv {}, cm {}",
+                KMC_LOG("[TIME.Div] skip div(Reason: For division by zero) av {}, divv {}, cm {}",
                     std::to_string(wrk_value_time), std::to_string(cor_divv), std::to_string(commit_wrk_value_time));
             }
         }
@@ -290,14 +289,14 @@ namespace KMCCT {
         void Mult(float mult_value, float correction) override {
             float cor_multv = mult_value + mult_value * correction;
             wrk_value_time *= cor_multv;
-            LOG("[TIME.Mult] av {}, multv {}, cm {}", std::to_string(wrk_value_time), std::to_string(cor_multv),
+            KMC_LOG("[TIME.Mult] av {}, multv {}, cm {}", std::to_string(wrk_value_time), std::to_string(cor_multv),
                 std::to_string(commit_wrk_value_time));
         }
 
         void MultToCMValue(float mult_value, float correction) override {
             float cor_multv = mult_value + mult_value * correction;
             commit_wrk_value_time *= cor_multv;
-            LOG("[TIME.MultToCMValue] av {}, multv {}, cm {}", std::to_string(wrk_value_time),
+            KMC_LOG("[TIME.MultToCMValue] av {}, multv {}, cm {}", std::to_string(wrk_value_time),
                 std::to_string(cor_multv), std::to_string(commit_wrk_value_time));
         }
 
@@ -319,7 +318,7 @@ namespace KMCCT {
         void Reset() override {
             commit_wrk_value_time = start_time;
             wrk_value_time = 0.0f;
-            LOG("[TIME.Reset] av {} cv {}", std::to_string(wrk_value_time), std::to_string(commit_wrk_value_time));
+            KMC_LOG("[TIME.Reset] av {} cv {}", std::to_string(wrk_value_time), std::to_string(commit_wrk_value_time));
         }
         void Commit() override {
             if (commit_wrk_value_time + wrk_value_time > 0.0f) {
@@ -328,12 +327,12 @@ namespace KMCCT {
                 commit_wrk_value_time = 0.0f;
             }
             wrk_value_time = 0.0f;
-            LOG("[TIME.Commit] cv {}, av {}", std::to_string(commit_wrk_value_time), std::to_string(wrk_value_time));
+            KMC_LOG("[TIME.Commit] cv {}, av {}", std::to_string(commit_wrk_value_time), std::to_string(wrk_value_time));
         }
 
         bool Completed() override {
             if (commit_wrk_value_time >= end_time) {
-                LOG("[TIME.Completed] cv {}, av {}", std::to_string(commit_wrk_value_time), std::to_string(end_time));
+                KMC_LOG("[TIME.Completed] cv {}, av {}", std::to_string(commit_wrk_value_time), std::to_string(end_time));
                 return true;
             }
 
@@ -359,14 +358,14 @@ namespace KMCCT {
 
         bool PreProcessing() override { return true; }
 
-        void Correction(float c) override { LOG("[KMCCCAmount.Correction]"); }
+        void Correction(float c) override { KMC_LOG("[KMCCCAmount.Correction]"); }
 
         void ToMove() override;
 
         void Add(float c_add_value, float correction) override {
             float cor_addv = c_add_value + c_add_value * correction;
             wrk_value_add += cor_addv;
-            LOG("[Amount.Add] av {}, addv {}, cm {}", std::to_string(wrk_value_add), std::to_string(cor_addv),
+            KMC_LOG("[Amount.Add] av {}, addv {}, cm {}", std::to_string(wrk_value_add), std::to_string(cor_addv),
                 std::to_string(commit_wrk_value_add));
         }
 
@@ -375,12 +374,12 @@ namespace KMCCT {
 
             if (cor_subv > 0.0f && (commit_wrk_value_add + wrk_value_add) - cor_subv >= 0.0f) {
                 wrk_value_add -= cor_subv;
-                LOG("[Amount.Subtract] av {}, subtractv {}, cm {}", std::to_string(wrk_value_add),
+                KMC_LOG("[Amount.Subtract] av {}, subtractv {}, cm {}", std::to_string(wrk_value_add),
                     std::to_string(cor_subv), std::to_string(commit_wrk_value_add));
 
             } else if (cor_subv > 0.0f) {
                 wrk_value_add = 0.0f;
-                LOG("[Amount.Subtract.reset] av {}, subtractv {}, cm {}", std::to_string(wrk_value_add),
+                KMC_LOG("[Amount.Subtract.reset] av {}, subtractv {}, cm {}", std::to_string(wrk_value_add),
                     std::to_string(cor_subv), std::to_string(commit_wrk_value_add));
             }
         }
@@ -389,10 +388,10 @@ namespace KMCCT {
             float cor_divv = div_value + div_value * correction;
             if (cor_divv != 0.0f) {
                 wrk_value_add /= cor_divv;
-                LOG("[Amount.Div] av {}, divv {}, cm {}", std::to_string(wrk_value_add), std::to_string(cor_divv),
+                KMC_LOG("[Amount.Div] av {}, divv {}, cm {}", std::to_string(wrk_value_add), std::to_string(cor_divv),
                     std::to_string(commit_wrk_value_add));
             } else {
-                LOG("[Amount.Div] skip div(Reason: For division by zero) av {}, divv {}, cm {}",
+                KMC_LOG("[Amount.Div] skip div(Reason: For division by zero) av {}, divv {}, cm {}",
                     std::to_string(wrk_value_add), std::to_string(cor_divv), std::to_string(commit_wrk_value_add));
             }
         }
@@ -400,14 +399,14 @@ namespace KMCCT {
         void Mult(float mult_value, float correction) override {
             float cor_multv = mult_value + mult_value * correction;
             wrk_value_add *= cor_multv;
-            LOG("[Amount.Mult] av {}, multv {}, cm {}", std::to_string(wrk_value_add), std::to_string(cor_multv),
+            KMC_LOG("[Amount.Mult] av {}, multv {}, cm {}", std::to_string(wrk_value_add), std::to_string(cor_multv),
                 std::to_string(commit_wrk_value_add));
         }
 
         void MultToCMValue(float mult_value, float correction) override {
             float cor_multv = mult_value + mult_value * correction;
             commit_wrk_value_add *= cor_multv;
-            LOG("[TIME.MultToCMValue] av {}, multv {}, cm {}", std::to_string(wrk_value_add), std::to_string(cor_multv),
+            KMC_LOG("[TIME.MultToCMValue] av {}, multv {}, cm {}", std::to_string(wrk_value_add), std::to_string(cor_multv),
                 std::to_string(commit_wrk_value_add));
         }
 
@@ -430,7 +429,7 @@ namespace KMCCT {
             commit_wrk_value_add = 0.0f;
             wrk_value_add = 0.0f;
             cool_time_now = false;
-            LOG("[Amount.Reset] av {} cv {}", std::to_string(wrk_value_add), std::to_string(commit_wrk_value_add));
+            KMC_LOG("[Amount.Reset] av {} cv {}", std::to_string(wrk_value_add), std::to_string(commit_wrk_value_add));
         }
         void Commit() override {
             if (commit_wrk_value_add + wrk_value_add > 0.0f) {
@@ -439,12 +438,12 @@ namespace KMCCT {
                 commit_wrk_value_add = 0.0f;
             }
             wrk_value_add = 0.0f;
-            LOG("[Amount.Commit] cv {}, av {}", std::to_string(commit_wrk_value_add), std::to_string(wrk_value_add));
+            KMC_LOG("[Amount.Commit] cv {}, av {}", std::to_string(commit_wrk_value_add), std::to_string(wrk_value_add));
         }
 
         bool Completed() override {
             if (commit_wrk_value_add >= target_amount) {
-                LOG("[Amount.Completed] cv {}, av {}", std::to_string(commit_wrk_value_add),
+                KMC_LOG("[Amount.Completed] cv {}, av {}", std::to_string(commit_wrk_value_add),
                     std::to_string(wrk_value_add));
                 return true;
             }
@@ -465,29 +464,29 @@ namespace KMCCT {
         bool Init(KMCCustomCondCheckHub* check, KMCCCheckSource* source) override { return true; }
         bool PreProcessing() override { return true; }
 
-        void Correction(float c) override { LOG("[Dummy.Correction]"); }
+        void Correction(float c) override { KMC_LOG("[Dummy.Correction]"); }
 
-        void ToMove() override { LOG("[Dummy.ToMove]"); }
+        void ToMove() override { KMC_LOG("[Dummy.ToMove]"); }
 
-        void Add(float c_add_value, float correction) override { LOG("[Dummy.Add]"); }
+        void Add(float c_add_value, float correction) override { KMC_LOG("[Dummy.Add]"); }
 
-        void Subtract(float subtract_value, float correction) override { LOG("[Dummy.Subtract]"); }
+        void Subtract(float subtract_value, float correction) override { KMC_LOG("[Dummy.Subtract]"); }
 
-        void Div(float div_value, float correction) override { LOG("[Dummy.Div]"); }
+        void Div(float div_value, float correction) override { KMC_LOG("[Dummy.Div]"); }
 
-        void Mult(float mult_value, float correction) override { LOG("[Dummy.Mult]"); }
+        void Mult(float mult_value, float correction) override { KMC_LOG("[Dummy.Mult]"); }
 
-        void MultToCMValue(float mult_value, float correction) override { LOG("[Dummy.MultToCMValue]"); }
+        void MultToCMValue(float mult_value, float correction) override { KMC_LOG("[Dummy.MultToCMValue]"); }
 
         bool IsEpsilon() override { return false; }
 
         float CompPercent() override { return 0.0f; }
 
-        void Reset() override { LOG("[Dummy.Reset]"); }
-        void Commit() override { LOG("[Dummy.Commit]"); }
+        void Reset() override { KMC_LOG("[Dummy.Reset]"); }
+        void Commit() override { KMC_LOG("[Dummy.Commit]"); }
 
         bool Completed() override {
-            LOG("[Dummy.Completed]");
+            KMC_LOG("[Dummy.Completed]");
 
             return false;
         }

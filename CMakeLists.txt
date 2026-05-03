@@ -10,13 +10,11 @@ if(DEFINED ENV{SKYRIM_MODS_FOLDER} AND IS_DIRECTORY "$ENV{SKYRIM_MODS_FOLDER}")
     set(OUTPUT_FOLDER "$ENV{SKYRIM_MODS_FOLDER}/${PROJECT_NAME}")
 endif()
 
-include_directories(./IWW/iWantWidgetsNG/include)
-
-add_subdirectory(IWW/iWantWidgetsNG)
-
 find_package(CommonLibSSE CONFIG REQUIRED)
 find_package(Boost REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(minhook CONFIG REQUIRED)
+find_package(yaml-cpp CONFIG REQUIRED)
 
 add_commonlibsse_plugin(${PROJECT_NAME} SOURCES 
     src/KMCConfig.cpp
@@ -41,12 +39,20 @@ add_commonlibsse_plugin(${PROJECT_NAME} SOURCES
     src/KMCGameEventListener.cpp
     src/KMCTempKeywordManager.cpp
     src/KMCExpression.cpp
+    src/KMCStorageUtilTracker.cpp
+    src/KMCPrismaUIBridge.cpp
+    src/KMCDisplayWordAndTexture.cpp
+    src/KMCDisplayAddon.cpp
+    src/KMCContextManager.cpp
     plugin.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ./include)
-
-target_link_libraries(${PROJECT_NAME} PUBLIC IWantWidgetsNative) 
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+    minhook::minhook
+    yaml-cpp::yaml-cpp
+)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 target_precompile_headers(${PROJECT_NAME} PUBLIC PCH.h)

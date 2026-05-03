@@ -1,4 +1,4 @@
-#include <boost/any.hpp>
+﻿#include <boost/any.hpp>
 
 #include "KMCCutinCond/KMCWorks.h"
 #include "KMCGameEventListener.h"
@@ -48,7 +48,7 @@ namespace KMCCT {
                     return;
                 }
 
-                LOG("KMCCCAmount::AddItemEvent item {} amount {} target amount {} abandon amount {}", get_item_name,
+                KMC_LOG("KMCCCAmount::AddItemEvent item {} amount {} target amount {} abandon amount {}", get_item_name,
                     get_amount, target_amount, abandon_amount);
 
                 {
@@ -72,7 +72,7 @@ namespace KMCCT {
                 if (dur >= cool_time * KMCCT::TIME_SCALE_MS) {
                     cool_time_now = false;
                 } else {
-                    LOG("[KMCCCAmount.ToMove] cool time av {}, dur(ms) {}, cool time(ms) {}",
+                    KMC_LOG("[KMCCCAmount.ToMove] cool time av {}, dur(ms) {}, cool time(ms) {}",
                         std::to_string(wrk_value_add), dur, cool_time * KMCCT::TIME_SCALE_MS);
                     return;
                 }
@@ -88,7 +88,7 @@ namespace KMCCT {
             std::lock_guard<std::mutex> lock(mtx);
             wrk_value_add = amount;
             amount = 0.0f;
-            LOG("[Amount.ToMove] av {}", std::to_string(wrk_value_add));
+            KMC_LOG("[Amount.ToMove] av {}", std::to_string(wrk_value_add));
         }
     }
 }

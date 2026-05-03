@@ -1,8 +1,4 @@
 #include "KMCUtility.h"
-
-#include <IWWConfig.h>
-#include <IWWFunctions.h>
-
 #include "KMCEventThread.h"
 
 std::mt19937 create_rand_engine() {
@@ -105,7 +101,7 @@ namespace KMCCT {
             std::string f = it->second;
             return it->second;
         } else {
-            ERROR("{}", e_message);
+            KMC_ERROR("{}", e_message);
         }
 
         return "";
@@ -144,11 +140,12 @@ namespace KMCCT {
         RE::NiPoint3 ppos = player->GetPosition();
 
         for (int i = 0; i < followers->size(); i++) {
-            RE::Actor *f = (*followers)[i].follower;
+            auto actor_ptr = (*followers)[i].follower_handle.get();
+            RE::Actor *f = actor_ptr.get();
             if (f != nullptr) {
                 bool checkOK = false;
                 float dist = f->GetPosition().GetDistance(ppos);
-                LOG("FPos PPos dist = {}", dist);
+                KMC_LOG("FPos PPos dist = {}", dist);
                 if (effectiveDistance > dist) {
                     checkOK = true;
                 }
@@ -156,11 +153,11 @@ namespace KMCCT {
                 if (checkOK) {
                     // check keyword
                     std::string r = std::to_string(rand);
-                    auto condKeywords = (*followers)[i].IKeywords;
-                    auto fmkeyword = std::find_if(condKeywords.begin(), condKeywords.end(),
-                                                  [r](const auto &p) { return p.first == r; });
-                    if (fmkeyword != condKeywords.end()) {
-                        f->HasKeyword(fmkeyword->second) ? checkOK = true : checkOK = false;
+                    const auto &restrict_keywords_map = (*followers)[i].restrict_keywords_map;
+
+                    auto it = restrict_keywords_map.find(rand);
+                    if (it != restrict_keywords_map.end()) {
+                        f->HasKeyword(it->second) ? checkOK = true : checkOK = false;
                     } else {
                         checkOK = true;
                     }
@@ -186,6 +183,8 @@ namespace KMCCT {
             return KMCInequalitySign::less_than;
         } else if (target == "==") {
             return KMCInequalitySign::equal;
+        } else if (target == "default") {
+            return KMCInequalitySign::def;
         }
 
         return KMCInequalitySign::unk;
@@ -340,7 +339,7 @@ namespace KMCCT {
             try {
                 v = source->at(i + source_index);
             } catch (...) {
-                ERROR("BuildMultTypeValues out of range");
+                KMC_ERROR("BuildMultTypeValues out of range");
                 return false;
             }
             auto value_type = results_value_type->at(i);
@@ -348,7 +347,7 @@ namespace KMCCT {
 
             if (v == "") {
                 if (value_type != KMCValueType::KM_STRING) {
-                    WARN("BuildMultTypeValues another type");
+                    KMC_WARN("BuildMultTypeValues another type");
                 }
 
                 continue;
@@ -467,6 +466,19 @@ namespace KMCCT {
         return func(a_character);
     }
 
+    uint64_t StorageUtilCalcID(void *stack_id) {
+        uint64_t strage_util_key_id = 0;
+        uint32_t low = 0;
+        if (stack_id) {
+            low = *(uint32_t *)((uintptr_t)stack_id + 0x14);
+            auto high = *(uint8_t *)((uintptr_t)stack_id + 0x1A);
+
+            strage_util_key_id = ((uint64_t)high << 32) | low;
+        }
+
+        return strage_util_key_id;
+    }
+
     void KMCIsWorn(RE::Actor *actor, std::vector<std::uint32_t> worn_slot, std::vector<bool> &result) {
         
         if (worn_slot.empty()) {
@@ -519,141 +531,44 @@ namespace KMCCT {
         return false;
     }
 
-    void NamePlateSimplyWipe(KMCNPLoadedWidget id, std::string aaaakmcroot) {
-        auto npasimple = KMCCT::KMCConfig::GetSingleton()->getINamePlateAnimation((int)simply);
 
-        const static int tox = KMCFindVector(&(npasimple->settings), "tox", -300);
-        const static int strength = KMCFindVector(&(npasimple->settings), "basevelocity", 1);
-        const static int acceleration = KMCFindVector(&(npasimple->settings), "acceleration", 1);
-        const static int stAddTiming = KMCFindVector(&(npasimple->settings), "switchgearsMS", 50);
-        const static int t = KMCFindVector(&(npasimple->settings), "switchgearsMS", 1) * KMCCT::TIME_SCALE_MS;
-
-        int wid = id.LoadedWidget;
-        // int tid = id.LoadedText;
-        int diffX = (tox + id.defaultWX) - id.defaultWX;
-        int length = 0;
-        int add = acceleration;
-        tox < 0 ? length = tox *-1 : length = tox;
-
-        long long freq = 2;
-
-        int stock = 0;
-
-        int nowp = 0;
-
-        int transX = 0;
-        if (diffX > 0) {
-            transX = strength;
-        } else if (diffX < 0) {
-            transX = -strength;
-        } else {
-            if (wid != -1) {
-                IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, wid, true);
-            }
-            return;
-        }
-
-        if (wid != -1) {
-            IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, wid, true);
-            int x = id.defaultWX;
-            time_point<Clock> start = Clock::now();
-
-            while (true) {
-                ++stock;
-                if (stock >= stAddTiming) {
-                    stock -= stAddTiming;
-                    add += acceleration;
-                }
-                x += (transX * add);
-                nowp += (strength * add);
-
-                if (nowp > length) {
-                    IWW::MainFunctions::GetSingleton()->SetPosX(aaaakmcroot, wid, (tox + id.defaultWX));
+    std::string EscapeStringForJavaScript(const std::string &input) {
+        std::ostringstream ss;
+        for (char c : input) {
+            switch (c) {
+                case '\'':
+                    ss << "\\'";
                     break;
-                } else {
-                    IWW::MainFunctions::GetSingleton()->SetPosX(aaaakmcroot, wid, x);
-                }
-
-                time_point<Clock> end;
-                long long dur = 0;
-
-                end = Clock::now();
-                milliseconds diff = duration_cast<milliseconds>(end - start);
-                dur = diff.count();
-                if (dur >= t) {
+                case '\"':
+                    ss << "\\\"";
                     break;
-                }
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(freq));
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
+                case '\\':
+                    ss << "\\\\";
                     break;
-                }
+                case '\n':
+                    ss << "\\n";
+                    break;
+                case '\r':
+                    ss << "\\r";
+                    break;
+                case '\t':
+                    ss << "\\t";
+                    break;
+                case '\b':
+                    ss << "\\b";
+                    break;
+                case '\f':
+                    ss << "\\f";
+                    break;
+                case '/':
+                    ss << "\\/";
+                    break;
+                default:
+                    ss << c;
+                    break;
             }
         }
+        return ss.str();
     }
 
-    void NamePlateFadeOut(KMCNPLoadedWidget id, std::string aaaakmcroot) {
-        auto npafade = KMCCT::KMCConfig::GetSingleton()->getINamePlateAnimation((int)end_fadeout);
-
-        const static int strength = KMCFindVector(&(npafade->settings), "fadeoutspeed", 1);
-        const static int speedupvalue = KMCFindVector(&(npafade->settings), "speedupvalue", 1);
-        const static int startalpha = KMCFindVector(&(npafade->settings), "startalpha", 255);
-        const static int stAddTiming = KMCFindVector(&(npafade->settings), "switchgearsMS", 50);
-        const static int t = KMCFindVector(&(npafade->settings), "animationtime", 1) * KMCCT::TIME_SCALE_MS;
-
-        long long freq = 2;
-        int add = speedupvalue;
-        int wid = id.LoadedWidget;
-        // int tid = id.LoadedText;
-
-        int alpha = startalpha;
-        int stock = 0;
-
-        if (wid != -1) {
-            IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, wid, true);
-            time_point<Clock> start = Clock::now();
-
-            while (true) {
-                ++stock;
-                if (stock >= stAddTiming) {
-                    stock -= stAddTiming;
-                    add += speedupvalue;
-                }
-                alpha -= (strength * add);
-
-                if (alpha > 0) {
-                    IWW::MainFunctions::GetSingleton()->SetTransparency(aaaakmcroot, wid, alpha);
-                } else {
-                    break;
-                }
-
-                time_point<Clock> end;
-                long long dur = 0;
-
-                end = Clock::now();
-                milliseconds diff = duration_cast<milliseconds>(end - start);
-                dur = diff.count();
-                if (dur >= t) {
-                    break;
-                }
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(freq));
-                if (KMCCT::KMCEventThread::GetSingleton()->forceendanim) {
-                    break;
-                }
-            }
-        }
-
-        IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, wid, false);
-        // std::this_thread::sleep_for(std::chrono::milliseconds(16));
-        // IWW::MainFunctions::GetSingleton()->SetVisible(aaaakmcroot, tid, false);
-        std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_INVISIBLE_MS));
-        IWW::MainFunctions::GetSingleton()->SetTransparency(aaaakmcroot, wid, 255);
-        IWW::MainFunctions::GetSingleton()->SetPosX(aaaakmcroot, wid, id.defaultWX);
-        IWW::MainFunctions::GetSingleton()->SetPosY(aaaakmcroot, wid, id.defaultWY);
-        std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CALL_INVISIBLE_MS));
-        // IWW::MainFunctions::GetSingleton()->SetTransparency(aaaakmcroot, tid, 255);
-        // IWW::MainFunctions::GetSingleton()->SetPosX(aaaakmcroot, tid, id.defaultTX);
-        // IWW::MainFunctions::GetSingleton()->SetPosY(aaaakmcroot, tid, id.defaultTY);
-    }
 }

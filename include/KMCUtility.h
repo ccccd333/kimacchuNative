@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <chrono>
 
 using Clock = std::chrono::steady_clock;
@@ -65,11 +65,9 @@ namespace KMCCT {
                 "Failed to get RE::ConsoleLog::GetSingleton(). Did you call ConsoleLog() before OnDataLoaded?");
     }
 
-    enum KMCWipeType { simply, end_fadeout };
-
     enum class KMCValueType { KM_INT, KM_FLOAT, KM_STRING, KM_LONG, UNK };
 
-    enum class KMCWaitType { in_scene, move_widget, max };
+    enum class KMCWaitType { in_scene, max };
 
     enum class KMCInterruptType { add_item, on_hit };
 
@@ -81,6 +79,7 @@ namespace KMCCT {
         more_than,  // TESGlobal > base_value
         less_than,
         equal,  // TESGlobal == base_value
+        def,
         unk
     };
 
@@ -96,7 +95,11 @@ namespace KMCCT {
         int GetValue(int &o) { return iv; }
 
         bool SetValue(std::string type, std::string value) {
+            
             if (type == "float") {
+                if (value.empty()) {
+                    value = "0.0";
+                }
                 fv = std::stof(value);
                 value_type = KMCValueType::KM_FLOAT;
                 return true;
@@ -105,10 +108,17 @@ namespace KMCCT {
                 value_type = KMCValueType::KM_STRING;
                 return true;
             } else if (type == "long") {
+                if (value.empty()) {
+                    value = "0";
+                }
                 lv = std::stol(value);
                 value_type = KMCValueType::KM_LONG;
                 return true;
             } else if (type == "int") {
+                
+                if (value.empty()) {
+                    value = "0";
+                }
                 iv = std::stoi(value);
                 value_type = KMCValueType::KM_INT;
                 return true;
@@ -140,6 +150,51 @@ namespace KMCCT {
             }
 
             return result;
+        }
+
+        std::string ToStringMV() {
+            if (KMCValueType::UNK == value_type) {
+                return "";
+            }
+
+            std::string result = "";
+
+            switch (value_type) {
+                case KMCValueType::KM_INT:
+                    result = std::to_string(iv);
+                    break;
+                case KMCValueType::KM_FLOAT:
+                    result = std::to_string(fv);
+                    break;
+                case KMCValueType::KM_STRING:
+                    result = sv;
+                    break;
+                case KMCValueType::KM_LONG:
+                    result = std::to_string(lv);
+                    break;
+            }
+
+            return result;
+        }
+
+        bool Comp(MultiTypeValue t) { 
+            return value_type == t.value_type;
+        }
+
+        void SetIntValue(int value) {
+            iv = value;
+            value_type = KMCValueType::KM_INT;
+        }
+
+
+        void SetFloatValue(float value) {
+            fv = value;
+            value_type = KMCValueType::KM_FLOAT;
+        }
+
+        void SetStringValue(std::string value) {
+            sv = value;
+            value_type = KMCValueType::KM_STRING;
         }
 
     public:
@@ -247,17 +302,10 @@ namespace KMCCT {
         }
 
     public:
-        std::vector<std::pair<std::string, std::string>> IAutoWordConfigs;
-        std::vector<std::pair<std::string, std::string>> IAutoWordWFConfigs;
-        std::vector<std::pair<std::string, std::string>> ISoundDescriptorFormIdConfigs;
-        std::vector<std::pair<std::string, std::string>> IAnimationRange;
-        std::vector<std::pair<std::string, std::string>> ISpeachTiming;
-        std::vector<std::pair<std::string, std::string>> IConditions;
-        std::vector<std::pair<std::string, RE::BGSKeyword *>> IKeywords;
-        std::vector<std::pair<std::string, std::map<std::string, std::string>>> ISoundDescriptorSEFormIdConfigs;
-        std::vector<std::pair<std::string, KMCCompsFlag>> IHideComponents;
-        std::vector<std::pair<std::string, std::string>> IConnectOAR;
-        RE::Actor *follower = nullptr;
+        std::unordered_map<int, std::string> playback_priority;
+        std::vector<std::pair<std::string, std::string>> restrict_keywords;
+        std::unordered_map<int, RE::BGSKeyword *> restrict_keywords_map;
+        RE::ActorHandle follower_handle;
         std::string formId = "";
         std::string pluginName = "";
         int index = 0;
@@ -268,7 +316,7 @@ namespace KMCCT {
         KMCInterruptPushCutInData() {}
         KMCInterruptPushCutInData(KMCInterruptType itt, std::string t, std::string cond1 = "", std::string cond2 = "",
                                   std::string cond3 = "", RE::TESForm *condf1 = nullptr) {
-            interruptType = itt;
+            interrupt_type = itt;
             type = t;
             condition1 = cond1;
             condition2 = cond2;
@@ -277,18 +325,12 @@ namespace KMCCT {
         }
 
     public:
-        KMCInterruptType interruptType;
+        KMCInterruptType interrupt_type;
         std::string type = "";
         std::string condition1 = "";
         std::string condition2 = "";
         std::string condition3 = "";
         RE::TESForm *conditionf1;
-    };
-
-    struct KMCUpdateProfileData {
-    public:
-        int tid = -1;
-        std::string format_data = "";
     };
 
     struct KMCWaitTaskParam {
@@ -344,94 +386,25 @@ namespace KMCCT {
         // KMCWaitTaskParam wtparam;
     };
 
-    struct KMCNamePlateAnimationSettings {
-    public:
-        std::vector<std::pair<std::string, std::string>> settings;
-    };
-
     struct KMCRandomData {
     public:
-        KMCRandomData(int of, int in, std::vector<int> r, int h, int l, size_t s) {
+        KMCRandomData(int of, int in, std::vector<int> r, int h, int l, size_t s, const std::vector<int> *ci) {
             offset = of;
             maxIndex = in;
-            randValues = r;
+            rand_values = r;
             high = h;
             low = l;
             size = s;
+            category_indices = ci;
         }
 
     public:
         int offset = 0;
         int maxIndex = 0;
-        std::vector<int> randValues;
+        std::vector<int> rand_values;
         int high = 0, low = 0;
         size_t size = 0;
-    };
-
-    struct KMCNamePlate {
-    public:
-        KMCNamePlate(std::vector<std::string> conf) {
-            conf.at(0) == "disable" ? isActive = false : isActive = true;
-            font = conf.at(1);
-            fontsize = std::stoi(conf.at(2));
-            r = std::stoi(conf.at(3));
-            g = std::stoi(conf.at(4));
-            b = std::stoi(conf.at(5));
-
-            name_x = std::stoi(conf.at(6));
-            name_y = std::stoi(conf.at(7));
-
-            font_x = std::stoi(conf.at(8));
-            font_y = std::stoi(conf.at(9));
-        }
-
-        bool isActive;
-        std::string font;
-        int fontsize;
-        int r, g, b;
-        int name_x, name_y;
-        int font_x, font_y;
-    };
-
-    struct KMCOutputContainer {
-    public:
-        KMCOutputContainer() {}
-        KMCOutputContainer(int o, WidgetType w) { 
-            output = o;
-            wt = w;
-        }
-
-
-        int output = -99;
-        WidgetType wt = WidgetType::none;
-    };
-    // animation setting
-
-    class KMCLoadedWidgetData {
-    public:
-        KMCLoadedWidgetData(){};
-
-        KMCLoadedWidgetData(bool isanim, int wid, int size, std::string loop) {
-            isAnim = isanim;
-            if (isAnim) {
-                animWedget.resize(size);
-                wedget = -1;
-                loop == IS_LOOP ? isLoop = true : isLoop = false;
-            } else {
-                wedget = wid;
-            }
-        }
-
-        ~KMCLoadedWidgetData() { animWedget.clear(); }
-
-    public:
-        bool isAnim = false;
-        bool isLoop = false;
-        int wedget = -1;
-        int bef_widget_id = -1;
-        std::vector<int> animWedget;
-        std::vector<int> bef_animWedget;
-        bool init = false;
+        const std::vector<int> *category_indices;
     };
 
     struct KMCDispConfigs {
@@ -513,6 +486,52 @@ namespace KMCCT {
         int defaultWX = 0, defaultWY = 0;
     };
 
+    struct VMObjectHandleInfo {
+        RE::VMHandle handle;
+        RE::FormType form_type;
+        uint64_t strage_util_key_id;
+        RE::FormID form_id;
+    };
+
+    struct StorageObservedValue {
+        std::string strage_key_name;
+        MultiTypeValue compare_value;
+        VMObjectHandleInfo vm_object;
+        bool has_value = false;
+    };
+
+    struct KMCCutinCondStorageUtilData {
+    public:
+        std::string tag;
+        VMObjectHandleInfo vm_object;
+        bool sov_is_null = false;
+        MultiTypeValue default_value;
+        std::string access_key;
+    };
+
+    struct KMCProfileReplaceMap {
+    public:
+        std::string id = "";
+        int row = -1;
+        /*
+        "所有権:{PlayerSLSValidFreedomLic} 日数:{PlayerSLSValidFreedomLic2} 日"を以下のように分解したものを保管する
+        [0]->所有権:
+        [1]->{PlayerSLSValidFreedomLic}
+        [2]-> 日数:
+        [3]->{PlayerSLSValidFreedomLic2}
+        [4]-> 日
+        */
+        std::vector<std::string> format_strings;
+        /*
+        \{([0-9]|[a-z]|[A-Z])+\}のパターンマッチでマッチした場合のもののindexを保管
+        [0]->1
+        [1]->3
+        */
+        std::vector<int> placeholder_indices;
+
+        std::unordered_map<int, std::string> live_map_keys;
+    };
+
     struct KMCProfilFormatIdMap {
     public:
         KMCProfilFormatIdMap() {}
@@ -530,20 +549,68 @@ namespace KMCCT {
         std::vector<std::string> format_id;
     };
 
+    struct KMCProfileDrawingData {
+    public:
+        std::string base_path;
+        int start = 0;
+        int end = 0;
+    };
+
+    struct KMCProfileOperatorData {
+    public:
+        std::string op;
+        KMCInequalitySign sign;
+        MultiTypeValue comp_value;
+        std::string result;
+        
+    };
+
+    struct KMCProfileStorageUtilLiveData {
+    public:
+        std::string tag;
+        StorageObservedValue sov;
+        bool sov_is_null = false;
+        MultiTypeValue default_value;
+        std::string type;
+        std::string access_key;
+        std::vector<KMCProfileOperatorData> pod;
+
+        std::string default_op_return_value;
+        //KMCProfileReplaceMap *prm_pointer;
+    };
+
     struct KMCProfil {
     public:
         KMCProfil() {}
 
     public:
-        std::vector<KMCDispConfigs> wids;
-        std::vector<std::string> row_string;
         int format_id_num = 0;
-        std::string format_id_strings = "";
-        std::vector<std::string> format_id_strings_array;
-        std::vector<std::pair<int, int>> map_index;
-        std::map<int, KMCDispConfigs> tids;
-        std::map<int, KMCProfilFormatIdMap> format_map;
-        bool isFormat = false;
+
+        std::unordered_map<std::string, std::string> bg_map;
+
+        /*
+        {
+            "T01":{
+            1:"ヒナ[Hina] 種族[Erin]",
+            2:"年齢:1X",
+            3:"所有権:{PlayerSLSValidFreedomLic}",
+            4:"<プロフィール>"
+            }
+        }
+        */
+        std::unordered_map<std::string, std::map<int, std::string>> profile_lines;
+
+        std::vector<KMCProfileReplaceMap> format_maps;
+
+        std::unordered_map<std::string, KMCProfileDrawingData> drawing_data;
+
+        /*
+        {
+            "{PlayerSLSValidFreedomLic}":KMCProfileStorageUtilLiveData,
+            ~~~etc~~~
+        }
+        */
+        std::unordered_map<std::string, KMCProfileStorageUtilLiveData> live_data;
     };
 
     struct STNodeRelations {
@@ -588,67 +655,68 @@ namespace KMCCT {
         float exp_time = 4.0f;
     };
 
+    enum class KMCDisplayType { PLAYER, FOLLOWER, UNK };
+
+    struct CutinEntry {
+        std::string category;
+        bool is_full_screen;
+        float display_time;
+        std::string word;
+        int range_start;
+        int range_end;
+    };
+
     struct KMCAnimST {
     public:
-        KMCLoadedWidgetData t;
-        KMCLoadedWidgetData ft;
-        int tid = -1;
-        int ftid = -1;
+        CutinEntry t;
+        CutinEntry ft;
         long long time = 0;
-        bool isAnim = false;
-        bool isfAnim = false;
+        long long ftime = 0;
         int rand = -1;
         int frand = -1;
+        int p_next_rand = -1;
+        int f_netx_rand = -1;
         float volum = 0;
         float oar_time = 0.0f;
         bool overri_oar_time = false;
         bool overri_exp_time = false;
         float exp_time = 0.0f;
         int exp_rand = -1;
-        std::vector<std::pair<std::string, std::string>> *ISpeechTiming;
+        std::unordered_map<int, std::string> *playback_priority;
         RE::TESObjectREFR *speakerp;
-        RE::TESObjectREFR *speakerf;
-        KMCNPLoadedWidget nppw;
-        KMCNPLoadedWidget npfw;
-        KMCWipeType wt;
-        KMCWipeType wet;
+        RE::ActorHandle speakerf_handle;
         KMCCompsFlag pcf;
         KMCCompsFlag fcf;
         std::string precord = "";
         std::string frecord = "";
+        std::string player_name = "";
+        std::string follower_name = "";
     };
 
-    class KMCFLoadedWidget {
-    public:
-        KMCFLoadedWidget() {}
-
-        KMCFLoadedWidget(std::unordered_map<int, KMCLoadedWidgetData> lw,
-                         std::unordered_map<int, KMCLoadedWidgetData> lt) {
-            LoadedWedget = std::move(lw);
-            LoadedText = std::move(lt);
-        }
-
-        void ResetLW() {
-            LoadedWedget.clear();
-            LoadedText.clear();
-        }
-
-    public:
-        std::unordered_map<int, KMCLoadedWidgetData> LoadedWedget;
-        std::unordered_map<int, KMCLoadedWidgetData> LoadedText;
+    struct KMCAnimData {
+        RE::TESObjectREFR *speaker;
+        KMCCompsFlag cf;
+        int rand = -1;
+        int next_rand = -1;
+        int frand = -1;
+        float volum = 0;
+        long long time = 0;
+        CutinEntry entry;
+        std::string record = "";
     };
+
     typedef void (*CutInFunction)(KMCAnimST *st, int &playerorfollower);
     struct KMCCutinOrder {
     public:
         KMCCutinOrder() {}
         KMCCutinOrder(CutInFunction f, int fop) {
             func = f;
-            playerorfollower = fop;
+            is_player = fop;
         }
 
     public:
         CutInFunction func;
-        int playerorfollower;
+        int is_player;
     };
 
     std::vector<std::string> KMCSplit(std::string str, char del);
@@ -724,15 +792,13 @@ namespace KMCCT {
         }
     }
 
+    uint64_t StorageUtilCalcID(void *stack_id);
+
     bool IsTalking(RE::Character *a_character);
 
     void KMCIsWorn(RE::Actor *actor, std::vector<std::uint32_t> worn_slot, std::vector<bool> &result);
     bool KMCIsWorn(RE::Actor *actor, RE::TESObjectARMO *armo);
 
-    void NamePlateSimplyWipe(KMCNPLoadedWidget id, std::string aaaakmcroot);
-    void NamePlateFadeOut(KMCNPLoadedWidget id, std::string aaaakmcroot);
+    std::string EscapeStringForJavaScript(const std::string &input);
 
-    // std::vector<RE::TESObjectREFR *> FindAllReferencesWithKeyword(RE::TESObjectREFR *a_ref, RE::TESForm
-    // *a_formOrList,
-    //                                                              float a_radius, bool a_matchAll);
 }

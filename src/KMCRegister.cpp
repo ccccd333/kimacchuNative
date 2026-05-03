@@ -1,4 +1,4 @@
-#include "KMCRegister.h"
+﻿#include "KMCRegister.h"
 #include "KMCConfig.h"
 #include "KMCOAR.h"
 #include "KMCSound.h"
@@ -9,108 +9,83 @@
 #include "KMCCutinCondition.h"
 #include "KMCGameEventListener.h"
 #include "KMCExpression.h"
-
-#include <IWWPapyrus.h>
+#include "KMCStorageUtilTracker.h"
+#include "KMCPrismaUIBridge.h"
+#include "KMCDisplayWordAndTexture.h"
+#include "KMCDisplayAddon.h"
+#include "KMCContextManager.h"
 
 SINGLETONBODY(KMCCT::KMCRegister)
 
 namespace KMCCT {
 
-	//std::string GetJContainersPluginName() {
- //       auto patchVersion = REL::Module::get().version().patch();
-
- //       std::string pluginName{"JContainers64"};
- //       if (REL::Module::IsVR()) {
- //           pluginName = "JContainersVR";
- //       } else if (patchVersion == 659 || patchVersion == 1179) {
- //           pluginName = "JContainersGOG";
- //       }
-
- //       return pluginName;
- //   }
-
     void KMCCT::OnMessageReceived(SKSE::MessagingInterface::Message* a_msg) {
         switch (a_msg->type) {
             case SKSE::MessagingInterface::kPostLoad: 
-                //std::string pluginName = GetJContainersPluginName();
-          
 
-                //SKSE::GetMessagingInterface()->RegisterListener(
-                //    pluginName.c_str(), [](SKSE::MessagingInterface::Message* a_msg) {
-                //        LOG("a_msg={}, msgtype={}", (void*)a_msg,
-                //                     a_msg ? a_msg->type : -1);
-                //        if (a_msg && a_msg->type == KMCCT::message_root_interface) {
-                //            const root_interface* root = root_interface::from_void(a_msg->data);
-                //            LOG("root_interface={}", (void*)root);
-                //            if (root) {
-                //                KMCCT::JCWrapper::GetSingleton()->PreInit(root);
-                //            }
-                //        }
-                //    });
-                //}
-
-                IWW::Config::GetSingleton()->Setup();
+                // この地点ではフォロワーのindex番号は決定しない
                 KMCCT::KMCConfig::GetSingleton()->Setup();
+                
+
                 KMCCT::KMCCutinCondition::GetSingleton()->Setup();
+                
                 KMCCT::KMCExpression::GetSingleton()->Setup();
 
+                KMCCT::KMCContextManager::GetSingleton()->Setup();
+                
                 break;
             case SKSE::MessagingInterface::kDataLoaded:
-                //KMCCT::JCWrapper::GetSingleton()->Init();
+                // この地点でフォロワーのindexが決定
+                KMCCT::KMCConfig::GetSingleton()->Init();
+                KMCCT::KMCDisplayAddon::GetSingleton()->Init();
+                KMCCT::KMCExpression::GetSingleton()->Prepare();
+
+                KMCPrismaUIBridge::GetSingleton()->Init();
+
+                KMCCT::KMCContextManager::GetSingleton()->Init();
 
                 KMCCT::KMCStateManager::GetSingleton()->Register();
 
-                KMCCT::KMCConfig::GetSingleton()->Init();
+                
                 KMCCT::KMCOAR::GetSingleton()->Init();
                 KMCCT::KMCSound::GetSingleton()->Init();
                 KMCCT::KMCStateManager::GetSingleton()->Init();
-                KMCCT::KMCEventThread::GetSingleton()->Init();
-                KMCCT::KMCProfile::GetSingleton()->Init();
+                
+                StorageUtilTracker::Init();
                 KMCCT::KMCCutinCondition::GetSingleton()->Init();
 
+                
                 KMCCT::KMCGameEventListener::GetSingleton()->Init();
-                KMCCT::KMCExpression::GetSingleton()->Init();
+                KMCCT::KMCEventThread::GetSingleton()->Init();
+
                 break;
             case SKSE::MessagingInterface::kPreLoadGame:  // set reload flag, so we can prevent in papyrus calls of
                                                           // native function untill view get reset by invoking _reset
-                LOG("kPreLoadGame")
-                KMCCT::KMCEventThread::GetSingleton()->forceendanim = true;
+                KMC_LOG("kPreLoadGame")
+                KMCCT::KMCEventThread::GetSingleton()->SetForceEndAnim(true);
                 // Wait for animation process to finish.
                 //KMCLoadedWidget();
                 KMCCT::KMCSetInitFlag();
                 KMCCT::KMCOAR::GetSingleton()->Reset();
 
                 KMCCT::KMCProfile::GetSingleton()->KMCResetProfileContainer();
-                //while (KMCGetAnimNow()) {}
-                
-                IWW::MainFunctions::GetSingleton()->SetReseting(true);
 
                 //KMCCT::KMCEventThread::GetSingleton()->Reset();
                 break;
             case SKSE::MessagingInterface::kPostLoadGame:  // for loading existing game
             case SKSE::MessagingInterface::kSaveGame:
-                // Wait for animation process to finish.
-                //KMCCT::KMCEventThread::GetSingleton()->forceendanim = true;
-                //while (KMCGetAnimNow()) {}
-
-                IWW::MainFunctions::GetSingleton()->UpdateHud();
-                LOG("kPostLoadGame | kSaveGame")
+                KMC_LOG("kPostLoadGame | kSaveGame")
                                 
                 break;
         }
     }
 
     bool KMCCT::PapyrusRegister(RE::BSScript::IVirtualMachine* vm) {
-        const bool loc_unhook = IWW::Config::GetSingleton()->GetVariable<bool>("General.UnhookPapyrus", true);
-#if (PAPYRUSUNHOOKFPSALL == 1)
-    #define REGISTERPAPYRUSFUNC(name, unhook) \
-        { vm->RegisterFunction(#name, "iwant_widgets_native", IWW::name, loc_unhook); }
-#else
-    #define REGISTERPAPYRUSFUNC(name, unhook) \
-        { vm->RegisterFunction(#name, "iwant_widgets_native", IWW::name, unhook&& loc_unhook); }
+        const bool loc_unhook = KMCConfig::GetSingleton()->IsUnhookEnabled();
+
     #define REGISTERPAPYRUSFUNC2(name, unhook) \
         { vm->RegisterFunction(#name, "aaaKimachuuCutInScripts_native", KMCCT::name, unhook&& loc_unhook); }
-#endif
+
         REGISTERPAPYRUSFUNC2(CutInCreate, true);
         REGISTERPAPYRUSFUNC2(Init, true);
         //REGISTERPAPYRUSFUNC2(SetFHUValues, true);
@@ -145,47 +120,6 @@ namespace KMCCT {
         REGISTERPAPYRUSFUNC2(IsUpdateMCM, true);
         REGISTERPAPYRUSFUNC2(SaveKMCMCM, true);
 
-        REGISTERPAPYRUSFUNC(LoadMeter, true)
-        REGISTERPAPYRUSFUNC(LoadText, true)
-        REGISTERPAPYRUSFUNC(LoadWidget, true)
-
-        REGISTERPAPYRUSFUNC(SetPos, true)
-        REGISTERPAPYRUSFUNC(SetPosX, true)
-        REGISTERPAPYRUSFUNC(SetPosY, true)
-        REGISTERPAPYRUSFUNC(SetSize, true)
-        REGISTERPAPYRUSFUNC(SetSizeH, true)
-        REGISTERPAPYRUSFUNC(SetSizeW, true)
-        REGISTERPAPYRUSFUNC(GetSize, true)
-        REGISTERPAPYRUSFUNC(SetZoom, true)
-        REGISTERPAPYRUSFUNC(SetZoomX, true)
-        REGISTERPAPYRUSFUNC(SetZoomY, true)
-        REGISTERPAPYRUSFUNC(SetVisible, true)
-        REGISTERPAPYRUSFUNC(SetRotation, true)
-        REGISTERPAPYRUSFUNC(SetTransparency, true)
-        REGISTERPAPYRUSFUNC(SetRGB, true)
-        REGISTERPAPYRUSFUNC(Destroy, true)
-
-        REGISTERPAPYRUSFUNC(SetMeterPercent, true)
-        REGISTERPAPYRUSFUNC(SetMeterFillDirection, true)
-        REGISTERPAPYRUSFUNC(SendToBack, true)
-        REGISTERPAPYRUSFUNC(SendToFront, true)
-        REGISTERPAPYRUSFUNC(DoMeterFlash, true)
-        REGISTERPAPYRUSFUNC(SetMeterRGB, true)
-
-        REGISTERPAPYRUSFUNC(SetText, true)
-        REGISTERPAPYRUSFUNC(AppendText, true)
-        REGISTERPAPYRUSFUNC(SwapDepths, true)
-
-        REGISTERPAPYRUSFUNC(DrawShapeLine, true)
-        REGISTERPAPYRUSFUNC(DrawShapeCircle, true)
-        REGISTERPAPYRUSFUNC(DrawShapeOrbit, true)
-
-        REGISTERPAPYRUSFUNC(DoTransitionByTime, true)
-
-        REGISTERPAPYRUSFUNC(IsHudReady, true)
-        REGISTERPAPYRUSFUNC(Reset, true)
-        REGISTERPAPYRUSFUNC(IsResetting, true)
-        REGISTERPAPYRUSFUNC(GetOutput, true)
 
 #undef REGISTERPAPYRUSFUNC
         return true;

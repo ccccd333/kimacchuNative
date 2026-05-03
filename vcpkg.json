@@ -13,8 +13,9 @@
     "fmt",
     "spdlog",
     "srell",
-    "articuno",
     "catch2",
-    "nlohmann-json"
+    "nlohmann-json",
+    "minhook",
+    "yaml-cpp"
   ]
 }

@@ -1,9 +1,10 @@
-#include "KMCCutinCond/KMCChecks.h"
+ï»¿#include "KMCCutinCond/KMCChecks.h"
 
 #include <boost/any.hpp>
 
 #include "KMCConfig.h"
 #include "KMCCutinCondition.h"
+#include "KMCStorageUtilTracker.h"
 #include "KMCTempKeywordManager.h"
 
 namespace KMCCT {
@@ -38,7 +39,7 @@ namespace KMCCT {
     bool KMCCCTNothing::Check(KMCCCheckSource source) { return true; }
 
     bool KMCCCTPlayerMove::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             if (player->IsMoving()) {
                 return true;
@@ -49,7 +50,7 @@ namespace KMCCT {
     }
 
     bool KMCCCTPlayerCombat::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             if (player->IsInCombat()) {
                 return true;
@@ -60,7 +61,7 @@ namespace KMCCT {
     }
 
     bool KMCCCTPlayerRunning::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             if (player->IsRunning()) {
                 return true;
@@ -71,7 +72,7 @@ namespace KMCCT {
     }
 
     bool KMCCCTPlayerSneaking::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             if (player->IsSneaking()) {
                 return true;
@@ -82,7 +83,7 @@ namespace KMCCT {
     }
 
     bool KMCCCTPlayerIdle::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             if (!player->IsMoving()) {
                 return true;
@@ -93,7 +94,7 @@ namespace KMCCT {
     }
 
     bool KMCCCTPlayerKeyword::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             if (source.hsnhs == HasNHan::both) {
                 if (player->HasKeywordInArray(source.has, true) && !player->HasKeywordInArray(source.nhas, true)) {
@@ -114,7 +115,7 @@ namespace KMCCT {
     }
 
     bool KMCCCTLocationKeyword::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             auto cell = player->GetParentCell();
             if (cell != nullptr) {
@@ -142,7 +143,7 @@ namespace KMCCT {
 
     bool KMCCCTPlayerKill::Init() {
         time_in_kill_count =
-            KMCFindVector(KMCCT::KMCConfig::GetSingleton()->getISetting(), TIME_TO_INCLUDE_IN_KILL_COUNT, 3) *
+            KMCFindVector(KMCCT::KMCConfig::GetSingleton()->GetKMCSetting(), TIME_TO_INCLUDE_IN_KILL_COUNT, 3) *
             KMCCT::TIME_SCALE_MS;
 
         KMCCT::KMCGameEventListener::GetSingleton()->SetCallBack(
@@ -218,8 +219,8 @@ namespace KMCCT {
     void KMCCCTPlayerKill::OnHitEvent(const RE::TESHitEvent* event) {
         if (event && event->cause && event->cause->IsPlayerRef()) {
             {
-                // onhit‚Å2‰ñ‚­‚ç‚¢“ü‚Á‚Ä‚­‚é‚Ì‚ÍƒvƒŒƒCƒ„[‚Ì•tô‚Å
-                // Œ•{–‚–@UŒ‚‚Æ‚È‚Á‚Ä‚¢‚é‚©‚ç
+                // onhitã§2å›ãã‚‰ã„å…¥ã£ã¦ãã‚‹ã®ã¯ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä»˜å‘ªã§
+                // å‰£ï¼‹é­”æ³•æ”»æ’ƒã¨ãªã£ã¦ã„ã‚‹ã‹ã‚‰
                 std::lock_guard<std::mutex> lock(mtx);
                 auto target = (unsigned long long)event->target.get();
                 // ERROR("[OnHitEvent] {}", target);
@@ -246,45 +247,45 @@ namespace KMCCT {
             if (hasm && nhasm) {
                 return true;
             }
-            LOG("[TEMP_KEYWORD_CHECK[BOTH]] no match");
-            if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
-                for (auto& has : source.thas) {
-                    LOG("[HAS] ==> {}", has);
-                }
+            KMC_LOG("[TEMP_KEYWORD_CHECK[BOTH]] no match");
+            // if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
+            //     for (auto& has : source.thas) {
+            //         LOG("[HAS] ==> {}", has);
+            //     }
 
-                for (auto& nhas : source.tnhas) {
-                    LOG("[NHAS] ==> {}", nhas);
-                }
+            //    for (auto& nhas : source.tnhas) {
+            //        LOG("[NHAS] ==> {}", nhas);
+            //    }
 
-                KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
-            }
+            //    KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
+            //}
         } else if (source.thsnhs == HasNHan::has) {
             bool hasm = KMCCT::KMCTempKeywordManager::GetSingleton()->HasTempKeyword(source.thas, true);
             if (hasm) {
                 return true;
             }
-            LOG("[TEMP_KEYWORD_CHECK[HAS]] no match");
-            if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
-                for (auto& has : source.thas) {
-                    LOG("[HAS] ==> {}", has);
-                }
+            KMC_LOG("[TEMP_KEYWORD_CHECK[HAS]] no match");
+            // if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
+            //     for (auto& has : source.thas) {
+            //         LOG("[HAS] ==> {}", has);
+            //     }
 
-                KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
-            }
+            //    KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
+            //}
         } else if (source.thsnhs == HasNHan::nhas) {
             bool nhasm = KMCCT::KMCTempKeywordManager::GetSingleton()->NHasTempKeyword(source.tnhas, true);
             if (nhasm) {
                 return true;
             }
 
-            LOG("[TEMP_KEYWORD_CHECK [NHAS]] no match");
-            if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
-                for (auto& nhas : source.tnhas) {
-                    LOG("[NHAS] ==> {}", nhas);
-                }
+            KMC_LOG("[TEMP_KEYWORD_CHECK [NHAS]] no match");
+            // if (IWW::Config::GetSingleton()->GetVariable<int>("General.Logging", 1) >= 2) {
+            //     for (auto& nhas : source.tnhas) {
+            //         LOG("[NHAS] ==> {}", nhas);
+            //     }
 
-                KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
-            }
+            //    KMCCT::KMCTempKeywordManager::GetSingleton()->ToLog();
+            //}
         }
 
         return false;
@@ -306,14 +307,14 @@ namespace KMCCT {
                             } else if (tag == GET_NAME) {
                                 kmc_pattern.kmcif = kmc_if::get_name;
                             } else {
-                                ERROR("KMCCCTCrossHair::Init tag name NG");
+                                KMC_ERROR("KMCCCTCrossHair::Init tag name NG");
                                 return false;
                             }
 
                             std::string ref_name = sp.back();
                             kmc_pattern.work = ref_name;
                             if (std::regex_match(ref_name, sm, pattern)) {
-                                // ‹L†‚ ‚è‚Ìê‡
+                                // è¨˜å·ã‚ã‚Šã®å ´åˆ
                                 kmc_pattern.kpm = kmc_pattern_mat::pattern;
                                 kmc_pattern.pattern = std::regex(ref_name);
                             } else {
@@ -327,15 +328,15 @@ namespace KMCCT {
                     }
 
                     if (!hit) {
-                        ERROR("KMCCCTCrossHair::Init NG");
+                        KMC_ERROR("KMCCCTCrossHair::Init NG");
                         return false;
                     }
                 } else {
-                    ERROR("KMCCCTCrossHair::Init Format NG [{}]", chrn);
+                    KMC_ERROR("KMCCCTCrossHair::Init Format NG [{}]", chrn);
                 }
             }
         } catch (std::exception ex) {
-            ERROR("KMCCCTCrossHair::Init Regex Error wt:{}", ex.what());
+            KMC_ERROR("KMCCCTCrossHair::Init Regex Error wt:{}", ex.what());
             return false;
         }
 
@@ -347,7 +348,7 @@ namespace KMCCT {
             cpd = RE::CrosshairPickData::GetSingleton();
 
             if (!cpd) {
-                ERROR("KMCCCTCrossHair::Init NG[RE::CrosshairPickData::GetSingleton()->not found]");
+                KMC_ERROR("KMCCCTCrossHair::Init NG[RE::CrosshairPickData::GetSingleton()->not found]");
                 return false;
             }
         }
@@ -381,13 +382,13 @@ namespace KMCCT {
             if (auto door = target->extraList.GetTeleportLinkedDoor().get(); door) {
                 if (auto gpc = door.get()->GetParentCell(); gpc) {
                     Obtained = gpc->GetName();
-                    LOG("KMCCCTCrossHair::GetCellNameTeleportLinkedDoor [{}]", Obtained);
+                    KMC_LOG("KMCCCTCrossHair::GetCellNameTeleportLinkedDoor [{}]", Obtained);
                     return IsMatch(Obtained, p);
                 }
             }
         }
 
-        LOG("KMCCCTCrossHair::GetCellNameTeleportLinkedDoor NOT FOUND [{}]", Obtained);
+        KMC_LOG("KMCCCTCrossHair::GetCellNameTeleportLinkedDoor NOT FOUND [{}]", Obtained);
         Obtained = NOT_FOUND;
         return false;
     }
@@ -396,11 +397,11 @@ namespace KMCCT {
             return IsMatch(Obtained, p);
         } else if (auto target = cpd->target.get(); target) {
             Obtained = target.get()->GetName();
-            LOG("KMCCCTCrossHair::GetName [{}]", Obtained);
+            KMC_LOG("KMCCCTCrossHair::GetName [{}]", Obtained);
             return IsMatch(Obtained, p);
         }
 
-        LOG("KMCCCTCrossHair::GetName NOT FOUND [{}]", Obtained);
+        KMC_LOG("KMCCCTCrossHair::GetName NOT FOUND [{}]", Obtained);
         Obtained = NOT_FOUND;
 
         return false;
@@ -419,7 +420,7 @@ namespace KMCCT {
     }
 
     bool KMCCCTBodySlot::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             std::vector<bool> res;
             KMCIsWorn(player, source.body_slot.slots, res);
@@ -433,17 +434,17 @@ namespace KMCCT {
                     if (rv) {
                         if (value == 1) {
                             hresult = true;
-                            LOG("[IsWorn] body slot ===> {}, flag:{}", key, value);
+                            KMC_LOG("[IsWorn] body slot ===> {}, flag:{}", key, value);
                         } else {
-                            LOG("[IsWorn] body slot ===> {}, flag:{}", key, value);
+                            KMC_LOG("[IsWorn] body slot ===> {}, flag:{}", key, value);
                             nhresult = true;
                         }
                     } else {
                         if (value == 0) {
-                            LOG("[IsNotWorn] body slot ===> {}, flag:{}", key, value);
+                            KMC_LOG("[IsNotWorn] body slot ===> {}, flag:{}", key, value);
                             hresult = true;
                         } else {
-                            LOG("[IsNotWorn] body slot ===> {}, flag:{}", key, value);
+                            KMC_LOG("[IsNotWorn] body slot ===> {}, flag:{}", key, value);
                             nhresult = true;
                         }
                     }
@@ -468,14 +469,14 @@ namespace KMCCT {
     }
 
     bool KMCCCTMagicEffectKeyword::Check(KMCCCheckSource source) {
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             const auto activeEffects = player->GetMagicTarget()->GetActiveEffectList();
             if (activeEffects) {
                 for (auto const& ae : *activeEffects) {
                     const auto mgef = ae ? ae->GetBaseObject() : nullptr;
                     if (mgef) {
-                        LOG("[Active Effect] Name {}, FormId {}", mgef->GetName(), mgef->GetFormID());
+                        KMC_LOG("[Active Effect] Name {}, FormId {}", mgef->GetName(), mgef->GetFormID());
                         if (source.hsnhs == HasNHan::both) {
                             if (mgef->HasKeywordInArray(source.has, true) &&
                                 !mgef->HasKeywordInArray(source.nhas, true)) {
@@ -504,11 +505,10 @@ namespace KMCCT {
         for (auto& [key, value] : source.cond_formula) {
             bool t = false;
             bool f = false;
+
             for (auto& formv : value) {
-                LOG("[Evaluate] EntryNo ==> {} Formula ==> {} comp1 ==> {} comp2 ==> {}", key, formv->cond,
-                    formv->comp1(), formv->comp2());
+
                 if (formv->isCacheable) {
-                    
                     if (formv->cache_type == KMCCacheType::armo && main->cache_container.PreInitWornArmo()) {
                         auto worn_armo_r = main->cache_container.GetWornArmorResult();
                         if (worn_armo_r.size() == 0) return false;
@@ -530,15 +530,67 @@ namespace KMCCT {
                                     }
                                 }
                             } else {
-                                ERROR("armo of formula, but it does not exist");
+                                KMC_ERROR("armo of formula, but it does not exist");
                             }
                         };
 
                         f_v(formv->c_form_id, formv->c_index, formv->c_is_worn);
                     } else {
-                        ERROR("This expression cannot be used because it is not initialized.");
+                        KMC_ERROR("This expression cannot be used because it is not initialized.");
+                    }
+                } else if (formv->lookup_mode == KMCFormula::KMCLookupMode::remote) {
+                    if (formv->remote_type == KMCFormula::KMCRemoteType::strage_util) {
+                        KMC_LOG("[Evaluate] EntryNo ==> {} Formula ==> {} ", key, formv->cond);
+
+                        MultiTypeValue c1;
+                        MultiTypeValue c2;
+                        if (formv->comp_type1 == KMCFormula::KMCCompType::storage_util) {
+                            const auto& sov = formv->comp1_v_sov;
+                            const VMObjectHandleInfo* vmhandle = nullptr;
+                            
+                            if (!sov.sov_is_null) {
+                                vmhandle = &sov.vm_object;
+                            }
+
+                            if (!StorageUtilTracker::GetValue(sov.default_value, sov.access_key, vmhandle, c1)) {
+                                KMC_WARN(
+                                    "WARN: [StorageUtil] Failed to retrieve value for key: '{}'. Using default value "
+                                    "instead.",
+                                    sov.access_key);
+                            }
+                        } else if (formv->comp_type1 == KMCFormula::KMCCompType::storage_target_val) {
+                            c1 = formv->comp1_stuv;
+                        }
+
+                        if (formv->comp_type2 == KMCFormula::KMCCompType::storage_util) {
+                            const auto& sov = formv->comp2_v_sov;
+                            const VMObjectHandleInfo* vmhandle = nullptr;
+
+                            if (!sov.sov_is_null) {
+                                vmhandle = &sov.vm_object;
+                            }
+
+                            if (!StorageUtilTracker::GetValue(sov.default_value, sov.access_key, vmhandle, c2)) {
+                                KMC_WARN(
+                                    "WARN: [StorageUtil] Failed to retrieve value for key: '{}'. Using default value "
+                                    "instead.",
+                                    sov.access_key);
+                            }
+                        } else if (formv->comp_type2 == KMCFormula::KMCCompType::storage_target_val) {
+                            c2 = formv->comp2_stuv;
+                        }
+
+                        if (JudgeKMCInequalitySign(formv->isign, c1, c2)) {
+                            t = true;
+                        } else {
+                            f = true;
+                        }
+                    } else {
+                        KMC_ERROR("[KMCFormula::KMCLookupMode::remote]This expression cannot be used because it is not initialized.");
                     }
                 } else {
+                    KMC_LOG("[Evaluate] EntryNo ==> {} Formula ==> {} comp1 ==> {} comp2 ==> {}", key, formv->cond,
+                            formv->comp1(), formv->comp2());
                     if (JudgeKMCInequalitySign(formv->isign, formv->comp1(), formv->comp2())) {
                         t = true;
                     } else {
@@ -548,7 +600,7 @@ namespace KMCCT {
             }
 
             if (t && !f) {
-                LOG("[OK] Formula ==>  EntryNo ==> {}", key);
+                KMC_LOG("[OK] Formula ==>  EntryNo ==> {}", key);
                 return true;
             }
         }

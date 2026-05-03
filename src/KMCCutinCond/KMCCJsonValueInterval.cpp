@@ -1,6 +1,5 @@
-#include "KMCCutinCond/KMCCJsonValueInterval.h"
+﻿#include "KMCCutinCond/KMCCJsonValueInterval.h"
 #include "KMCConfig.h"
-#include <IWWFunctions.h>
 
 namespace KMCCT {
     using namespace boost::property_tree;
@@ -15,7 +14,7 @@ namespace KMCCT {
             return interval[path];
         }
         
-        ERROR("KMCCJsonValueInterval::GetInterval ERROR [{}]", path);
+        KMC_ERROR("KMCCJsonValueInterval::GetInterval ERROR [{}]", path);
         return "";
     }
 
@@ -23,7 +22,7 @@ namespace KMCCT {
         ptree pt;
         try {
             read_json(COMMON_PATH + jsonFileName, pt);
-            LOG("JsonFileName = {}", jsonFileName);
+            KMC_LOG("JsonFileName = {}", jsonFileName);
             for (auto& element : pt) {
                 const std::string key = element.first;
                 auto t = element.second;
@@ -45,16 +44,16 @@ namespace KMCCT {
                     LOG("KMCCCJsonDefaultValues bool key {} value {}", key, boost::any_cast<bool>(push_value));
                 } else */if (auto vs = t.get_value_optional<std::string>()) {
                     push_value = vs.get();
-                    LOG("KMCCJsonValueInterval string key {} value {}", key, push_value);
+                    KMC_LOG("KMCCJsonValueInterval string key {} value {}", key, push_value);
                 } else {
-                    ERROR(" Bad value. key {}", key);
+                    KMC_ERROR(" Bad value. key {}", key);
                     continue;
                 }
 
                 interval.insert(std::make_pair(key, push_value));
             }
         } catch (...) {
-            ERROR("ERROR LOADING");
+            KMC_ERROR("ERROR LOADING");
             return false;
         }
 

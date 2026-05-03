@@ -1,5 +1,4 @@
-#pragma once
-#include "IWWFunctions.h"
+﻿#pragma once
 #include "KMCConfig.h"
 
 namespace KMCCT {

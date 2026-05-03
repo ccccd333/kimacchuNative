@@ -1,5 +1,4 @@
-#pragma once
-#include <IWWFunctions.h>
+ï»¿#pragma once
 #include <KMCCutinCond/KMCCategory.h>
 
 #include "KMCCCJsonTags.h"
@@ -82,7 +81,7 @@ namespace KMCCT {
             //     return validate_start_time(v_value, must);
             // }
 
-            LOG("no validate [{}]", tag);
+            KMC_LOG("no validate [{}]", tag);
             return true;
         }
 
@@ -132,7 +131,7 @@ namespace KMCCT {
                     return false;
                 }
 
-                // keywordw’è‚È‚Ì‚Éformid‚âƒvƒ‰ƒOƒCƒ“–¼‚ª‚È‚¢ê‡
+                // keywordæŒ‡å®šãªã®ã«formidã‚„ãƒ—ãƒ©ã‚°ã‚¤ãƒ³åãŒãªã„å ´åˆ
                 if (sp.at(6) == "" || sp.at(7) == "") {
                     wt = "No formid or plugin name, even though it is a KEYWORD designation. [now] " + sp.at(6) +
                          " [now] " + sp.at(7);
@@ -173,7 +172,7 @@ namespace KMCCT {
             float coef_1 = stof(sp.at(0));
             float coef_2 = stof(sp.at(1));
             if (coef_1 < 0.0 || coef_2 < 0.0) {
-                // 0–¢–‚ÌŒW”‚ÍNG
+                // 0æœªæº€ã®ä¿‚æ•°ã¯NG
                 wt = "coef_1 and coef_2 are negative numbers. Please make them positive numbers. [now] " + sp.at(0) +
                      " [now] " + sp.at(1);
                 return false;
@@ -181,14 +180,14 @@ namespace KMCCT {
 
             std::string relation = sp.at(2);
             if (!(relation == "between" || relation == "coef_1" || relation == "coef_2")) {
-                // ŒW”‚ÌŠÖŒW«‚ª‚¨‚©‚µ‚¢ê‡‚ÍNG
+                // ä¿‚æ•°ã®é–¢ä¿‚æ€§ãŒãŠã‹ã—ã„å ´åˆã¯NG
                 wt = "coef_relation must be specified as between or coef_1 or coef_2 [now] " + sp.at(2);
                 return false;
             }
 
             float cool_time = stof(sp.at(3));
             if (cool_time < 0.0f) {
-                // •‰”‚ÌŠÔ‚Íó‚¯•t‚¯‚È‚¢
+                // è² æ•°ã®æ™‚é–“ã¯å—ã‘ä»˜ã‘ãªã„
                 wt = "cool_time should be a positive number. [now] " + sp.at(3);
                 return false;
             }
@@ -196,7 +195,7 @@ namespace KMCCT {
             float lower_value = stof(sp.at(4));
             float upper_value = stof(sp.at(5));
             if (lower_value < 0.0f || upper_value < 0.0f) {
-                // •‰”‚ÌŠÔ‚Íó‚¯•t‚¯‚È‚¢
+                // è² æ•°ã®æ™‚é–“ã¯å—ã‘ä»˜ã‘ãªã„
                 wt =
                     "lower_value and upper_value should be a positive number. [now] " + sp.at(4) + " [now] " + sp.at(5);
                 return false;
@@ -210,7 +209,7 @@ namespace KMCCT {
             float cutin_time = stof(sp.at(0));
             float start_time = stof(sp.at(1));
             if (cutin_time < 0.0 || start_time < 0.0) {
-                // 0–¢–‚ÍNG
+                // 0æœªæº€ã¯NG
                 wt = "cutin_time, start_time should be a positive number. [now] " + sp.at(0) + " [now] " + sp.at(1);
                 return false;
             }
@@ -225,7 +224,7 @@ namespace KMCCT {
             float stack_limit = stof(sp.at(2));
             float cool_time = stof(sp.at(3));
             if (abandon_amount < 0.0 || target_amount < 0.0 || stack_limit < 0.0 || cool_time < 0.0) {
-                // 0–¢–‚ÍNG
+                // 0æœªæº€ã¯NG
                 wt = "Cannot define a negative value in the definition in type_amount";
                 return false;
             }

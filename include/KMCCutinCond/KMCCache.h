@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 namespace KMCCT {
 
@@ -12,11 +12,10 @@ namespace KMCCT {
         int Add(RE::FormID armo) { 
             int idx = c_index;
             cache_worn_armor[c_index] = armo;
-            isCacheable = true;
+            is_cacheable = true;
             c_index++;
             return idx;
         }
-
         
         void PreCache();
         void CacheReset();
@@ -51,7 +50,7 @@ namespace KMCCT {
         }
 
     public:
-        bool isCacheable = false;
+        bool is_cacheable = false;
         bool end_cache = false;
 
     private:
@@ -74,6 +73,7 @@ namespace KMCCT {
         std::unordered_map<int, bool> cache_worn_armor_result;
         bool pre_init_worn_armo = false;
         bool chec_pre_init_worn_armo = false;
+
         // cache index
         int c_index = 0;
     };

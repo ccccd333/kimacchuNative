@@ -1,7 +1,6 @@
-#include "KMCCutinCond/KMCCache.h"
+﻿#include "KMCCutinCond/KMCCache.h"
 #include "KMCGameEventListener.h"
 #include "KMCConfig.h"
-#include "IWWFunctions.h"
 
 namespace KMCCT {
     void KMCCacheContainer::PreCache() { 
@@ -53,7 +52,7 @@ namespace KMCCT {
 
     void KMCCacheContainer::OnEquipEvent(const RE::TESEquipEvent *event) {
         if (event && event->actor.get()) {
-            auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+            auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
             if (player && event->actor.get()->GetFormID() == player->GetFormID()) {
                 for (auto &[index, armo_formid] : cache_worn_armor) {
                     if (armo_formid == event->baseObject) {
@@ -89,7 +88,7 @@ namespace KMCCT {
             }
         }
 
-        auto player = KMCCT::KMCConfig::GetSingleton()->getPlayer();
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
             if (cache_worn_armor.size() > 0) {
                 auto inv = player->GetInventory();
