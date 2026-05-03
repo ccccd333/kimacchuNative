@@ -149,6 +149,11 @@ void KMCCT::CutInPeriodicCall() {
             continue;
         }
 
+        if (KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::WHILE_WAIT_TIME));
+            continue;
+        }
+
         std::string cutin_name = "";
         STCutinSetting cutin_setting;
         cutin_setting.time = aaaakmctime;

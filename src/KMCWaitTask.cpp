@@ -31,22 +31,22 @@ namespace KMCCT {
         //out_state = state;
         if (state == -3) {
             // If the cell is not attached, such as during the main menu
-            aaaaWaitWidgetDisped = true;
+            SetWaitFlag(true);
             KMCCT::KMCTimer(KMCCT::WAIT_CYCLE_MS);
         } else {
             if (KMCCheckWaitTask()) {
-                DispWWidget(true);
-                aaaaWaitWidgetDisped = true;
-                KMCCT::KMCTimer(KMCCT::WAIT_CYCLE_MS);
-            } else if (aaaaWaitWidgetDisped) {
-                DispWWidget(false);
-                aaaaWaitWidgetDisped = false;
+                DispStopIcon(true);
+                SetWaitFlag(true);
+                //KMCCT::KMCTimer(KMCCT::WAIT_CYCLE_MS);
+            } else if (is_speaking) {
+                DispStopIcon(false);
+                SetWaitFlag(false);
             } else {
-                aaaaWaitWidgetDisped = false;
+                SetWaitFlag(false);
             }
         }
 
-        return aaaaWaitWidgetDisped;
+        return is_speaking;
     }
 
     void KMCWaitTask::KMCPushWaitTask(KMCWaitType id, KMCWaitConfigs config) {
@@ -90,16 +90,16 @@ namespace KMCCT {
 
     void KMCWaitTask::Reset() { 
         isinscene_state = 0;
-        aaaaWaitWidgetDisped = false;
+        SetWaitFlag(false);
     }
 
-    void KMCWaitTask::DispWWidget(bool suspensionRequest) {
-        if (suspensionRequest) {
-            if (!aaaaWaitWidgetDisped) {
+    void KMCWaitTask::DispStopIcon(bool suspension_request) {
+        if (suspension_request) {
+            if (!GetWaitFlag()) {
                 KMCCT::WaitWidgetVisible(aaaaWaitTextWidget);
             }
         } else {
-            if (aaaaWaitWidgetDisped) {
+            if (GetWaitFlag()) {
                 KMCCT::WaitWidgetInVisible(aaaaWaitTextWidget);
             }
         }
