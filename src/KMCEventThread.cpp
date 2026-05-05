@@ -44,13 +44,8 @@ std::mutex aaaakmc_is_already_init_mtx_;
 
 ThreadPoolExecutor executor;
 
-bool isInitEnd = false;
-bool isProfileInitEnd = false;
-float followerDetectRange = 1000.0;
-std::vector<std::string> cutinArg;
+bool is_profile_init_end = false;
 RE::TESForm *form;
-
-std::vector<int> LoadedWidgetsFactory;
 
 using Clock = std::chrono::steady_clock;
 using std::chrono::duration_cast;
@@ -393,8 +388,7 @@ namespace KMCCT {
         form = RE::TESDataHandler::GetSingleton()->LookupForm(0x806, "KimachuuCutIn.esp"); 
 
         init_first = true;
-        isInitEnd = false;
-        isProfileInitEnd = false;
+        is_profile_init_end = false;
         SetForceEndAnim(false);
 
         KMCCT::KMCWaitTask::GetSingleton()->SetWaitFlag(false);
@@ -407,11 +401,10 @@ namespace KMCCT {
         // CategoryRandomizer();
 
         // KMCCT::KMCStateManager::GetSingleton()->SetFHUStatus(0.0f, 0.0f, 0.0f);
-        isInitEnd = false;
-        isProfileInitEnd = false;
+        is_profile_init_end = false;
 
         if (enable_profile) {
-            isProfileInitEnd = true;
+            is_profile_init_end = true;
         }
 
         if (enable_cutin) {
@@ -448,7 +441,7 @@ namespace KMCCT {
     }
 
     void KMCEventThread::CutInCreate(std::vector<std::string> variableArray) {
-        if (isInitEnd && !KMCCT::KMCCutin::GetSingleton()->GetAnimNow() &&
+        if (!KMCCT::KMCCutin::GetSingleton()->GetAnimNow() &&
             !KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag()) {
             // if (cutinArg.size() != variableArray.size()) {
             //     cutinArg.resize(variableArray.size());
@@ -479,10 +472,9 @@ namespace KMCCT {
         KMCCT::KMCExpression::GetSingleton()->Reset();
     }
 
-    bool KMCEventThread::GetProfileInitEnd() { return isProfileInitEnd; }
+    bool KMCEventThread::GetProfileInitEnd() { return is_profile_init_end; }
     bool KMCEventThread::GetInitFirstFlag() { return init_first; }
     bool KMCEventThread::GetEnableProfileFlag() { return enable_profile; }
-    bool KMCEventThread::GetInitEndFlag() { return isInitEnd; }
 
     KMCEventThread::~KMCEventThread() {
         force_end_anim.store(true);

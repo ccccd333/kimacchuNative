@@ -89,7 +89,7 @@ namespace KMCCT {
                           KMCCT::INTERRUPT_EVENT_COOL_TIME) *
             KMCCT::TIME_SCALE_MS;
         auto *thread = KMCCT::KMCEventThread::GetSingleton();
-        if (!thread->GetForceEndAnim() && !thread->IsShuttingDown() && thread->GetInitEndFlag() &&
+        if (!thread->GetForceEndAnim() && !thread->IsShuttingDown() &&
             !KMCCT::KMCCutin::GetSingleton()->GetAnimNow() && !KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag()) {
             time_point<Clock> interrupt_time = Clock::now();
             milliseconds diff = duration_cast<milliseconds>(interrupt_time - event_start);
