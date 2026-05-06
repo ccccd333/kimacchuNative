@@ -801,4 +801,6 @@ namespace KMCCT {
 
     std::string EscapeStringForJavaScript(const std::string &input);
 
+    bool IsActorReadyForProcess(RE::TESObjectREFR *target);
+
 }

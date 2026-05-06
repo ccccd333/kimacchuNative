@@ -225,32 +225,43 @@ void KMCCT::ProfilePeriodicCall() {
         if (thread->IsShuttingDown()) {
             break;
         }
+        int current_state = 0;
+        if (!IsActorReadyForProcess(KMCConfig::GetSingleton()->GetPlayer())) {
+            current_state = -3;
+        }
+
+        if (!enable_cutin) {
+
+            if (last_state == -3) {
+                last_state = current_state;
+                std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::WHILE_WAIT_TIME));
+                continue;
+            }
+
+            KMCCT::KMCEventThread::GetSingleton()->SetForceEndAnim(false);
+        }
 
         if (thread->GetForceEndAnim()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::INSPECTION_LOOP_MS));
             continue;
         }
-
-        int current_state = KMCCT::KMCWaitTask::GetSingleton()->GetIsinSceneState();
         
-        if (!thread->GetForceEndAnim()) {
-            auto *profile = KMCCT::KMCProfile::GetSingleton();
-            if (last_state == -3) {
-                last_state = current_state;
-                profile->ShowProfile(false);
-                profile->Set_switch_disp_profile_flag(false);
-                std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CUT_IN_COND_WHILE_WAIT_TIME));
-                continue;
-            }
+        auto *profile = KMCCT::KMCProfile::GetSingleton();
+        if (current_state == -3 && last_state != -3) {
+            last_state = current_state;
+            profile->ShowProfile(false);
+            profile->Set_switch_disp_profile_flag(false);
+            KMCCT::KMCEventThread::GetSingleton()->SetForceEndAnim(true);
+            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CUT_IN_COND_WHILE_WAIT_TIME));
+            continue;
+        }
 
-            
-            if (!profile->GetUpdateProfile() && profile->GetShowProfile() && !profile->GetShowingProfile() &&
-                KMCCT::KMCStateManager::GetSingleton()->GetProfileInvisibleState(
-                    KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag())) {
-                // 戦闘中などは消すようにする。json内容次第。
-                profile->ShowProfile(false);
-                profile->Set_switch_disp_profile_flag(false);
-            }
+        if (!profile->GetUpdateProfile() && profile->GetShowProfile() && !profile->GetShowingProfile() &&
+            KMCCT::KMCStateManager::GetSingleton()->GetProfileInvisibleState(
+                KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag())) {
+            // 戦闘中などは消すようにする。json内容次第。
+            profile->ShowProfile(false);
+            profile->Set_switch_disp_profile_flag(false);
         }
 
         last_state = current_state;

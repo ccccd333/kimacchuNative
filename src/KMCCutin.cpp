@@ -795,10 +795,16 @@ namespace KMCCT {
         int id = 0;
 
         if (is_player == 0) {
+            if (!IsActorReadyForProcess(st->speakerp)) return;
             KMCPrismaUIBridge::GetSingleton()->KMCPlayPlayerCutin(st->rand, st->p_next_rand, st->player_name);
 
             time = st->time;
         } else {
+            if (auto actor_ptr = st->speakerf_handle.get()) {
+                if (!IsActorReadyForProcess(actor_ptr.get())) return;
+            } else {
+                return;
+            }
             id = st->frand + 1;
             KMCPrismaUIBridge::GetSingleton()->KMCPlayFollowerCutin(st->frand + 1, st->rand, st->f_netx_rand,
                                                                     st->follower_name);

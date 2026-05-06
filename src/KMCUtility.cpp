@@ -571,4 +571,20 @@ namespace KMCCT {
         return ss.str();
     }
 
+    bool IsActorReadyForProcess(RE::TESObjectREFR *a_target) {
+
+        if (!a_target || !a_target->Is3DLoaded()) {
+            return false;
+        }
+
+        auto pcell = a_target->GetParentCell();
+
+        if (pcell == nullptr) {
+            return false;
+        }
+
+
+        return true;
+    }
+
 }
