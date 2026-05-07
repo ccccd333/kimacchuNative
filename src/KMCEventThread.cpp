@@ -44,13 +44,8 @@ std::mutex aaaakmc_is_already_init_mtx_;
 
 ThreadPoolExecutor executor;
 
-bool isInitEnd = false;
-bool isProfileInitEnd = false;
-float followerDetectRange = 1000.0;
-std::vector<std::string> cutinArg;
+bool is_profile_init_end = false;
 RE::TESForm *form;
-
-std::vector<int> LoadedWidgetsFactory;
 
 using Clock = std::chrono::steady_clock;
 using std::chrono::duration_cast;
@@ -230,32 +225,43 @@ void KMCCT::ProfilePeriodicCall() {
         if (thread->IsShuttingDown()) {
             break;
         }
+        int current_state = 0;
+        if (!IsActorReadyForProcess(KMCConfig::GetSingleton()->GetPlayer())) {
+            current_state = -3;
+        }
+
+        if (!enable_cutin) {
+
+            if (last_state == -3) {
+                last_state = current_state;
+                std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::WHILE_WAIT_TIME));
+                continue;
+            }
+
+            KMCCT::KMCEventThread::GetSingleton()->SetForceEndAnim(false);
+        }
 
         if (thread->GetForceEndAnim()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::INSPECTION_LOOP_MS));
             continue;
         }
-
-        int current_state = KMCCT::KMCWaitTask::GetSingleton()->GetIsinSceneState();
         
-        if (!thread->GetForceEndAnim()) {
-            auto *profile = KMCCT::KMCProfile::GetSingleton();
-            if (last_state == -3) {
-                last_state = current_state;
-                profile->ShowProfile(false);
-                profile->Set_switch_disp_profile_flag(false);
-                std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CUT_IN_COND_WHILE_WAIT_TIME));
-                continue;
-            }
+        auto *profile = KMCCT::KMCProfile::GetSingleton();
+        if (current_state == -3 && last_state != -3) {
+            last_state = current_state;
+            profile->ShowProfile(false);
+            profile->Set_switch_disp_profile_flag(false);
+            KMCCT::KMCEventThread::GetSingleton()->SetForceEndAnim(true);
+            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::CUT_IN_COND_WHILE_WAIT_TIME));
+            continue;
+        }
 
-            
-            if (!profile->GetUpdateProfile() && profile->GetShowProfile() && !profile->GetShowingProfile() &&
-                KMCCT::KMCStateManager::GetSingleton()->GetProfileInvisibleState(
-                    KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag())) {
-                // 戦闘中などは消すようにする。json内容次第。
-                profile->ShowProfile(false);
-                profile->Set_switch_disp_profile_flag(false);
-            }
+        if (!profile->GetUpdateProfile() && profile->GetShowProfile() && !profile->GetShowingProfile() &&
+            KMCCT::KMCStateManager::GetSingleton()->GetProfileInvisibleState(
+                KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag())) {
+            // 戦闘中などは消すようにする。json内容次第。
+            profile->ShowProfile(false);
+            profile->Set_switch_disp_profile_flag(false);
         }
 
         last_state = current_state;
@@ -393,8 +399,7 @@ namespace KMCCT {
         form = RE::TESDataHandler::GetSingleton()->LookupForm(0x806, "KimachuuCutIn.esp"); 
 
         init_first = true;
-        isInitEnd = false;
-        isProfileInitEnd = false;
+        is_profile_init_end = false;
         SetForceEndAnim(false);
 
         KMCCT::KMCWaitTask::GetSingleton()->SetWaitFlag(false);
@@ -407,11 +412,10 @@ namespace KMCCT {
         // CategoryRandomizer();
 
         // KMCCT::KMCStateManager::GetSingleton()->SetFHUStatus(0.0f, 0.0f, 0.0f);
-        isInitEnd = false;
-        isProfileInitEnd = false;
+        is_profile_init_end = false;
 
         if (enable_profile) {
-            isProfileInitEnd = true;
+            is_profile_init_end = true;
         }
 
         if (enable_cutin) {
@@ -448,7 +452,7 @@ namespace KMCCT {
     }
 
     void KMCEventThread::CutInCreate(std::vector<std::string> variableArray) {
-        if (isInitEnd && !KMCCT::KMCCutin::GetSingleton()->GetAnimNow() &&
+        if (!KMCCT::KMCCutin::GetSingleton()->GetAnimNow() &&
             !KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag()) {
             // if (cutinArg.size() != variableArray.size()) {
             //     cutinArg.resize(variableArray.size());
@@ -479,10 +483,9 @@ namespace KMCCT {
         KMCCT::KMCExpression::GetSingleton()->Reset();
     }
 
-    bool KMCEventThread::GetProfileInitEnd() { return isProfileInitEnd; }
+    bool KMCEventThread::GetProfileInitEnd() { return is_profile_init_end; }
     bool KMCEventThread::GetInitFirstFlag() { return init_first; }
     bool KMCEventThread::GetEnableProfileFlag() { return enable_profile; }
-    bool KMCEventThread::GetInitEndFlag() { return isInitEnd; }
 
     KMCEventThread::~KMCEventThread() {
         force_end_anim.store(true);

@@ -81,7 +81,6 @@ namespace KMCCT {
         bool GetProfileInitEnd();
         bool GetInitFirstFlag();
         bool GetEnableProfileFlag();
-        bool GetInitEndFlag();
     public:
         std::atomic<bool> force_end_anim;
         

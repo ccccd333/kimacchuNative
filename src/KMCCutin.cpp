@@ -89,7 +89,7 @@ namespace KMCCT {
                           KMCCT::INTERRUPT_EVENT_COOL_TIME) *
             KMCCT::TIME_SCALE_MS;
         auto *thread = KMCCT::KMCEventThread::GetSingleton();
-        if (!thread->GetForceEndAnim() && !thread->IsShuttingDown() && thread->GetInitEndFlag() &&
+        if (!thread->GetForceEndAnim() && !thread->IsShuttingDown() &&
             !KMCCT::KMCCutin::GetSingleton()->GetAnimNow() && !KMCCT::KMCWaitTask::GetSingleton()->GetWaitFlag()) {
             time_point<Clock> interrupt_time = Clock::now();
             milliseconds diff = duration_cast<milliseconds>(interrupt_time - event_start);
@@ -795,10 +795,16 @@ namespace KMCCT {
         int id = 0;
 
         if (is_player == 0) {
+            if (!IsActorReadyForProcess(st->speakerp)) return;
             KMCPrismaUIBridge::GetSingleton()->KMCPlayPlayerCutin(st->rand, st->p_next_rand, st->player_name);
 
             time = st->time;
         } else {
+            if (auto actor_ptr = st->speakerf_handle.get()) {
+                if (!IsActorReadyForProcess(actor_ptr.get())) return;
+            } else {
+                return;
+            }
             id = st->frand + 1;
             KMCPrismaUIBridge::GetSingleton()->KMCPlayFollowerCutin(st->frand + 1, st->rand, st->f_netx_rand,
                                                                     st->follower_name);

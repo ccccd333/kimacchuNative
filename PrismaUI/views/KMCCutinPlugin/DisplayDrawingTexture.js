@@ -62,6 +62,8 @@ export class DisplayDrawingTexture {
         this.word_line_height = 24;
 
         this.font = "sans-serif";
+
+        this.requested_stop = false;
     }
 
     setCacheType(chache_type) {
@@ -364,6 +366,7 @@ export class DisplayDrawingTexture {
         this.last_time = 0;
         this.start_time = null;
         this.animating = true;
+        this.requested_stop = false;
         this.current_group = group;
         this.current_next_group = next_group;
         this.duration_sec = cutin?.display_time ?? 5.0;
@@ -474,8 +477,9 @@ export class DisplayDrawingTexture {
         this.frame = (this.frame + 1) % this.bitmaps.length;
 
         // アニメーション秒数を超えた場合C++に通知とキャッシュモード(1)の場合は再生済みは消す
-        if ((time - this.start_time) >= this.duration_sec * 1000) {
+        if (this.requested_stop || (time - this.start_time) >= this.duration_sec * 1000) {
             this.animating = false;
+            this.requested_stop = false;
 
             // 全てのレイヤー非表示
             Object.keys(this.ctxs).forEach(key => {
@@ -525,40 +529,7 @@ export class DisplayDrawingTexture {
     stopAll() {
         // ゲームロード時
         if (!this.animating) return;
-        this.animating = false;
-
-
-        if (this.current_next_group !== this.current_group) {
-            if (this.cache_type === 1) {
-                const group_promise = this.cache.get(this.current_group);
-                if (group_promise) {
-                    group_promise.then(frames => frames.forEach(bmp => bmp.close()));
-                    this.cache.delete(this.current_group);
-                }
-            }
-
-            if ((this.cache_type === 1 || this.cache_type === 2) && this.current_next_group !== -1) {
-                this.preloadGroup(this.current_next_group);
-            }
-        }
-
-        // ビットマップの配列を空にするだけで、各bmpのcloseは呼ばない
-        // キャッシュ側にあるデータは生存し続ける
-        // なんかGCに残りすぎると若干気持ち悪い、切り替えは早いけど
-        // PrismaUIがCPUレンダリングなのでRAMに乗りっぱなし
-        // 150*150.pngなら見た感じOK、フルHDはできるだけ残したくないけど読み込みおっそいからしょうがない
-        this.bitmaps = [];
-        this.current_group = null;
-
-        Object.keys(this.ctxs).forEach(key => {
-            const ctx = this.ctxs[key];
-            const canvas = this.canvases[key];
-            if (ctx && canvas) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                canvas.style.display = "none";
-            }
-        });
-
+        this.requested_stop = true;
     }
 }
 

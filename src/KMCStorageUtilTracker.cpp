@@ -50,6 +50,12 @@ namespace KMCCT {
         } else {
             SKSE::log::error("StorageUtil not found SE? or AE?");
         }
+
+        auto setting = KMCCT::KMCConfig::GetSingleton()->GetKMCSetting();
+
+        int config_ms = KMCFindVector(setting, TRACKER_CACHE_TTL, (long long)3) * KMCCT::TIME_SCALE_MS;
+
+        CACHE_TTL = std::chrono::milliseconds(config_ms);
     }
 
     void StorageUtilTracker::FetchAllValues(std::list<StorageObservedValue>& result) {
@@ -192,6 +198,26 @@ namespace KMCCT {
                                         int& result) {
         if (!_get_int || !_has_int) return false;
 
+        uint64_t handle = 0;
+        if (vm_handle_info) {
+            handle = vm_handle_info->handle;
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(cache_int.mtx);
+            auto& sub_map = cache_int.data[key];
+            auto it = sub_map.find(handle);
+
+            if (it != sub_map.end()) {
+                if (std::chrono::steady_clock::now() < it->second.expiry_time) {
+                    result = it->second.value;
+                    return true;
+                }
+
+                sub_map.erase(it);
+            }
+        }
+
         bool is_available = true;
         void* form = nullptr;
         if (vm_handle_info) {
@@ -205,8 +231,14 @@ namespace KMCCT {
 
         if (_has_int(nullptr, form, key_cstr)) {
             result = _get_int(nullptr, form, key.c_str(), default_value);
+            {
+                std::lock_guard<std::mutex> lock(cache_int.mtx);
+                cache_int.data[key][handle] = {result, std::chrono::steady_clock::now() + CACHE_TTL};
+            }
+
             return true;
         }
+
         return false;
     }
 
@@ -214,6 +246,24 @@ namespace KMCCT {
                                            const VMObjectHandleInfo* vm_handle_info,
                                           float& result) {
         if (!_get_float || !_has_float) return false;
+        uint64_t handle = 0;
+        if (vm_handle_info) {
+            handle = vm_handle_info->handle;
+        }
+        {
+            std::lock_guard<std::mutex> lock(cache_float.mtx);
+            auto& sub_map = cache_float.data[key];
+            auto it = sub_map.find(handle);
+
+            if (it != sub_map.end()) {
+                if (std::chrono::steady_clock::now() < it->second.expiry_time) {
+                    result = it->second.value;
+                    return true;
+                }
+
+                sub_map.erase(it);
+            }
+        }
 
         bool is_available = true;
         void* form = nullptr; 
@@ -227,8 +277,13 @@ namespace KMCCT {
         if (_has_float(nullptr, form, key_cstr)) {
             result = _get_float(nullptr, form, key_cstr, default_value);
 
+            {
+                std::lock_guard<std::mutex> lock(cache_float.mtx);
+                cache_float.data[key][handle] = {result, std::chrono::steady_clock::now() + CACHE_TTL};
+            }
             return true;
         }
+
         return false;
     }
 
@@ -236,6 +291,25 @@ namespace KMCCT {
                                             const VMObjectHandleInfo* vm_handle_info,
                                             std::string& result) {
         if (!_get_string || !_has_string) return false;
+        uint64_t handle = 0;
+        if (vm_handle_info) {
+            handle = vm_handle_info->handle;
+        }
+        {
+            std::lock_guard<std::mutex> lock(cache_string.mtx);
+            auto& sub_map = cache_string.data[key];
+            auto it = sub_map.find(handle);
+
+            if (it != sub_map.end()) {
+                if (std::chrono::steady_clock::now() < it->second.expiry_time) {
+                    result = it->second.value;
+                    return true;
+                }
+
+                sub_map.erase(it);
+            }
+        }
+
         bool is_available = true;
         std::string default_val = default_value;
         void* form = nullptr; 
@@ -256,8 +330,14 @@ namespace KMCCT {
                 result = "";
             }
 
+            {
+                std::lock_guard<std::mutex> lock(cache_string.mtx);
+                cache_string.data[key][handle] = {result, std::chrono::steady_clock::now() + CACHE_TTL};
+            }
+
             return true;
         }
+
         return false;
     }
 

@@ -46,7 +46,7 @@ namespace KMCCT {
                                         track_id, spvalue.at(0), spvalue.at(1));
                                     continue;
                                 }
-                                RE::Actor* SEPoint = player;
+                                RE::ActorHandle SEPoint = player->GetHandle();
                                 if (values.emit_from != PLAY_SE_PLAYER_POS) {
                                     if (follower == nullptr) {
                                         KMC_ERROR(
@@ -55,7 +55,7 @@ namespace KMCCT {
                                             track_id);
                                         continue;
                                     } else {
-                                        SEPoint = follower;
+                                        SEPoint = follower->GetHandle();
                                     }
                                 }
 
@@ -194,6 +194,11 @@ namespace KMCCT {
     void KMCSound::PlayProfileSE(KMCProfileSEType trackid, float volume, RE::TESObjectREFR* target) {
         int tid = (int)trackid;
         if (ProfileSE.contains(tid)) {
+            if (!IsActorReadyForProcess(target)) {
+                return;
+            }
+
+
             auto se = ProfileSE.at(tid);
             RE::BSSoundHandle handle;
             AudioManager->BuildSoundDataFromDescriptor(handle, se);
@@ -207,6 +212,10 @@ namespace KMCCT {
         auto it = std::find_if(sound_descriptor_map.begin(), sound_descriptor_map.end(),
                                 [trackid](const auto& p) { return p.first == trackid; });
         if (it != sound_descriptor_map.end()) {
+            if (!IsActorReadyForProcess(target)) {
+                return;
+            }
+
             RE::BSSoundHandle handle;
             AudioManager->BuildSoundDataFromDescriptor(handle, (it->second)->soundDescriptor);
             handle.SetVolume(volume);
@@ -230,6 +239,11 @@ namespace KMCCT {
                 if ((it2->second)->soundDescriptor == nullptr) {
                     KMC_LOG("KMCSound::Play follower {} track id {}", frand, trackid);
                 }
+                if (!IsActorReadyForProcess(target)) {
+                    return;
+                }
+
+
                 AudioManager->BuildSoundDataFromDescriptor(handle, (it2->second)->soundDescriptor);
                 handle.SetVolume(volume);
                 handle.SetObjectToFollow(target->Get3D());
@@ -289,12 +303,22 @@ namespace KMCCT {
 
                 if (recordmap.contains(record)) {
                     auto v = recordmap[record];
-                    KMC_LOG("PlaySE Follower : trackid {} record {} pos {}", trackid, record,
-                        v.SEPoint->GetName());
+                    RE::Actor* actor = nullptr;
+                    if (auto actor_ptr = v.SEPoint.get()) {
+                        actor = actor_ptr.get();
+                        if (!IsActorReadyForProcess(actor)) return "";
+
+                        KMC_LOG("PlaySE Follower : trackid {} record {} pos {}", trackid, record, actor->GetName());
+                    } else {
+                        return "";
+                    }
+
+
+
                     RE::BSSoundHandle handle;
                     AudioManager->BuildSoundDataFromDescriptor(handle, v.sd);
                     handle.SetVolume(volume);
-                    handle.SetObjectToFollow(v.SEPoint->Get3D());
+                    handle.SetObjectToFollow(actor->Get3D());
                     handle.Play();
 
                     // next record
@@ -355,11 +379,19 @@ namespace KMCCT {
 
             if (recordmap.contains(record)) {
                 auto v = recordmap[record];
-                KMC_LOG("PlaySE Player : trackid{} record{}", trackid, record);
+                RE::Actor* actor = nullptr;
+                if (auto actor_ptr = v.SEPoint.get()) {
+                    actor = actor_ptr.get();
+                    if (!IsActorReadyForProcess(actor)) return "";
+
+                    KMC_LOG("PlaySE Follower : trackid {} record {} pos {}", trackid, record, actor->GetName());
+                } else {
+                    return "";
+                }
                 RE::BSSoundHandle handle;
                 AudioManager->BuildSoundDataFromDescriptor(handle, v.sd);
                 handle.SetVolume(volume);
-                handle.SetObjectToFollow(v.SEPoint->Get3D());
+                handle.SetObjectToFollow(actor->Get3D());
                 handle.Play();
 
                 // next record

@@ -14,7 +14,7 @@ struct KMCSECond {
 public:
     KMCSECond() {}
 
-    KMCSECond(RE::BGSSoundDescriptorForm *s, RE::Actor *p) { 
+    KMCSECond(RE::BGSSoundDescriptorForm *s, RE::ActorHandle p) { 
         sd = s;
         SEPoint = p;
     }
@@ -22,7 +22,7 @@ public:
 public:
 
     RE::BGSSoundDescriptorForm *sd;
-    RE::Actor *SEPoint;
+    RE::ActorHandle SEPoint;
 };
 
 class KMCFSoundDescription {

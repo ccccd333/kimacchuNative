@@ -2,8 +2,22 @@
 #include "KMCUtility.h"
 namespace KMCCT {
 
+template <typename T>
+    struct ExpiringValue {
+        T value;
+        std::chrono::steady_clock::time_point expiry_time;
+    };
+
+    template <typename U>
+    struct CacheLayer {
+        std::map<std::string, std::map<uint64_t, ExpiringValue<U>>> data;
+        std::mutex mtx;
+    };
+
     class StorageUtilTracker {
     public:
+        static inline constexpr const char* TRACKER_CACHE_TTL = "tracker_cache_ttl";
+
         static void Init();
 
         static void FetchAllValues(std::list<StorageObservedValue>& result);
@@ -74,6 +88,13 @@ namespace KMCCT {
         //static std::set<std::string> watched_keys;
         //static std::set<uint64_t> watch_strage_util_key_ids;
         //static std::mutex key_handle_map_mutex;
+
+        static inline CacheLayer<int> cache_int;
+        static inline CacheLayer<float> cache_float;
+        static inline CacheLayer<std::string> cache_string;
+
+        static inline std::chrono::milliseconds CACHE_TTL{3000};
+
     };
 
 }
