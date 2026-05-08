@@ -1,4 +1,4 @@
-﻿#include "KMCPrismaUIBridge.h"
+#include "KMCPrismaUIBridge.h"
 
 #include "KMCDisplayWordAndTexture.h"
 #include "KMCCutin.h"
@@ -199,9 +199,11 @@ namespace KMCCT {
         }
     }
 
-    void KMCPrismaUIBridge::KMCShowProfile() {
+    void KMCPrismaUIBridge::KMCShowProfile(std::string category) {
         if (prisma_ui->IsValid(cutin_view)) {
-            std::string script = "KMCShowProfile()";
+            json data_map = {{"category", category}};
+
+            std::string script = "KMCShowProfile(" + data_map.dump() + ")";
             prisma_ui->Invoke(cutin_view, script.c_str());
         } else {
             SKSE::log::warn("KMCShowProfile failed: cutin_view is invalid.");

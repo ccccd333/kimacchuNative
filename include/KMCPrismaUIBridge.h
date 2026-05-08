@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "PrismaUI_API.h"
 #include <nlohmann/json.hpp>
 
@@ -38,7 +38,7 @@ namespace KMCCT {
         // profile
         void KMCSetupProfile(const json &j);
 
-        void KMCShowProfile();
+        void KMCShowProfile(std::string category = "default");
 
         void KMCHideProfile();
 

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "KMCUtility.h"
 
 namespace KMCCT {
@@ -35,6 +35,7 @@ namespace KMCCT {
         void KMCResetProfileContainer();
         void InterruptProfileEventManager();
         void ShowProfile(bool visible);
+        //void ShowProfile(bool visible, std::string category = "default");
         void TryShowProfile();
         int GetStateProfileEvent();
         bool GetUpdateProfile() { return update_prifile; }

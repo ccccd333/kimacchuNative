@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <chrono>
 
 using Clock = std::chrono::steady_clock;
@@ -549,11 +549,17 @@ namespace KMCCT {
         std::vector<std::string> format_id;
     };
 
+    struct KMCProfileTexRange {
+        int start = 0;
+        int end = 0;
+    };
+
     struct KMCProfileDrawingData {
     public:
         std::string base_path;
         int start = 0;
         int end = 0;
+        std::map<std::string, KMCProfileTexRange> category_tex_range;
     };
 
     struct KMCProfileOperatorData {

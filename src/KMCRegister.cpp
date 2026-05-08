@@ -39,10 +39,10 @@ namespace KMCCT {
                 KMCCT::KMCConfig::GetSingleton()->Init();
                 KMCCT::KMCDisplayAddon::GetSingleton()->Init();
                 KMCCT::KMCExpression::GetSingleton()->Prepare();
+                KMCCT::KMCContextManager::GetSingleton()->Init();
 
                 KMCPrismaUIBridge::GetSingleton()->Init();
-
-                KMCCT::KMCContextManager::GetSingleton()->Init();
+                               
 
                 KMCCT::KMCStateManager::GetSingleton()->Register();
 
