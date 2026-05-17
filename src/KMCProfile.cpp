@@ -42,6 +42,9 @@ namespace KMCCT {
 
                 if (is_live_data_only) {
                     dummy_modified_container.clear();
+                    KMC_LOG("StorageUtil live monitoring key only");
+                } else {
+                    KMC_LOG("StorageUtil fetch info via Papyrus script and C++ for monitored keys");
                 }
             } else {
                 KMC_ERROR("[Error] Failed to parse profile configuration JSON. The profile function will be disabled.");
