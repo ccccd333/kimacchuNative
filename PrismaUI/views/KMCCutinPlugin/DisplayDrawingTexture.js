@@ -535,15 +535,15 @@ export class DisplayDrawingTexture {
 
 function CutinFinished(display_type) {
     window.KMCOnCutinFinished(display_type);
-    addResponse(display_type);
+    //addResponse(display_type);
 }
 
 function OnCutinStartReady(display_type) {
     window.KMCOnCutinStartReady(display_type);
-    addResponse(display_type);
+    //addResponse(display_type);
 }
 
 function OnCutinUnavailable(display_type) {
     window.KMCOnCutinUnavailable(display_type);
-    addResponse(display_type);
+    //addResponse(display_type);
 }

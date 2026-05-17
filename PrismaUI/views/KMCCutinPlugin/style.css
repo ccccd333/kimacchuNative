@@ -228,3 +228,28 @@
     background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
     transition: width 0.2s ease-out;
 }
+
+/* プロフィール用プログレスバー */
+#profile_loading_overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 160;
+}
+
+#profile_progress_label {
+    color: #aaffff;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+#profile_progress_bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #00ffaa 0%, #00cc88 100%);
+    transition: width 0.2s ease-out;
+}

@@ -471,9 +471,9 @@ namespace KMCCT {
     bool KMCCCTMagicEffectKeyword::Check(KMCCCheckSource source) {
         auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
         if (player) {
-            const auto activeEffects = player->GetMagicTarget()->GetActiveEffectList();
-            if (activeEffects) {
-                for (auto const& ae : *activeEffects) {
+            const auto active_effects = player->GetMagicTarget()->GetActiveEffectList();
+            if (active_effects) {
+                for (auto const& ae : *active_effects) {
                     const auto mgef = ae ? ae->GetBaseObject() : nullptr;
                     if (mgef) {
                         KMC_LOG("[Active Effect] Name {}, FormId {}", mgef->GetName(), mgef->GetFormID());

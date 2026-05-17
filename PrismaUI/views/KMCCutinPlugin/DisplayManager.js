@@ -187,7 +187,7 @@ window.KMCPreloadGroup = async (json) => {
 
 function OnCacheLoaded(display_type) {
     window.OnCacheLoaded(display_type);
-    addResponse(display_type);
+    //addResponse(display_type);
 }
 
 // window.KMCPreloadGroups = async (json) => {
@@ -281,8 +281,10 @@ window.KMCSetupProfile = async (json) => {
     await window.KMCDisplayManager.profile.setup(json);
 };
 
-window.KMCShowProfile = () => {
-    window.KMCDisplayManager.profile.show();
+window.KMCShowProfile = (json) => {
+    
+    const category = json.category || "default";
+    window.KMCDisplayManager.profile.show(category);
 };
 
 window.KMCHideProfile = () => {

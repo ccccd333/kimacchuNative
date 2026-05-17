@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "KMCUtility.h"
 
 namespace KMCCT {
@@ -13,6 +13,7 @@ namespace KMCCT {
         inline constexpr std::string_view Mount = "Mount";
         inline constexpr std::string_view Dungeon = "InDungeon";
         inline constexpr std::string_view Idle = "Idle";
+        inline constexpr std::string_view Inn = "Inn";
         inline constexpr std::string_view FHU = "FHU";
     }
 
@@ -22,6 +23,12 @@ namespace KMCCT {
         inline constexpr std::string_view Faction = "faction";
         inline constexpr std::string_view Keyword = "keyword";
     }
+
+    struct MagicEffectTarget {
+        RE::BGSKeyword* me_keyword;
+        int threshold = 0;
+        int priority = 0;
+    };
 
     struct State {
     public:
@@ -64,6 +71,10 @@ namespace KMCCT {
 
         State() {}
 
+        void ResetME() { 
+            me_keywords.clear();
+            is_me_representative = false;
+        }
     public:
         RE::BGSKeyword* keyword;
         RE::TESFaction* faction;
@@ -73,6 +84,12 @@ namespace KMCCT {
         int threshold = 0;
         KMCTESGlobalParam gparam;
         KMCStrageUtilParam stuparam;
+        bool is_magic_effect = false;
+        bool is_me_representative = false;
+        int me_priority = 0;
+        std::vector<MagicEffectTarget> me_keywords;
+        // profileフラグ
+        bool is_profile = false;
     };
     typedef std::string (*StateFunc)(int any, State st);
     struct StateControll {
@@ -102,8 +119,10 @@ namespace KMCCT {
 
         void Setup();
         void Init();
+        void ProfileStateSetup(std::set<std::string> monitor_target);
 
         std::string GetPlayerState();
+        std::string GetStateForProfile();
 
         // event
         void OnHitEvent(const RE::TESHitEvent* event);
@@ -118,10 +137,16 @@ namespace KMCCT {
 
         bool Parse(std::string path);
 
-        std::map<int, StateControll> states;
+        std::map<int, StateControll> cutin_states;
+        
         bool loaded = true;
 
         std::vector<ActionStateEntry> action_states;
         std::unordered_map<std::string, std::vector<std::pair<int, std::string>>> extended_context_data;
+
+        // profile用
+        std::map<int, StateControll> profile_states;
+
+        
     };
 }

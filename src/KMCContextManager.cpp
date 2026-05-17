@@ -1,4 +1,4 @@
-#include "KMCContextManager.h"
+﻿#include "KMCContextManager.h"
 #include "KMCConfig.h"
 #include "KMCCutin.h"
 #include "KMCGameEventListener.h"
@@ -14,10 +14,17 @@ namespace KMCCT {
 
     RE::BGSKeyword* LocTypeDungeon;
     RE::BGSKeyword* LocTypeClearable;
+    RE::BGSKeyword* LocTypeInn;
     std::vector<RE::BGSKeyword*> WeaponKeywordTypeSlash;
     std::vector<RE::BGSKeyword*> WeaponKeywordTypeBlunt;
-    bool isTravel = false;
-    bool isTravelFar = false;
+    std::atomic<bool> is_travel{false};
+    std::atomic<bool> is_travel_far{false};
+
+    std::atomic<bool> is_p_travel{false};
+    std::atomic<bool> is_p_travel_far{false};
+
+    std::unordered_map<int, bool> me_result_cache;
+    std::unordered_map<int, bool> me_p_result_cache;
 
     std::string STHasKeyword(int any, State st) {
         if (st.threshold < any) {
@@ -32,23 +39,57 @@ namespace KMCCT {
     }
 
     std::string STHasMagicEffectKeyword(int any, State st) {
-        if (st.threshold < any) {
-            return "";
-        }
+        
+        if (st.is_me_representative) {
+            std::vector<MagicEffectTarget*> target;
+            for (auto& v : st.me_keywords) {
+                // randの値以下なので、確率に選ばれなかった
+                if (v.threshold < any) {
+                    continue;
+                }
 
-        const auto activeEffects = st.actor->GetMagicTarget()->GetActiveEffectList();
-        if (activeEffects) {
-            for (auto const& ae : *activeEffects) {
-                const auto mgef = ae ? ae->GetBaseObject() : nullptr;
-                if (mgef != nullptr) {
-                    KMC_LOG("Active Effect Name {} search target {}", mgef->GetName(), st.keyword->GetFormEditorID());
-                    if (mgef->HasKeyword(st.keyword)) {
-                        return st.cutinName;
+                target.push_back(&v);
+            }
+
+            if (target.empty()) {
+                return "";
+            }
+
+            const auto active_effects = st.actor->GetMagicTarget()->GetActiveEffectList();
+            if (active_effects) {
+                for (auto const& ae : *active_effects) {
+                    const auto mgef = ae ? ae->GetBaseObject() : nullptr;
+                    if (mgef != nullptr) {
+                        KMC_LOG("Active Effect Name {} search target {}", mgef->GetName(),
+                                st.keyword->GetFormEditorID());
+                        for (auto* v : target) {
+                            if (mgef->HasKeyword(v->me_keyword)) {
+                                if (st.is_profile) {
+                                    me_p_result_cache[v->priority] = true;
+                                } else {
+                                    // magic effectのN番目かわからないし、リストの最後なのかわからないので入れてく
+                                    me_result_cache[v->priority] = true;
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
 
+        if (st.is_profile) {
+            if (me_p_result_cache.contains(st.me_priority)) {
+                if (me_p_result_cache[st.me_priority]) {
+                    return st.cutinName;
+                }
+            }
+        } else {
+            if (me_result_cache.contains(st.me_priority)) {
+                if (me_result_cache[st.me_priority]) {
+                    return st.cutinName;
+                }
+            }
+        }
         return "";
     }
 
@@ -81,16 +122,27 @@ namespace KMCCT {
             return "";
         }
 
-        if (isTravelFar) {
-            isTravelFar = false;
-            return "FTEndFar";
-        }
+        if (st.is_profile) {
+            if (is_p_travel_far.load(std::memory_order_relaxed)) {
+                is_p_travel_far.store(false, std::memory_order_relaxed);
+                return "FTEndFar";
+            }
 
-        if (isTravel) {
-            isTravel = false;
-            return "FTEndClose";
-        }
+            if (is_p_travel.load(std::memory_order_relaxed)) {
+                is_p_travel.store(false, std::memory_order_relaxed);
+                return "FTEndClose";
+            }
+        } else {
+            if (is_travel_far.load(std::memory_order_relaxed)) {
+                is_travel_far.store(false, std::memory_order_relaxed);
+                return "FTEndFar";
+            }
 
+            if (is_travel.load(std::memory_order_relaxed)) {
+                is_travel.store(false, std::memory_order_relaxed);
+                return "FTEndClose";
+            }
+        }
         return "";
     }
 
@@ -180,6 +232,24 @@ namespace KMCCT {
 
         return "";
     }
+
+    std::string STInn(int any, State st) {
+        if (st.threshold < any) {
+            return "";
+        }
+
+        auto cell = st.actor->GetParentCell();
+        if (cell != nullptr && cell->IsInteriorCell()) {
+            auto loc = st.actor->GetCurrentLocation();
+            if (loc != nullptr) {
+                if (loc->HasKeyword(LocTypeInn)) {
+                    return "Inn";
+                }
+            }
+        }
+
+        return "";
+    }
 #pragma endregion 
 
     void KMCContextManager::Setup() {
@@ -194,9 +264,9 @@ namespace KMCCT {
     }
 
     void KMCContextManager::Init() {
-        LocTypeDungeon = (RE::BGSKeyword*)RE::TESForm::LookupByID(0x000130DB);
-        LocTypeClearable = (RE::BGSKeyword*)RE::TESForm::LookupByID(0x000F5E80);
-
+        LocTypeDungeon = RE::TESForm::LookupByID<RE::BGSKeyword>(0x000130DB);
+        LocTypeClearable = RE::TESForm::LookupByID<RE::BGSKeyword>(0x000F5E80);
+        LocTypeInn = RE::TESForm::LookupByID<RE::BGSKeyword>(0x0001CB87);
         WeaponKeywordTypeSlash = {
             RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(0x0001E711, "Skyrim.esm"),
             RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(0x0001E713, "Skyrim.esm"),
@@ -213,20 +283,22 @@ namespace KMCCT {
 
         for (const auto& entry : action_states) {
             if (entry.name == StateNames::FTEndFar) {
-                states.emplace(entry.priority, StateControll(STFTEnd, KMCCT::State(player, "FTEndFar", entry.chance)));
+                cutin_states.emplace(entry.priority, StateControll(STFTEnd, KMCCT::State(player, "FTEndFar", entry.chance)));
                 cutin_chance_fasttravel = entry.chance;
             } else if (entry.name == StateNames::Injury) {
-                states.emplace(entry.priority, StateControll(STInjury, KMCCT::State(player, "Injury", entry.chance)));
+                cutin_states.emplace(entry.priority, StateControll(STInjury, KMCCT::State(player, "Injury", entry.chance)));
             } else if (entry.name == StateNames::Combat) {
-                states.emplace(entry.priority, StateControll(STCombat, KMCCT::State(player, "Combat", entry.chance)));
+                cutin_states.emplace(entry.priority, StateControll(STCombat, KMCCT::State(player, "Combat", entry.chance)));
             } else if (entry.name == StateNames::Sneak) {
-                states.emplace(entry.priority, StateControll(STSneak, KMCCT::State(player, "Sneak", entry.chance)));
+                cutin_states.emplace(entry.priority, StateControll(STSneak, KMCCT::State(player, "Sneak", entry.chance)));
             } else if (entry.name == StateNames::Mount) {
-                states.emplace(entry.priority, StateControll(STMount, KMCCT::State(player, "Mount", entry.chance)));
+                cutin_states.emplace(entry.priority, StateControll(STMount, KMCCT::State(player, "Mount", entry.chance)));
             } else if (entry.name == StateNames::Dungeon) {
-                states.emplace(entry.priority, StateControll(STDungeon, KMCCT::State(player, "InDungeon", entry.chance)));
+                cutin_states.emplace(entry.priority, StateControll(STDungeon, KMCCT::State(player, "InDungeon", entry.chance)));
             } else if (entry.name == StateNames::Idle) {
-                states.emplace(entry.priority, StateControll(STIdle, KMCCT::State(player, "Idle", entry.chance)));
+                cutin_states.emplace(entry.priority, StateControll(STIdle, KMCCT::State(player, "Idle", entry.chance)));
+            } else if (entry.name == StateNames::Inn) {
+                cutin_states.emplace(entry.priority, StateControll(STInn, KMCCT::State(player, "Inn", entry.chance)));
             }
         }
 
@@ -267,6 +339,60 @@ namespace KMCCT {
                                     "DetectionGlobal.json", "DetectionGlobal.json error param 6 or 7 "});
             }
         }
+
+        State* first_magic_effect_state = nullptr;
+
+        for (auto& [priority, control] : cutin_states) {
+            if (control.state.is_magic_effect) {
+                if (first_magic_effect_state == nullptr) {
+                    first_magic_effect_state = &control.state;
+                    first_magic_effect_state->is_me_representative = true;
+                    MagicEffectTarget met = {.me_keyword = control.state.keyword,
+                                             .threshold = control.state.threshold,
+                                             .priority = control.state.me_priority};
+                    first_magic_effect_state->me_keywords.push_back(met);
+                } else {
+                    MagicEffectTarget met = {.me_keyword = control.state.keyword,
+                                             .threshold = control.state.threshold,
+                                             .priority = control.state.me_priority};
+                    first_magic_effect_state->me_keywords.push_back(met);
+                    control.state.is_me_representative = false;
+                }
+            }
+        }
+    }
+
+    void KMCContextManager::ProfileStateSetup(std::set<std::string> monitor_target) {
+        for (const auto& [priority, control] : cutin_states) {
+            if (monitor_target.contains(control.state.cutinName)) {
+                profile_states.emplace(priority, control);
+            }
+        }
+
+        State* first_magic_effect_state = nullptr;
+
+        for (auto& [priority, control] : profile_states) {
+            control.state.is_profile = true;
+
+            if (control.state.is_magic_effect) {
+                if (first_magic_effect_state == nullptr) {
+                    
+                    first_magic_effect_state = &control.state;
+                    first_magic_effect_state->ResetME();
+                    first_magic_effect_state->is_me_representative = true;
+                    MagicEffectTarget met = {.me_keyword = control.state.keyword,
+                                             .threshold = control.state.threshold,
+                                             .priority = control.state.me_priority};
+                    first_magic_effect_state->me_keywords.push_back(met);
+                } else {
+                    MagicEffectTarget met = {.me_keyword = control.state.keyword,
+                                             .threshold = control.state.threshold,
+                                             .priority = control.state.me_priority};
+                    first_magic_effect_state->me_keywords.push_back(met);
+                    control.state.is_me_representative = false;
+                }
+            }
+        }
     }
 
     void KMCContextManager::OnHitEvent(const RE::TESHitEvent* event) {
@@ -301,9 +427,11 @@ namespace KMCCT {
     }
     void KMCContextManager::FastTravelEndEvent(const RE::TESFastTravelEndEvent* event) {
         if (event->fastTravelEndHours > 1.5f) {
-            isTravelFar = true;
+            is_travel_far.store(true, std::memory_order_relaxed);
+            is_p_travel_far.store(true, std::memory_order_relaxed);
         } else {
-            isTravel = true;
+            is_travel.store(true, std::memory_order_relaxed);
+            is_p_travel.store(true, std::memory_order_relaxed);
         }
     }
 
@@ -312,36 +440,56 @@ namespace KMCCT {
         std::string state = GetHighestPriorityPlayer();
 
         if (state != "") {
-            isTravelFar = false;
-            isTravel = false;
+            is_travel_far.store(false, std::memory_order_relaxed);
+            is_travel.store(false, std::memory_order_relaxed);
         }
 
         return state;
     }
 
-    std::string KMCContextManager::GetHighestPriorityPlayer() {
+    std::string KMCContextManager::GetStateForProfile() {
+        std::string state = "default";
+
         auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
-
-        if (KMCStateManager::GetSingleton()->GetStoppingState()) {
-            return "";
-        }
-
-        if (player == nullptr) return "";
+        if (player == nullptr) return "default";
 
         std::random_device rnd;
         std::mt19937 mt(rnd());
         std::uniform_int_distribution<> rand100(1, 100);
         int r = (int)rand100(mt);
 
-        std::string result;
+        me_p_result_cache.clear();
+        for (const auto& [key, value] : profile_states) {
+            state = value.func(r, value.state);
+            if (state != "") {
+                is_p_travel_far.store(false, std::memory_order_relaxed);
+                is_p_travel.store(false, std::memory_order_relaxed);
+                return state;
+            }
+        }
 
-        for (auto [key, value] : states) {
-            result = value.func(r, value.state);
+        return "default";
+    }
+
+    std::string KMCContextManager::GetHighestPriorityPlayer() {
+        auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
+        if (player == nullptr || KMCStateManager::GetSingleton()->GetStoppingState()) {
+            return "";
+        }
+
+        std::random_device rnd;
+        std::mt19937 mt(rnd());
+        std::uniform_int_distribution<> rand100(1, 100);
+        int r = rand100(mt);
+
+        me_result_cache.clear();
+
+        for (const auto& [key, value] : cutin_states) {
+            std::string result = value.func(r, value.state);
             if (result != "") {
                 return result;
             }
         }
-
         return "";
     }
 
@@ -357,6 +505,7 @@ namespace KMCCT {
                 RE::TESFaction* faction = nullptr;
                 RE::TESGlobal* global = nullptr;
                 bool found = false;
+                bool is_magic_effect = false;
 
                 switch (type) {
                     case KMCDetectionType::keyword:
@@ -373,6 +522,7 @@ namespace KMCCT {
                         keyword = RE::TESDataHandler::GetSingleton()->LookupForm<RE::BGSKeyword>(
                             std::stoll(spvalue.at(0), NULL, 16), spvalue.at(1));
                         keyword != nullptr ? found = true : found = false;
+                        is_magic_effect = true;
                         break;
                     case KMCDetectionType::global:
                         global = RE::TESDataHandler::GetSingleton()->LookupForm<RE::TESGlobal>(
@@ -385,7 +535,7 @@ namespace KMCCT {
 
                 if (found) {
                     int priority = std::stoi(spvalue.at(3));
-                    if (states.contains(priority)) {
+                    if (cutin_states.contains(priority)) {
                         KMC_ERROR("{}", messages.at(0));
                     } else {
                         KMCCT::State state =
@@ -408,8 +558,11 @@ namespace KMCCT {
                         } catch (...) {
                             KMC_ERROR("{}", messages.at(3));
                         }
-
-                        states.insert(std::make_pair(priority, StateControll(f, state)));
+                        if (is_magic_effect) {
+                            state.is_magic_effect = true;
+                            state.me_priority = priority;
+                        }
+                        cutin_states.insert(std::make_pair(priority, StateControll(f, state)));
                     }
                 } else {
                     KMC_ERROR("{}", messages.at(1));
@@ -439,7 +592,7 @@ namespace KMCCT {
             ActionStateEntry ase;
             auto sp = KMCSplit(line.get<std::string>(), ',');
             if (sp.size() != 3) {
-                // json�̓ǂݎ�����T�C�Y�Ƒz�肪�Ⴄ
+                // jsonの読み取ったサイズと想定が違う
                 return false;
             }
 

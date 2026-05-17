@@ -15,6 +15,9 @@ export class DisplayProfile {
         
         this.ctxs = new Map();
         this.text_containers = {};
+
+        this.total_images = 0;
+        this.loaded_images = 0;
         
         // const ids = ["D01", "D02", "D03"];
         // this.ctxs = new Map();
@@ -34,6 +37,9 @@ export class DisplayProfile {
     }
 
     async setup(json) {
+        this.total_images = 0;
+        this.loaded_images = 0;
+
         const tasks = [];
         for (const [id, data] of Object.entries(json)) {
             if (id.startsWith("T")) {
@@ -53,7 +59,11 @@ export class DisplayProfile {
             }
         }
 
+        this.show_profile_progress();
+
         await Promise.all(tasks);
+
+        this.hide_profile_progress();
 
         this.container.style.display = "none";
 
@@ -92,25 +102,94 @@ export class DisplayProfile {
         }
     }
 
-    async preloadProfile(id, data) {
-        if (this.image_cache.has(id)) return;
-        const { base_path, texture_range } = data;
-        const fetchPromises = [];
-        const dir = base_path + id + "/";
-        for (let i = texture_range.start; i <= texture_range.end; i++) {
-            fetchPromises.push(
-                fetch(`${dir}${i}.png`)
-                    .then(r => r.blob())
-                    .then(blob => createImageBitmap(blob))
-                    .catch(e => console.error(`[Profile] Load fail: ${id}_${i}`, e))
-            );
-        }
-        const bitmaps = await Promise.all(fetchPromises);
-        this.image_cache.set(id, bitmaps.filter(b => b));
+    show_profile_progress() {
+        const overlay = document.getElementById("profile_loading_overlay");
+        if (overlay) overlay.style.display = "block";
     }
 
-    show() {
+    hide_profile_progress() {
+        const overlay = document.getElementById("profile_loading_overlay");
+        if (overlay) {
+            setTimeout(() => {
+                overlay.style.display = "none";
+            }, 500);
+        }
+    }
+
+    update_profile_progress() {
+        const percent = this.total_images > 0 
+            ? Math.floor((this.loaded_images / this.total_images) * 100) 
+            : 0;
+        
+        const bar = document.getElementById("profile_progress_bar");
+        const text = document.getElementById("profile_progress_text");
+        
+        if (bar) bar.style.width = `${percent}%`;
+        if (text) text.innerText = `${percent}%`;
+    }
+
+    async preloadProfile(id, data) {
+        if (this.image_cache.has(id)) return;
+
+        const { base_path, texture_range, category } = data;
+        const dir = base_path + id + "/";
+        const category_map = new Map();
+
+        const load_range = async (range, current_dir) => {
+            const fetch_promises = [];
+            for (let i = range.start; i <= range.end; i++) {
+                fetch_promises.push(
+                    fetch(`${current_dir}${i}.png`)
+                        .then(r => r.blob())
+                        .then(blob => createImageBitmap(blob))
+                        .then(bmp => {
+                            this.loaded_images++;
+                            this.update_profile_progress();
+                            return bmp;
+                        })
+                        .catch(e => {
+                            console.error(`[Profile] Load fail: ${id}_${i}`, e);
+                            this.loaded_images++;
+                            this.update_profile_progress();
+                            return null;
+                        })
+                );
+            }
+            const bitmaps = await Promise.all(fetch_promises);
+            return bitmaps.filter(b => b);
+        };
+
+        this.total_images += (texture_range.end - texture_range.start + 1);
+
+        if (category) {
+            for (const [cat_name, cat_data] of Object.entries(category)) {
+                if (cat_data.texture_range) {
+                    this.total_images += (cat_data.texture_range.end - cat_data.texture_range.start + 1);
+                }
+            }
+        }
+
+        const default_bitmaps = await load_range(texture_range, dir);
+        category_map.set("default", default_bitmaps);
+
+        if (category) {
+            for (const [cat_name, cat_data] of Object.entries(category)) {
+                if (cat_data.texture_range) {
+                    const cat_dir = dir + cat_name + "/";
+                    const cat_bitmaps = await load_range(cat_data.texture_range, cat_dir);
+                    category_map.set(cat_name, cat_bitmaps);
+                }
+            }
+        }
+
+        this.image_cache.set(id, category_map);
+    }
+
+    show(category) {
+        this.current_category = category;
         this.container.style.display = "block";
+
+        console.log(`[DisplayProfile] show() called with category: "${this.current_category}"`);
 
         if (!this.animating) {
             this.animating = true;
@@ -138,8 +217,19 @@ export class DisplayProfile {
         this.last_time = time - (elapsed % this.interval);
 
         for (const [id, ctx] of this.ctxs) {
-            const frames = this.image_cache.get(id);
-            if (!frames || frames.length === 0) continue;
+            const category_map = this.image_cache.get(id);
+            if (!category_map) continue;
+
+            let frames = category_map.get(this.current_category);
+            if (!frames || frames.length === 0) {
+                frames = category_map.get("default");
+                console.log(`[DisplayProfile] Category "${this.current_category}" not found for ${id}, fallback to "default"`);
+            }
+            
+            if (!frames || frames.length === 0) {
+                console.warn(`[DisplayProfile] No frames available for ${id}`);
+                continue
+            };
 
             const bmp = frames[this.frame % frames.length];
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);

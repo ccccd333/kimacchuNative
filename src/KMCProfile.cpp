@@ -1,4 +1,4 @@
-﻿#include "KMCProfile.h"
+#include "KMCProfile.h"
 #include "KMCConfig.h"
 #include "KMCEventThread.h"
 #include "KMCSound.h"
@@ -6,6 +6,7 @@
 #include "KMCWaitTask.h"
 #include "KMCPrismaUIBridge.h"
 #include "KMCStorageUtilTracker.h"
+#include "KMCContextManager.h"
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -25,7 +26,7 @@ namespace KMCCT {
 
             if (loaded) {
                 mod_end_index = mod_start_index + profil_ex_data.format_id_num;
-
+                is_live_data_only = true;
                 if (mod_start_index != mod_end_index) {
                     for (const auto &fm : profil_ex_data.format_maps) {
                         for (const auto &index : fm.placeholder_indices) {
@@ -33,9 +34,14 @@ namespace KMCCT {
                                 modified_container.push_back(fm.live_map_keys.at(index));
                             } else {
                                 modified_container.push_back(fm.format_strings.at(index));
+                                is_live_data_only = false;
                             }
                         }
                     }
+                }
+
+                if (is_live_data_only) {
+                    dummy_modified_container.clear();
                 }
             } else {
                 KMC_ERROR("[Error] Failed to parse profile configuration JSON. The profile function will be disabled.");
@@ -47,7 +53,11 @@ namespace KMCCT {
     }
 
     std::vector<std::string> KMCProfile::GetModifiedContainer() { 
-        return modified_container;
+        if (is_live_data_only) {
+            return dummy_modified_container;
+        } else {
+            return modified_container;
+        }
     
     }
 
@@ -57,8 +67,11 @@ namespace KMCCT {
 
             if (update_prifile) return;
             update_prifile = true;
-
-            ResultModifiedContainer = container;
+            if (is_live_data_only) {
+                ResultModifiedContainer = modified_container;
+            } else {
+                ResultModifiedContainer = container;
+            }
 
             //if (BefResultModifiedContainer.size() > 0 && BefResultModifiedContainer == ResultModifiedContainer) {
             //    update_prifile = false;
@@ -252,8 +265,8 @@ namespace KMCCT {
             interrupt_show_profile = false;
         }
     }
-
     void KMCProfile::ShowProfile(bool visible) {
+    //void KMCProfile::ShowProfile(bool visible, std::string category) {
 
         auto *thread = KMCCT::KMCEventThread::GetSingleton();
 
@@ -290,7 +303,9 @@ namespace KMCCT {
             KMCCT::KMCSound::GetSingleton()->PlayProfileSE(KMCProfileSEType::open, aaaakmcvolum, player);
 
             // visible
-            KMCPrismaUIBridge::GetSingleton()->KMCShowProfile();
+            std::string category = KMCContextManager::GetSingleton()->GetStateForProfile();
+            KMCPrismaUIBridge::GetSingleton()->KMCShowProfile(category);
+            //KMCPrismaUIBridge::GetSingleton()->KMCShowProfile(category);
 
             std::this_thread::sleep_for(std::chrono::milliseconds(time));
         } else {
@@ -372,7 +387,7 @@ namespace KMCCT {
         papyrus側で{PlayerSLSValidFreedomLic}を文字列に置き換えた後の値を
         */
         //std::vector<KMCProfileReplaceMap> format_map;
-
+        std::set<std::string> monitor_target;
 
         for (auto &[key, profile] : j.items()) {
             if (key.empty()) continue;
@@ -470,6 +485,29 @@ namespace KMCCT {
                     }
                 }
 
+                // category別texture_range
+                if (profile.contains("category") && profile["category"].is_object()) {
+                    for (auto& [cat_name, cat_val] : profile["category"].items()) {
+                        if (cat_val.contains("texture_range") && cat_val["texture_range"].is_object()) {
+                            int cat_start = cat_val["texture_range"].value("start", 1);
+                            int cat_end   = cat_val["texture_range"].value("end", 1);
+                            data.category_tex_range[cat_name] = {.start = cat_start, .end = cat_end};
+
+                            monitor_target.insert(cat_name);
+
+                            for (int i = cat_start; i <= cat_end; i++) {
+                                std::string file_path =
+                                    data.base_path + key + "/" + cat_name + "/" + std::to_string(i) + ".png";
+                                if (!fs::exists(PRISMA_UI_HTML_PATH + file_path)) {
+                                    std::string error_path = PRISMA_UI_HTML_PATH + file_path;
+                                    KMC_ERROR("Missing category file: {} cat={}", error_path, cat_name);
+                                    is_missing_file = true;
+                                }
+                            }
+                        }
+                    }
+                }
+
                 profil_ex_data.drawing_data[key] = data;
             }
         }
@@ -547,10 +585,10 @@ namespace KMCCT {
                         error = true;
                         is_error_strage_util = true;
                     }
-
+                    bool found = false;
                     // T01とかのやつのformat用文字列変換クラスをポインタでもらっとく
                     for (auto &prm : profil_ex_data.format_maps) {
-                        bool found = false;
+                        
                         int post_index = 0;
                         for (const auto &index : prm.placeholder_indices) {
                             if (prm.format_strings.at(index) == tag_name) {
@@ -564,6 +602,11 @@ namespace KMCCT {
                             prm.live_map_keys[post_index] = live_key;
                             break;
                         }
+                    }
+
+                    if (!found) {
+                        KMC_ERROR("Failed to get live key for StorageUtil tag: {}", tag_name);
+                        error = true;
                     }
                 } else {
                     error = true;
@@ -592,6 +635,9 @@ namespace KMCCT {
                 "error logs for specific tag failures.");
             return false;
         }
+
+
+        KMCContextManager::GetSingleton()->ProfileStateSetup(monitor_target);
 
         KMCPrismaUIBridge::GetSingleton()->KMCSetupProfile(j);
 
