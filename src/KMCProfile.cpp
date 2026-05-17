@@ -26,7 +26,7 @@ namespace KMCCT {
 
             if (loaded) {
                 mod_end_index = mod_start_index + profil_ex_data.format_id_num;
-
+                is_live_data_only = true;
                 if (mod_start_index != mod_end_index) {
                     for (const auto &fm : profil_ex_data.format_maps) {
                         for (const auto &index : fm.placeholder_indices) {
@@ -34,9 +34,14 @@ namespace KMCCT {
                                 modified_container.push_back(fm.live_map_keys.at(index));
                             } else {
                                 modified_container.push_back(fm.format_strings.at(index));
+                                is_live_data_only = false;
                             }
                         }
                     }
+                }
+
+                if (is_live_data_only) {
+                    dummy_modified_container.clear();
                 }
             } else {
                 KMC_ERROR("[Error] Failed to parse profile configuration JSON. The profile function will be disabled.");
@@ -48,7 +53,11 @@ namespace KMCCT {
     }
 
     std::vector<std::string> KMCProfile::GetModifiedContainer() { 
-        return modified_container;
+        if (is_live_data_only) {
+            return dummy_modified_container;
+        } else {
+            return modified_container;
+        }
     
     }
 
@@ -58,8 +67,11 @@ namespace KMCCT {
 
             if (update_prifile) return;
             update_prifile = true;
-
-            ResultModifiedContainer = container;
+            if (is_live_data_only) {
+                ResultModifiedContainer = modified_container;
+            } else {
+                ResultModifiedContainer = container;
+            }
 
             //if (BefResultModifiedContainer.size() > 0 && BefResultModifiedContainer == ResultModifiedContainer) {
             //    update_prifile = false;

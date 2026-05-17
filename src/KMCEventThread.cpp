@@ -272,10 +272,22 @@ void KMCCT::ProfilePeriodicCall() {
 void KMCCT::PapyrusPeriodicCall() {
 
     time_point<Clock> start = Clock::now();
+    int last_state = -3;
     auto *thread = KMCCT::KMCEventThread::GetSingleton();
     while (true) {
         if (thread->IsShuttingDown()) {
             break;
+        }
+
+        int current_state = 0;
+        if (!IsActorReadyForProcess(KMCConfig::GetSingleton()->GetPlayer())) {
+            current_state = -3;
+        }
+
+        if (last_state == -3) {
+            last_state = current_state;
+            std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::WHILE_WAIT_TIME));
+            continue;
         }
 
         if (thread->GetForceEndAnim()) {
@@ -283,7 +295,7 @@ void KMCCT::PapyrusPeriodicCall() {
             continue;
         }
 
-        if (!thread->GetForceEndAnim()) {
+        //if (thread->GetForceEndAnim()) {
             //int result = 0;
             //auto vmhandler = StorageUtilTracker::BuildHandleFromStackPointer(KMCConfig::GetSingleton()->GetPlayer());
             //if (StorageUtilTracker::GetIntValue("testKeyInt", vmhandler, result)) {
@@ -296,16 +308,22 @@ void KMCCT::PapyrusPeriodicCall() {
             milliseconds diff = duration_cast<milliseconds>(end - start);
             dur = diff.count();
             if (dur >= aaaakmcUpdatePapyrusCycle * KMCCT::PAPYRUS_UPDATE_WHILE_WAIT_TIME) {
-                auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
+                if (KMCProfile::GetSingleton()->IsLiveDataOnly()) {
+                    KMCProfile::GetSingleton()->SetModifiedContainer({});
+                } else {
+                    auto player = KMCCT::KMCConfig::GetSingleton()->GetPlayer();
 
-                if (player) {
-                    RE::Actor *ac = player;
-                    PapyrusFuncCall("aaaKimachuuCutInMCMScripts", "UpdateProf", form, ac);
-                    start = Clock::now();
+                    if (player) {
+                        RE::Actor *ac = player;
+                        PapyrusFuncCall("aaaKimachuuCutInMCMScripts", "UpdateProf", form, ac);
+                        
+                    }
                 }
-            }
-        }
 
+                start = Clock::now();
+            }
+        //}
+        last_state = current_state;
         std::this_thread::sleep_for(std::chrono::milliseconds(KMCCT::PAPYRUS_UPDATE_WHILE_WAIT_TIME));
     }
 }

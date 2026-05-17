@@ -52,6 +52,7 @@ namespace KMCCT {
         void Set_switch_disp_profile_flag(bool set) { switch_disp_profile_flag = set; }
 
         bool IsReady() const { return loaded; }
+        bool IsLiveDataOnly() const { return is_live_data_only; }
     private:
         // レガシー
         /*void ProfileInit(KMCProfil &profil, std::string target, std::vector<std::pair<std::string, std::string>> *ws,
@@ -66,6 +67,7 @@ namespace KMCCT {
 
         // ModifiedContainer
         std::vector<std::string> modified_container;
+        std::vector<std::string> dummy_modified_container;
         std::vector<std::string> ResultModifiedContainer;
         std::vector<std::string> BefResultModifiedContainer;
         int StrageUtilStartIndex = 0;
@@ -84,5 +86,7 @@ namespace KMCCT {
 
         bool is_missing_file = false;
         bool loaded = true;
+
+        bool is_live_data_only = false;
     };
 }
