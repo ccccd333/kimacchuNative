@@ -585,10 +585,10 @@ namespace KMCCT {
                         error = true;
                         is_error_strage_util = true;
                     }
-
+                    bool found = false;
                     // T01とかのやつのformat用文字列変換クラスをポインタでもらっとく
                     for (auto &prm : profil_ex_data.format_maps) {
-                        bool found = false;
+                        
                         int post_index = 0;
                         for (const auto &index : prm.placeholder_indices) {
                             if (prm.format_strings.at(index) == tag_name) {
@@ -602,6 +602,11 @@ namespace KMCCT {
                             prm.live_map_keys[post_index] = live_key;
                             break;
                         }
+                    }
+
+                    if (!found) {
+                        KMC_ERROR("Failed to get live key for StorageUtil tag: {}", tag_name);
+                        error = true;
                     }
                 } else {
                     error = true;
